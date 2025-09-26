@@ -1,0 +1,266 @@
+@use "../abstracts/mixins" as *;
+
+.ant-notification {
+  z-index: 9999;
+}
+
+.ant-drawer {
+  z-index: 9900;
+}
+
+.ant-dropdown {
+  z-index: 9999;
+
+  &-menu-item {
+    font-size: 1.6rem !important;
+  }
+
+  &-menu-item p {
+    display: flex;
+    align-items: center;
+  }
+
+  &-menu-item span.language {
+    font-size: 2rem !important;
+  }
+}
+
+.ant-form {
+  $form-spacing: 20px;
+  $form-border-radius: 6px;
+  $form-item-margin-bottom: 32px;
+  $form-label-height: 32px;
+  $form-input-height: 40px;
+
+  /* Row and Column */
+  & .ant-row {
+    margin-left: calc(-1 * calc($form-spacing / 2));
+    margin-right: calc(-1 * calc($form-spacing / 2));
+  }
+
+  & .ant-col {
+    padding-left: calc(calc($form-spacing / 2));
+    padding-right: calc(calc($form-spacing / 2));
+  }
+
+  & .ant-row.split-2 .ant-row.split-2 {
+    margin-left: calc($form-spacing / 2);
+  }
+
+  & .ant-row.split-2 .ant-row.split-2 .ant-form-item {
+    padding-right: calc(calc($form-spacing / 1));
+  }
+
+  & > .ant-row {
+    width: 100%;
+  }
+
+  & .ant-row.split-2 > .ant-col {
+    width: calc(100% / 2) !important;
+  }
+
+  & > .ant-row.split-3 > .ant-col {
+    width: calc(100% / 3) !important;
+
+    @media (max-width: 768px) {
+      width: 100% !important;
+    }
+  }
+
+  & .ant-form-item {
+    margin-bottom: $form-item-margin-bottom;
+  }
+
+  & .ant-form-item.margin-bottom-0 {
+    margin-bottom: 0px;
+  }
+
+  & .ant-form-item.multiple-2 {
+    width: calc(100% * 2 + $form-spacing);
+    z-index: 100;
+  }
+
+  .student-content & > .ant-row > .ant-col:nth-of-type(1) {
+    @media (max-width: 768px) {
+      width: 100% !important;
+    }
+  }
+
+  .student-content & > .ant-row > .ant-col:nth-of-type(2) {
+    @media (max-width: 768px) {
+      width: 50% !important;
+      margin-top: 114px;
+    }
+  }
+
+  .student-content & > .ant-row > .ant-col:nth-of-type(3) {
+    @media (max-width: 768px) {
+      width: 50% !important;
+      margin-top: 114px;
+    }
+  }
+
+  // Label, Input and Select...
+  &-item {
+    position: relative;
+  }
+
+  &
+    :is(
+      label,
+      label.ant-form-item-required::before,
+      input,
+      .ant-select-selection-placeholder,
+      .ant-select-selection-item
+    ) {
+    font-size: 1.6rem !important;
+  }
+
+  &
+    :where(.css-dev-only-do-not-override-vwtsud).ant-form-item
+    .ant-form-item-label
+    > label.ant-form-item-required::before {
+    font-size: 2rem !important;
+  }
+
+  &
+    :is(
+      input,
+      .ant-select,
+      .ant-select-selector,
+      .ant-select-selection-placeholder,
+      .ant-select-selection-search-input,
+      .ant-picker
+    ) {
+    height: $form-input-height !important;
+    line-height: $form-input-height !important;
+  }
+
+  & .ant-form-item-label {
+    @include size(100%, $form-label-height);
+  }
+
+  & :is(.ant-select-arrow svg, .ant-select-clear svg) {
+    @include size(14px !important);
+  }
+
+  & .ant-picker {
+    width: 100%;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  & :is(.ant-image, img.image-preview, .ant-image-mask) {
+    @include size(62%, 200px);
+    margin-top: 24px;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+
+  & img.image-preview {
+    padding: 4px;
+    border: 1px solid #cecece;
+    border-radius: $form-border-radius;
+  }
+
+  & .ant-upload {
+    position: absolute;
+    top: calc(
+      calc(
+          calc(
+              $form-item-margin-bottom + $form-label-height + $form-input-height
+            ) * 3
+        ) / 2
+    );
+    left: 0;
+    width: 100%;
+  }
+
+  & .ant-upload button {
+    @include size(100%, $form-input-height);
+    font-size: 1.6rem;
+  }
+
+  & .ant-form-item-control:has(.ant-upload) .ant-form-item-additional {
+    position: absolute;
+    top: calc(
+      calc($form-item-margin-bottom + $form-label-height) * 3 +
+        calc($form-input-height * 4)
+    );
+    left: calc($form-spacing / 2);
+  }
+
+  & .ant-form-item.hidden {
+    visibility: hidden;
+  }
+
+  & .buttons {
+    @include flexCenter();
+    margin-top: 30px;
+  }
+
+  & .submit-button {
+    @include size(100%, 35px);
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+
+  & .relation-students {
+    padding-top: 10px;
+    border-top: 1px solid #dedede;
+  }
+
+  & .relation-student  {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #e7f5ff;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  & .relation-student img {
+    @include size(45px);
+    border-radius: 50%;
+  }
+
+  & .relation-student b {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  & .relation-student p {
+    color: #777;
+    font-size: 1.3rem;
+  }
+
+   & .relation-student button {
+     @include size(30px !important);
+     padding: 0;
+    margin-left: auto;
+   }
+
+  & .relation-student:not(:first-of-type) {
+    margin-top: 6px;
+  }
+}
+
+.ant-alert {
+  .admin-layout__main-content &-icon {
+    // font-size: 2rem !important;
+  }
+
+  .admin-layout__main-content &-message {
+    font-size: 2rem !important;
+    font-weight: 500;
+  }
+
+  .admin-layout__main-content &-description {
+    color: #666 !important;
+    font-size: 1.8rem;
+  }
+
+  .admin-layout__main-content &-action button {
+    font-weight: 700;
+  }
+}

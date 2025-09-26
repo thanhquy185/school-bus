@@ -1,0 +1,22 @@
+.notification {
+    z-index: 9999;
+
+  & .ant-notification-notice-icon {
+    font-size: 4rem !important;
+  }
+
+  & .ant-notification-notice-message,
+  & .ant-notification-notice-description {
+    margin-inline-start: 54px !important;
+  }
+
+  & .ant-notification-notice-message {
+    font-size: 1.8rem !important;
+    font-weight: 700;
+  }
+
+  & .ant-notification-notice-description {
+    color: #777 !important  ;
+    font-size: 1.6rem !important;
+  }
+}

@@ -1,0 +1,24 @@
+@use "../abstracts/colors" as *;
+@use "../abstracts/mixins" as *;
+
+.table-data {
+  & :is(th .ant-table-column-title, th, td) {
+    text-align: center !important;
+    font-size: 1.5rem;
+  }
+
+  &.students td img {
+    @include size(90%, 100px);
+    // border-radius: 2px;
+  }
+
+  & td.actions div {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  & td.actions button.ant-btn {
+    @include size(35px);
+  }
+}

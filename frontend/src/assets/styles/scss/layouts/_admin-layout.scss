@@ -1,0 +1,242 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/colors" as *;
+@use "../abstracts/mixins" as *;
+
+.admin-layout {
+  $main-header-height: 70px;
+  $main-filter-height: 40px;
+  $main-filter-right-width: 16%;
+  $main-card-content-spacing: 10px;
+
+  min-height: 100vh;
+
+  /* Sider */
+  &__sider {
+    background: $primary-color;
+  }
+
+  &__sider:not(.ant-layout-sider-collapsed) {
+    flex: 0 0 20% !important;
+    min-width: 20% !important;
+    max-width: 20% !important;
+    width: 20% !important;
+  }
+
+  &__sider.ant-layout-sider-collapsed {
+    flex: 0 0 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    width: 100px !important;
+  }
+
+  &__sider-menu {
+    background: $primary-color;
+    padding: 0 12px;
+  }
+
+  &__sider-menu .ant-menu-item {
+    height: 50px;
+    border-radius: 6px;
+    line-height: 50px;
+    transition: 0.2s ease-in !important;
+  }
+
+  &__sider-menu .ant-menu-item svg {
+    @include size(20px);
+    transition: inherit;
+  }
+
+  &__sider-menu .ant-menu-item span {
+    font-size: 1.8rem;
+    transition: inherit;
+  }
+
+  &__sider-menu .ant-menu-item span a {
+    transition: inherit;
+  }
+
+  &__sider-menu .ant-menu-item-selected {
+    background-color: #ffe08a !important;
+    color: #003366 !important;
+  }
+
+  &__sider-menu .ant-menu-item-selected .anticon {
+    color: #003366 !important;
+  }
+
+  &__sider-menu .ant-menu-item:hover {
+    background-color: #ffe08a !important;
+    color: #003366 !important;
+  }
+
+  &__sider-menu .ant-menu-item:hover .anticon {
+    color: #003366 !important;
+  }
+
+  &__sider-menu .ant-menu-item:not(:first-of-type) {
+    margin-top: 10px;
+  }
+
+  /* Drawer */
+  .ant-drawer-content-wrapper:has(&__drawer) {
+    width: 80% !important;
+
+    @media (max-width: 768px) {
+      width: 100% !important;
+    }
+  }
+
+  &__drawer .ant-drawer-header {
+    display: none;
+  }
+
+  &__drawer .ant-drawer-body {
+    padding: 0;
+    background: $primary-color;
+  }
+
+  &__drawer-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 12px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  &__drawer-footer .close-btn {
+    @include flexCenter();
+    @include size(100%, 40px);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 1.6rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Main */
+  &__main-header {
+    position: sticky;
+    top: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    height: $main-header-height;
+    background: $secondary-color;
+    padding: 0;
+  }
+
+  &__main-header .collapse-button {
+    @include size($main-header-height);
+    color: $primary-color;
+    font-size: 2rem;
+  }
+
+  &__main-header .title {
+    color: $primary-color;
+    font-size: 2.2rem;
+    font-weight: 700;
+  }
+
+  &__main-header .right,
+  &__main-header .right button {
+    display: flex;
+    align-items: center;
+  }
+
+  &__main-header .right {
+    margin-left: auto;
+  }
+
+  &__main-header .right button {
+    padding: 14px 10px !important;
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+
+  &__main-header .right button span.ant-btn-icon {
+    font-size: 1.8rem;
+  }
+
+  &__main-header .right button > span:not(.ant-btn-icon) {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  &__main-header .right button.language > span:not(.ant-btn-icon) {
+    font-size: 2.4rem;
+  }
+
+  &__main-content {
+    padding: $admin-spacing;
+  }
+
+  &__main-breadcrumb li {
+    font-size: 1.6rem;
+    cursor: pointer;
+  }
+
+  &__main-card {
+    margin-top: calc($admin-spacing / 2);
+  }
+
+  &__main-card .ant-card-head {
+    min-height: 70px;
+  }
+
+  &__main-card .ant-card-head-title {
+    font-size: 2.4rem;
+  }
+
+  &__main-filter,
+  &__main-filter .left {
+    display: flex;
+    align-items: center;
+  }
+
+  &__main-filter {
+    height: $main-filter-height;
+  }
+
+  &__main-filter
+    :is(.ant-input-affix-wrapper, .ant-select, .ant-select-selector, a, button) {
+    height: $main-filter-height;
+    font-size: 1.6rem;
+  }
+
+  &__main-filter :is(a, button) {
+    font-weight: 600;
+  }
+
+  &__main-filter .left {
+    width: calc(100% - $main-filter-right-width);
+  }
+
+  &__main-filter .left .filter-find {
+    width: 34%;
+  }
+
+  &__main-filter .left .filter-select {
+    width: 18%;
+  }
+
+  &__main-filter .left .filter-reset {
+    width: 12%;
+  }
+
+  &__main-filter .left > :not(:first-child) {
+    margin-left: $main-card-content-spacing;
+  }
+
+  &__main-filter .right {
+    width: $main-filter-right-width;
+  }
+
+  &__main-filter .right :is(a, button) {
+    width: 100%;
+  }
+
+  &__main-table {
+    margin-top: $main-card-content-spacing;
+  }
+}

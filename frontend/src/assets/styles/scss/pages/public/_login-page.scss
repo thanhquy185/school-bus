@@ -1,0 +1,73 @@
+@use "../../abstracts/colors" as *;
+@use "../../abstracts/mixins" as *;
+
+.login {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate3d(-50%, -50%, 0);
+  width: 30%;
+  background: #fff;
+  padding: 84px 20px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &__brand {
+    position: absolute;
+    top: 0;
+    left: 0;
+    @include flex(space-between, center);
+    width: 100%;
+    background: $primary-color;
+    padding: 10px 14px;
+    border-radius: 8px 8px 0 0;
+  }
+
+  &__brand-light {
+    // display: inline-block;
+    @include flexCenter();
+    @include size(30px);
+    background: $secondary-color;
+    border-radius: 4px;
+  }
+
+  &__brand-light span {
+    @include size(16px);
+    background: #fff;
+    border-radius: 50%;
+  }
+
+  &__brand-info {
+    @include flexCenter();
+    gap: 10px;
+  }
+
+  &__brand-info img {
+    @include size(38px);
+  }
+
+  &__brand-info h1 {
+    color: #fff;
+    font-size: 2.2rem;
+    font-weight: 700;
+  }
+
+  &__form .ant-input-affix-wrapper {
+    padding: 0 10px;
+  }
+
+  &__form .ant-input-affix-wrapper :is(*, .ant-input) {
+    height: 40px !important;
+    line-height: 40px !important;
+  }
+
+  &__form span.anticon {
+    font-size: 1.6rem;
+  }
+
+  &__form button {
+    @include size(100%, 35px);
+    font-weight: 600;
+    margin-top: 20px;
+  }
+}
