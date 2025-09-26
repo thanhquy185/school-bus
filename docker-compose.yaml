@@ -1,0 +1,14 @@
+services:
+  mysql:
+    image: mysql:lts
+    container_name: school_bus
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: NDuong205
+      MYSQL_DATABASE: school_bus
+      MYSQL_USER: namduongit
+      MYSQL_PASSWORD: NDuong205
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql

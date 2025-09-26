@@ -11,6 +11,7 @@
     "start": "sass src/assets/styles/scss:src/assets/styles/css -w"
   },
   "dependencies": {
+    "@babel/core": "^7.28.4",
     "@fortawesome/fontawesome-svg-core": "^7.0.1",
     "@fortawesome/free-solid-svg-icons": "^7.0.1",
     "@fortawesome/react-fontawesome": "^3.0.2",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
+    "@types/babel__core": "^7.20.5",
     "@types/node": "^24.5.2",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",

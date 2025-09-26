@@ -1,0 +1,41 @@
+{
+  "name": "learn-nodejs",
+  "version": "1.0.0",
+  "main": "dist/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "dev": "nodemon",
+    "clean": "rm -rf dist"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "ext": "ts",
+    "ignore": [
+      "node_modules"
+    ],
+    "exec": "ts-node ./src/app.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "5.0.0",
+    "@types/node": "20.19.5",
+    "nodemon": "3.1.9",
+    "tailwindcss": "^3.4.17",
+    "ts-node": "10.9.2",
+    "typescript": "5.7.3"
+  },
+  "dependencies": {
+    "@types/ejs": "3.1.5",
+    "dotenv": "17.2.2",
+    "ejs": "3.1.10",
+    "express": "^5.1.0",
+    "mysql2": "^3.15.1"
+  }
+}
