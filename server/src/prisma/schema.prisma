@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ParentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum DriverStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+// Tables
+model classes {
+  id Int @id @default(autoincrement())
+  name String
+  // Relations
+  students students[]
+}
+
+model roles {
+  id Int @id @default(autoincrement())
+  name String @unique
+  users users[]
+}
+
+model users {
+  id Int @id @default(autoincrement())
+  username String @unique
+  password String
+  status AccountStatus @default(ACTIVE)
+  // Foreign Key
+  role_id Int
+  role roles @relation(fields: [role_id], references: [id])
+  // Relations
+  parents parents?
+  drivers drivers?
+}
+
+model parents {
+  id Int @id @default(autoincrement())
+  avatar String?
+  full_name String
+  phone String @unique
+  email String @unique
+  address String
+  status ParentStatus @default(ACTIVE)
+  // Foreign Key
+  user_id Int @unique
+  user users @relation(fields: [user_id], references: [id])
+  // Relations
+  students students[]
+}
+
+model students {
+  id Int @id @default(autoincrement())
+  avatar String?
+  full_name String
+  birth_date DateTime
+  gender Gender @default(OTHER)
+  status StudentStatus @default(ACTIVE)
+  // Foreign Keys
+  parent_id Int
+  parent parents @relation(fields: [parent_id], references: [id])
+
+  class_id Int
+  class classes @relation(fields: [class_id], references: [id])
+}
+
+model drivers {
+  id Int @id @default(autoincrement())
+  avatar String?
+  full_name String
+  birth_date DateTime
+  gender Gender @default(OTHER)
+  phone String @unique
+  email String @unique
+  address String
+  status DriverStatus @default(ACTIVE)
+  // Foreign Key
+  user_id Int @unique
+  user users @relation(fields: [user_id], references: [id])
+}

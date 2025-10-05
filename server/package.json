@@ -1,13 +1,14 @@
 {
-  "name": "learn-nodejs",
+  "name": "school-bus",
   "version": "1.0.0",
-  "main": "dist/app.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "start": "node dist/app.js",
+    "_build": "tsc",
+    "_start": "node ./dist/index.js",
+    
     "dev": "nodemon",
-    "clean": "rm -rf dist"
+    "db": "cd ./src/prisma && npx prisma migrate dev --name init",
+    "_clean": "rm -rf dist"
   },
   "nodemonConfig": {
     "watch": [
@@ -17,25 +18,30 @@
     "ignore": [
       "node_modules"
     ],
-    "exec": "ts-node ./src/app.ts"
+    "exec": "ts-node ./src/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/express": "5.0.0",
-    "@types/node": "20.19.5",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.19.5",
     "nodemon": "3.1.9",
-    "tailwindcss": "^3.4.17",
     "ts-node": "10.9.2",
-    "typescript": "5.7.3"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.3"
   },
   "dependencies": {
+    "@prisma/client": "^6.16.3",
     "@types/ejs": "3.1.5",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
     "dotenv": "17.2.2",
     "ejs": "3.1.10",
     "express": "^5.1.0",
-    "mysql2": "^3.15.1"
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.16.3",
+    "zod": "^4.1.11"
   }
 }
