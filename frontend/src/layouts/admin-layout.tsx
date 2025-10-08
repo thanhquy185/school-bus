@@ -18,6 +18,8 @@ import {
   faPowerOff,
   faRoad,
   faMapLocationDot,
+  faLocation,
+  faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
@@ -40,30 +42,36 @@ const CustomItemValue = {
   },
   journey: {
     key: "2",
-    value: "journey",
-    link: "/admin/journeys",
+    value: "route",
+    link: "/admin/routes",
     icon: <FontAwesomeIcon icon={faRoad} />,
   },
-  bus: {
+  pickup: {
     key: "3",
+    value: "pickup",
+    link: "/admin/pickups",
+    icon: <FontAwesomeIcon icon={faLocationDot} />,
+  },
+  bus: {
+    key: "4",
     value: "bus",
     link: "/admin/buses",
     icon: <FontAwesomeIcon icon={faBus} />,
   },
   driver: {
-    key: "4",
+    key: "5",
     value: "driver",
     link: "/admin/drivers",
     icon: <FontAwesomeIcon icon={faChalkboardUser} />,
   },
-  relation: {
-    key: "5",
-    value: "relation",
-    link: "/admin/relations",
+  parent: {
+    key: "6",
+    value: "parent",
+    link: "/admin/parents",
     icon: <FontAwesomeIcon icon={faPeopleRoof} />,
   },
   student: {
-    key: "6",
+    key: "7",
     value: "student",
     link: "/admin/students",
     icon: <FontAwesomeIcon icon={faUserGraduate} />,
@@ -136,6 +144,15 @@ const AdminLayout: React.FC = () => {
       ),
     },
     {
+      key: CustomItemValue.pickup.key,
+      icon: CustomItemValue.pickup.icon,
+      label: (
+        <Link to={CustomItemValue.pickup.link}>
+          {t(CustomItemValue.pickup.value)}
+        </Link>
+      ),
+    },
+    {
       key: CustomItemValue.bus.key,
       icon: CustomItemValue.bus.icon,
       label: (
@@ -154,11 +171,11 @@ const AdminLayout: React.FC = () => {
       ),
     },
     {
-      key: CustomItemValue.relation.key,
-      icon: CustomItemValue.relation.icon,
+      key: CustomItemValue.parent.key,
+      icon: CustomItemValue.parent.icon,
       label: (
-        <Link to={CustomItemValue.relation.link}>
-          {t(CustomItemValue.relation.value)}
+        <Link to={CustomItemValue.parent.link}>
+          {t(CustomItemValue.parent.value)}
         </Link>
       ),
     },
@@ -193,9 +210,9 @@ const AdminLayout: React.FC = () => {
       setSelectedItem(
         menuItems[Number(CustomItemValue.driver.key) - 1] as CustomItemType
       );
-    } else if (pathname === CustomItemValue.relation.link) {
+    } else if (pathname === CustomItemValue.parent.link) {
       setSelectedItem(
-        menuItems[Number(CustomItemValue.relation.key) - 1] as CustomItemType
+        menuItems[Number(CustomItemValue.parent.key) - 1] as CustomItemType
       );
     } else if (pathname === CustomItemValue.student.link) {
       setSelectedItem(
@@ -254,11 +271,11 @@ const AdminLayout: React.FC = () => {
           placement="left"
           open={drawerVisible}
           onClose={() => setDrawerVisible(false)}
-          className="admin-layout__drawer"
+          className="admin-layout__drawer drawer"
         >
           {brand}
           {menuContent}
-          <div className="admin-layout__drawer-footer">
+          <div className="drawer__footer">
             <Button
               color="danger"
               variant="solid"

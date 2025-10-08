@@ -78,39 +78,16 @@
   }
 
   /* Drawer */
-  .ant-drawer-content-wrapper:has(&__drawer) {
-    width: 80% !important;
-
-    @media (max-width: 768px) {
-      width: 100% !important;
-    }
+  &__drawer .brand {
+    padding: 12px 0 !important;
   }
 
-  &__drawer .ant-drawer-header {
-    display: none;
+  &__drawer .brand img {
+    @include size(35px);
   }
 
-  &__drawer .ant-drawer-body {
-    padding: 0;
-    background: $primary-color;
-  }
-
-  &__drawer-footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    padding: 12px;
-    border-top: 1px solid #f0f0f0;
-  }
-
-  &__drawer-footer .close-btn {
-    @include flexCenter();
-    @include size(100%, 40px);
-    border-radius: 6px;
-    color: #fff;
-    font-size: 1.6rem;
-    font-weight: 600;
-    cursor: pointer;
+  &__drawer .brand span {
+    font-size: 2.4rem;
   }
 
   /* Main */

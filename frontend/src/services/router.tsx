@@ -1,14 +1,19 @@
 import { createBrowserRouter } from "react-router-dom";
 import AdminLayout from "../layouts/admin-layout";
+import ClientLayout from "../layouts/client-layout";
+import MapPage from "../pages/admin/map-page";
+import RoutePage from "../pages/admin/route-page";
+import PickupPage from "../pages/admin/pickup-page";
+import BusPage from "../pages/admin/bus-page";
+import DriverPage from "../pages/admin/driver-page";
+import ParentPage from "../pages/admin/parent-page";
+import StudentPage from "../pages/admin/student-page";
+import ParentInfoPage from "../pages/parents/info-page";
+import ParentStudentPage from "../pages/parents/student-page";
 import LoginPage from "../pages/public/login-page";
 import ErrorPage from "../pages/public/error-page";
 import UnauthorizedPage from "../pages/public/unauthorized-page";
-import DriverPage from "../pages/admin/driver-page";
-import RelationPage from "../pages/admin/relation-page";
-import StudentPage from "../pages/admin/student-page";
-import BusPage from "../pages/admin/bus-page";
-import JourneyPage from "../pages/admin/journey-page";
-import MapPage from "../pages/admin/map-page";
+import ParentMapPage from "../pages/parents/map-page";
 
 // Router giúp chuyển hướng trang
 export const getRouter = async (): Promise<
@@ -25,8 +30,12 @@ export const getRouter = async (): Promise<
           element: <MapPage />,
         },
         {
-          path: "journeys",
-          element: <JourneyPage />,
+          path: "routes",
+          element: <RoutePage />,
+        },
+        {
+          path: "pickups",
+          element: <PickupPage />,
         },
         {
           path: "buses",
@@ -37,8 +46,8 @@ export const getRouter = async (): Promise<
           element: <DriverPage />,
         },
         {
-          path: "relations",
-          element: <RelationPage />,
+          path: "parents",
+          element: <ParentPage />,
         },
         {
           path: "students",
@@ -46,21 +55,46 @@ export const getRouter = async (): Promise<
           children: [
             {
               path: "list",
-              element: <StudentPage/>
+              element: <StudentPage />,
             },
             {
               path: "create",
-              element: <StudentPage/>
+              element: <StudentPage />,
             },
             {
               path: "update",
-              element: <StudentPage/>
+              element: <StudentPage />,
             },
             {
               path: "lock",
-              element: <StudentPage/>
-            }
-          ]
+              element: <StudentPage />,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: "/driver",
+      element: <ClientLayout role="driver" />,
+      errorElement: <ErrorPage />,
+      children: [],
+    },
+    {
+      path: "/parent",
+      element: <ClientLayout role="parent" />,
+      errorElement: <ErrorPage />,
+      children: [
+        {
+          path: "map",
+          element: <ParentMapPage />,
+        },
+        {
+          path: "info",
+          element: <ParentInfoPage />,
+        },
+        {
+          path: "student",
+          element: <ParentStudentPage />,
         },
       ],
     },

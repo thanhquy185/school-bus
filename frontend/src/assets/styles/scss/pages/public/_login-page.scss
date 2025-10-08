@@ -68,6 +68,12 @@
   &__form button {
     @include size(100%, 35px);
     font-weight: 600;
-    margin-top: 20px;
+    margin-top: 14px;
+  }
+
+  &__form a {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 1.4rem;
   }
 }
