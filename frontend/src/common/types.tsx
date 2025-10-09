@@ -13,10 +13,52 @@ export interface ClassType {
     name?: string;
 }
 
+// Kiểu dữ liệu tuyến đường
+// - Chưa format
+export interface RouteNotFormatType {
+    id?: number;
+    name?: string;
+    startPickup?: string;
+    endPickup?: string;
+    startTime?: string;
+    endTime?: string;
+    status?: string;
+    routeDetails?: RouteDetailsNotFormatType[];
+}
+// - Đã format
+export interface RouteFormatType {
+    id?: number;
+    name?: string;
+    startPickup?: string;
+    endPickup?: string;
+    startTime?: string;
+    endTime?: string;
+    status?: string;
+    routeDetails?: RouteDetailsFormatType[];
+}
+
+// Kiểu dữ liệu chi tiết tuyến đường
+// - Chưa format
+export interface RouteDetailsNotFormatType {
+    routeId?: number;
+    pickupId?: number;
+    order?: number;
+}
+// - Đã format
+export interface RouteDetailsFormatType {
+    // route?: RouteFormatType;
+    pickup?: PickupType;
+    order?: number;
+}
+
 // Kiểu dữ liệu trạm xe buýt
 export interface PickupType {
     id?: number;
     name?: string;
+    category?: string;
+    lat?: number;
+    lng?: number;
+    status?: string;
 }
 
 // Kiểu dữ liệu xe buýt

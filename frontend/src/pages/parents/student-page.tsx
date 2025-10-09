@@ -15,22 +15,86 @@ import {
   EyeOutlined,
   EnvironmentOutlined,
 } from "@ant-design/icons";
-import type { StudentFormatType } from "../../common/types";
+import type { PickupType, StudentFormatType } from "../../common/types";
 import { ruleRequired } from "../../common/rules";
 import type { RcFile } from "antd/es/upload";
 import CustomUpload from "../../components/upload";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
+import LeafletMap from "../../components/leaflet-map";
+import { getItemById } from "../../utils/getItemEvents";
 
-type DrawerMode = "view" | "edit" | "bus" | null;
+type DrawerMode = "view" | "edit" | "pickup" | null;
 
 const ParentStudentPage = () => {
+  const pickupData: PickupType[] = [
+    {
+      id: 1,
+      name: "Trường Đại học Sài Gòn",
+      category: "Trường học",
+      lat: 10.75960314081626,
+      lng: 106.68201506137848,
+      status: "Hoạt động",
+    },
+    {
+      id: 2,
+      name: "Trạm Công viên Lê Thị Riêng",
+      category: "Điểm đưa đón",
+      lat: 10.786197005344277,
+      lng: 106.66577696800232,
+      status: "Tạm dừng",
+    },
+    {
+      id: 3,
+      name: "Trạm Ngã 3 Tô Hiến Thành",
+      category: "Điểm đưa đón",
+      lat: 10.782542301538852,
+      lng: 106.67269945487907,
+      status: "Hoạt động",
+    },
+    {
+      id: 4,
+      name: "Trạm Vòng xoay Dân Chủ",
+      category: "Điểm đưa đón",
+      lat: 10.778231651587179,
+      lng: 106.68071896686253,
+      status: "Hoạt động",
+    },
+    {
+      id: 5,
+      name: "Trạm Nhà hát Hoà Bình",
+      category: "Điểm đưa đón",
+      lat: 10.771691782379415,
+      lng: 106.67420637069971,
+      status: "Hoạt động",
+    },
+    {
+      id: 6,
+      name: "Trạm Vòng xoay Lý Thái Tổ",
+      category: "Điểm đưa đón",
+      lat: 10.767212337954136,
+      lng: 106.67562797183044,
+      status: "Hoạt động",
+    },
+    {
+      id: 7,
+      name: "Trạm Vòng xoay Cộng Hoà",
+      category: "Điểm đưa đón",
+      lat: 10.764561529473132,
+      lng: 106.6818913125902,
+      status: "Hoạt động",
+    },
+  ];
   const students: StudentFormatType[] = [
     {
       id: "1",
       pickup: {
-        id: 1,
-        name: "Trạm xe buýt 1",
+        id: 5,
+        name: "Trạm Nhà hát Hoà Bình",
+        category: "Điểm đưa đón",
+        lat: 10.771691782379415,
+        lng: 106.67420637069971,
+        status: "Hoạt động",
       },
       class: {
         id: 1,
@@ -44,8 +108,12 @@ const ParentStudentPage = () => {
     {
       id: "2",
       pickup: {
-        id: 2,
-        name: "Trạm xe buýt 2",
+        id: 3,
+        name: "Trạm Ngã 3 Tô Hiến Thành",
+        category: "Điểm đưa đón",
+        lat: 10.782542301538852,
+        lng: 106.67269945487907,
+        status: "Hoạt động",
       },
       class: {
         id: 2,
@@ -80,13 +148,14 @@ const ParentStudentPage = () => {
       ? `Chi tiết thông tin ${selectedStudent?.fullname}`
       : drawerMode === "edit"
       ? `Cập nhật thông tin ${selectedStudent?.fullname}`
-      : drawerMode === "bus"
+      : drawerMode === "pickup"
       ? `Cập nhật trạm xe buýt ${selectedStudent?.fullname}`
       : "";
 
   // Form
   const [form] = Form.useForm<StudentFormatType>();
   const [imageFile, setImageFile] = useState<RcFile>();
+  const [pickupValue, setPickupValue] = useState<PickupType>();
   useEffect(() => {
     form.setFieldValue("avatar", imageFile?.name);
   }, [imageFile]);
@@ -98,6 +167,7 @@ const ParentStudentPage = () => {
     form.setFieldValue("fullname", selectedStudent?.fullname || undefined);
     form.setFieldValue("birthday", selectedStudent?.birthday || undefined);
     form.setFieldValue("gender", selectedStudent?.gender || undefined);
+    setPickupValue(selectedStudent?.pickup);
   }, [selectedStudent]);
 
   return (
@@ -137,7 +207,7 @@ const ParentStudentPage = () => {
                   variant="solid"
                   color="green"
                   icon={<EnvironmentOutlined />}
-                  onClick={() => openDrawerWithMode("bus", student)}
+                  onClick={() => openDrawerWithMode("pickup", student)}
                 >
                   Cập nhật trạm xe buýt
                 </Button>,
@@ -159,7 +229,7 @@ const ParentStudentPage = () => {
                       </Tag>
                     </div>
                     <div>Lớp: {student.class?.name}</div>
-                    <div>Trạm: Trạm abc - 123</div>
+                    <div>Trạm: {student.pickup?.name}</div>
                   </>
                 }
               />
@@ -175,10 +245,20 @@ const ParentStudentPage = () => {
         open={openDrawer}
         className="drawer--default"
       >
-        {drawerMode === "bus" ? (
-          <Form form={form} layout="vertical" onFinish={() => {}}>
+        {drawerMode === "pickup" ? (
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{ pickup: selectedStudent?.pickup?.id }}
+            onFinish={() => {}}
+          >
             <Form.Item>
-              <div style={{ height: 300, background: "#ccc" }}></div>
+              <LeafletMap
+                pointType={pickupValue?.category}
+                lat={pickupValue?.lat}
+                lng={pickupValue?.lng}
+                type="detail"
+              />
             </Form.Item>
             <Form.Item
               name="pickup"
@@ -187,13 +267,21 @@ const ParentStudentPage = () => {
               rules={[ruleRequired("Trạm xe buýt không được để trống !")]}
             >
               <Select
+              allowClear
+              showSearch
                 id="pickup"
                 placeholder="Chọn Trạm xe buýt"
-                options={[
-                  { label: "Trạm Nguyễn Văn Cừ", value: 1 },
-                  { label: "Trạm Lê Văn Sỹ", value: 2 },
-                  { label: "Trạm Điện Biên Phủ", value: 3 },
-                ]}
+                options={pickupData?.map((pickup) => ({
+                  label:
+                    "#" +
+                    pickup?.id +
+                    " - " +
+                    pickup?.name +
+                    " - " +
+                    pickup?.category,
+                  value: pickup?.id,
+                }))}
+                onChange={(val: number) => setPickupValue(getItemById(pickupData, val))}
               />
             </Form.Item>
             {/* <Form.Item label="Ghi chú" name="note">

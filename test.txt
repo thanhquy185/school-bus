@@ -1,0 +1,10 @@
+const handlePickupSelected = (lat: number, lng: number, info: any) => {
+    console.log("Thông tin điểm được chọn:", lat, lng, info);
+  };
+
+  <LeafletMap
+        height={400}
+        enableSearch={true}
+        enableBaseLayers={true}
+        handlePickupSelected={handlePickupSelected}
+      />

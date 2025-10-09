@@ -185,7 +185,7 @@ const BusPage = () => {
             <Row className="split-3">
               <Col></Col>
               <Col>
-                <Form.Item name="id" label={defaultLabels.id}>
+                <Form.Item name="id" label={defaultLabels.id} className="text-center">
                   <Input disabled />
                 </Form.Item>
                 <Form.Item name="status" label={defaultLabels.status}>

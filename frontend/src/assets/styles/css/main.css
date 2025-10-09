@@ -191,7 +191,7 @@ img {
 }
 
 table {
-  table-layout: fixed;
+  table-layout: fixed !important;
 }
 
 table :is(th, td) {
@@ -2048,6 +2048,27 @@ input,
 .ant-form .buttons :is(.submit-button, button.only) {
   width: 100%;
 }
+.ant-form-item {
+  position: relative;
+}
+.route-content .ant-form-item :is(.buttons, .buttons button) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.route-content .ant-form-item .buttons {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  margin-top: 0;
+}
+.route-content .ant-form-item .buttons button {
+  gap: 4px;
+  width: 100% !important;
+  height: auto !important;
+  padding: 4px 10px;
+  font-size: 1.2rem;
+}
 .bus-content .ant-form .buttons, :is(.driver-content, .parent-content).change-password .ant-form .buttons {
   margin-top: 62px !important;
 }
@@ -2059,6 +2080,38 @@ input,
 }
 .ant-drawer .parent-content .ant-form .ant-form-item:nth-of-type(2) {
   margin-top: 114px;
+}
+:is(.route-content, .pickup-content) .ant-form:has(.has-map) #leaflet-map {
+  height: 456px !important;
+}
+.route-content .ant-form:has(.has-map.has-select) .select-pickup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 0;
+  margin-right: 0;
+}
+.route-content .ant-form:has(.has-map.has-select) .select-pickup :is(.ant-select,
+.ant-select-selector,
+.ant-select-selection-wrap,
+.ant-select-selection-placeholder,
+.ant-select-selection-search-input,
+.ant-select-selection-item,
+button) {
+  height: 32px !important;
+  line-height: 32px !important;
+  font-size: 1.4rem !important;
+}
+.route-content .ant-form:has(.has-map.has-select) .select-pickup .ant-select {
+  width: calc(80% - 3px);
+}
+.route-content .ant-form:has(.has-map.has-select) .select-pickup button {
+  width: calc(20% - 3px);
+  font-size: 1.2rem !important;
+}
+.route-content .ant-form:has(.has-map.has-select) #leaflet-map {
+  height: 410px !important;
+  margin-top: 6px;
 }
 @media (max-width: 767.98px) {
   .ant-form > .ant-row:is(.split-2, .split-3) > .ant-col {

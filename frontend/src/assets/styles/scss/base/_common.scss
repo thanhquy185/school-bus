@@ -58,7 +58,7 @@ img {
 }
 
 table {
-  table-layout: fixed;
+  table-layout: fixed !important;
 }
 
 table :is(th, td) {

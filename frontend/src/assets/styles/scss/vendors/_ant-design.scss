@@ -175,7 +175,9 @@
     width: 100%;
   }
 
-  :is(.driver-content, .parent-content:not(.client), .student-content) & .ant-upload {
+  :is(.driver-content, .parent-content:not(.client), .student-content)
+    &
+    .ant-upload {
     top: calc(
       calc(
           calc(
@@ -244,6 +246,30 @@
     width: 100%;
   }
 
+  &-item {
+    position: relative;
+  }
+
+  .route-content &-item :is(.buttons, .buttons button) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .route-content &-item .buttons {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    margin-top: 0;
+  }
+
+  .route-content &-item .buttons button {
+    gap: 4px;
+    @include size(100% !important, auto !important);
+    padding: 4px 10px;
+    font-size: 1.2rem;
+  }
+
   .bus-content & .buttons,
   :is(.driver-content, .parent-content).change-password & .buttons {
     margin-top: calc($form-item-margin-bottom + 30px) !important;
@@ -262,6 +288,55 @@
 
   .ant-drawer .parent-content & .ant-form-item:nth-of-type(2) {
     margin-top: 114px;
+  }
+
+  :is(.route-content, .pickup-content) &:has(.has-map) #leaflet-map {
+    height: calc(
+      calc($form-item-margin-bottom + $form-label-height) * 4 +
+        calc($form-input-height * 5)
+    ) !important;
+  }
+
+  .route-content &:has(.has-map.has-select) .select-pickup {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .route-content
+    &:has(.has-map.has-select)
+    .select-pickup
+    :is(
+      .ant-select,
+      .ant-select-selector,
+      .ant-select-selection-wrap,
+      .ant-select-selection-placeholder,
+      .ant-select-selection-search-input,
+      .ant-select-selection-item,
+      button
+    ) {
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 1.4rem !important;
+  }
+
+  .route-content &:has(.has-map.has-select) .select-pickup .ant-select {
+    width: calc(80% - calc(6px / 2));
+  }
+
+  .route-content &:has(.has-map.has-select) .select-pickup button {
+    width: calc(20% - calc(6px / 2));
+    font-size: 1.2rem !important;
+  }
+
+  .route-content &:has(.has-map.has-select) #leaflet-map {
+    height: calc(
+      calc($form-item-margin-bottom + $form-label-height) * 4 +
+        calc($form-input-height * 5) - $form-input-height - 6px
+    ) !important;
+    margin-top: 6px;
   }
 
   // Mobile
