@@ -17,7 +17,6 @@ import {
 import {
   SearchOutlined,
   ReloadOutlined,
-  PlusOutlined,
 } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -25,6 +24,7 @@ import {
   faLock,
   faLockOpen,
   faPenToSquare,
+  faPlus,
   faUserGraduate,
 } from "@fortawesome/free-solid-svg-icons";
 import type { RcFile } from "antd/es/upload";
@@ -1073,7 +1073,7 @@ const StudentPage = () => {
               <div className="right">
                 <Button
                   type="primary"
-                  icon={<PlusOutlined />}
+                  icon={<FontAwesomeIcon icon={faPlus}/>}
                   onClick={() => setCurrentAction("create")}
                 >
                   {t("student-create")}

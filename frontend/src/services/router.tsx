@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import AdminLayout from "../layouts/admin-layout";
 import ClientLayout from "../layouts/client-layout";
 import MapPage from "../pages/admin/map-page";
+import InformPage from "../pages/admin/inform-page";
 import RoutePage from "../pages/admin/route-page";
 import PickupPage from "../pages/admin/pickup-page";
 import BusPage from "../pages/admin/bus-page";
@@ -30,6 +31,10 @@ export const getRouter = async (): Promise<
           element: <MapPage />,
         },
         {
+          path: "informs",
+          element: <InformPage />,
+        },
+        {
           path: "routes",
           element: <RoutePage />,
         },
@@ -52,24 +57,6 @@ export const getRouter = async (): Promise<
         {
           path: "students",
           element: <StudentPage />,
-          children: [
-            {
-              path: "list",
-              element: <StudentPage />,
-            },
-            {
-              path: "create",
-              element: <StudentPage />,
-            },
-            {
-              path: "update",
-              element: <StudentPage />,
-            },
-            {
-              path: "lock",
-              element: <StudentPage />,
-            },
-          ],
         },
       ],
     },

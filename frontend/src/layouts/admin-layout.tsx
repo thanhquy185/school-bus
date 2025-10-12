@@ -18,8 +18,8 @@ import {
   faPowerOff,
   faRoad,
   faMapLocationDot,
-  faLocation,
   faLocationDot,
+  faMessage,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
@@ -40,38 +40,44 @@ const CustomItemValue = {
     link: "/admin/map",
     icon: <FontAwesomeIcon icon={faMapLocationDot} />,
   },
-  journey: {
+  inform: {
     key: "2",
+    value: "inform",
+    link: "/admin/informs",
+    icon: <FontAwesomeIcon icon={faMessage} />,
+  },
+  route: {
+    key: "3",
     value: "route",
     link: "/admin/routes",
     icon: <FontAwesomeIcon icon={faRoad} />,
   },
   pickup: {
-    key: "3",
+    key: "4",
     value: "pickup",
     link: "/admin/pickups",
     icon: <FontAwesomeIcon icon={faLocationDot} />,
   },
   bus: {
-    key: "4",
+    key: "5",
     value: "bus",
     link: "/admin/buses",
     icon: <FontAwesomeIcon icon={faBus} />,
   },
   driver: {
-    key: "5",
+    key: "6",
     value: "driver",
     link: "/admin/drivers",
     icon: <FontAwesomeIcon icon={faChalkboardUser} />,
   },
   parent: {
-    key: "6",
+    key: "7",
     value: "parent",
     link: "/admin/parents",
     icon: <FontAwesomeIcon icon={faPeopleRoof} />,
   },
   student: {
-    key: "7",
+    key: "8",
     value: "student",
     link: "/admin/students",
     icon: <FontAwesomeIcon icon={faUserGraduate} />,
@@ -135,11 +141,20 @@ const AdminLayout: React.FC = () => {
       ),
     },
     {
-      key: CustomItemValue.journey.key,
-      icon: CustomItemValue.journey.icon,
+      key: CustomItemValue.inform.key,
+      icon: CustomItemValue.inform.icon,
       label: (
-        <Link to={CustomItemValue.journey.link}>
-          {t(CustomItemValue.journey.value)}
+        <Link to={CustomItemValue.inform.link}>
+          {t(CustomItemValue.inform.value)}
+        </Link>
+      ),
+    },
+    {
+      key: CustomItemValue.route.key,
+      icon: CustomItemValue.route.icon,
+      label: (
+        <Link to={CustomItemValue.route.link}>
+          {t(CustomItemValue.route.value)}
         </Link>
       ),
     },
@@ -198,9 +213,13 @@ const AdminLayout: React.FC = () => {
       setSelectedItem(
         menuItems[Number(CustomItemValue.map.key) - 1] as CustomItemType
       );
-    } else if (pathname === CustomItemValue.journey.link) {
+    } else if (pathname === CustomItemValue.inform.link) {
       setSelectedItem(
-        menuItems[Number(CustomItemValue.journey.key) - 1] as CustomItemType
+        menuItems[Number(CustomItemValue.inform.key) - 1] as CustomItemType
+      );
+    } else if (pathname === CustomItemValue.route.link) {
+      setSelectedItem(
+        menuItems[Number(CustomItemValue.route.key) - 1] as CustomItemType
       );
     } else if (pathname === CustomItemValue.bus.link) {
       setSelectedItem(

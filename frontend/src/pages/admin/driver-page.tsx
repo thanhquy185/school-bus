@@ -32,7 +32,7 @@ import {
   faLock,
   faLockOpen,
   faPenToSquare,
-  faUserGraduate,
+  faChalkboardUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { ruleRequired } from "../../common/rules";
 import { CommonGenderValue, CommonStatusValue } from "../../common/values";
@@ -794,7 +794,7 @@ const DriverPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faChalkboardUser} />
               &nbsp;{t("driver-manager")}
             </span>
           ),
@@ -814,7 +814,7 @@ const DriverPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faChalkboardUser} />
               &nbsp;{t("driver-manager")}
             </span>
           ),
@@ -835,7 +835,7 @@ const DriverPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faChalkboardUser} />
               &nbsp;{t("driver-manager")}
             </span>
           ),
@@ -856,7 +856,7 @@ const DriverPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faChalkboardUser} />
               &nbsp;{t("driver-manager")}
             </span>
           ),
@@ -877,7 +877,7 @@ const DriverPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faChalkboardUser} />
               &nbsp;{t("driver-manager")}
             </span>
           ),
@@ -898,7 +898,7 @@ const DriverPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faChalkboardUser} />
               &nbsp;{t("driver-manager")}
             </span>
           ),
@@ -919,7 +919,7 @@ const DriverPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faChalkboardUser} />
               &nbsp;{t("driver-manager")}
             </span>
           ),

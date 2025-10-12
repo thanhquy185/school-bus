@@ -20,7 +20,6 @@ import {
 import {
   SearchOutlined,
   ReloadOutlined,
-  PlusOutlined,
 } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -1440,7 +1439,7 @@ const RoutePage = () => {
               <div className="right">
                 <Button
                   type="primary"
-                  icon={<PlusOutlined />}
+                  icon={<FontAwesomeIcon icon={faPlus}/>}
                   onClick={() => setCurrentAction("create")}
                 >
                   {t("route-create")}

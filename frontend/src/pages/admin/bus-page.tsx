@@ -24,7 +24,7 @@ import {
   faLock,
   faLockOpen,
   faPenToSquare,
-  faUserGraduate,
+  faBus,
 } from "@fortawesome/free-solid-svg-icons";
 import type { ColumnsType } from "antd/es/table";
 import type {
@@ -437,7 +437,7 @@ const BusPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faBus} />
               &nbsp;{t("bus-manager")}
             </span>
           ),
@@ -457,7 +457,7 @@ const BusPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faBus} />
               &nbsp;{t("bus-manager")}
             </span>
           ),
@@ -478,7 +478,7 @@ const BusPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faBus} />
               &nbsp;{t("bus-manager")}
             </span>
           ),
@@ -499,7 +499,7 @@ const BusPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faBus} />
               &nbsp;{t("bus-manager")}
             </span>
           ),
@@ -520,7 +520,7 @@ const BusPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faBus} />
               &nbsp;{t("bus-manager")}
             </span>
           ),
@@ -541,7 +541,7 @@ const BusPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faBus} />
               &nbsp;{t("bus-manager")}
             </span>
           ),

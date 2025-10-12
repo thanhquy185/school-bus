@@ -31,7 +31,7 @@ import {
   faLock,
   faLockOpen,
   faPenToSquare,
-  faUserGraduate,
+  faPeopleRoof,
 } from "@fortawesome/free-solid-svg-icons";
 import { ruleRequired } from "../../common/rules";
 import { CommonStatusValue } from "../../common/values";
@@ -682,7 +682,7 @@ const ParentPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faPeopleRoof} />
               &nbsp;{t("parent-manager")}
             </span>
           ),
@@ -702,7 +702,7 @@ const ParentPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faPeopleRoof} />
               &nbsp;{t("parent-manager")}
             </span>
           ),
@@ -723,7 +723,7 @@ const ParentPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faPeopleRoof} />
               &nbsp;{t("parent-manager")}
             </span>
           ),
@@ -744,7 +744,7 @@ const ParentPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faPeopleRoof} />
               &nbsp;{t("parent-manager")}
             </span>
           ),
@@ -765,7 +765,7 @@ const ParentPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faPeopleRoof} />
               &nbsp;{t("parent-manager")}
             </span>
           ),
@@ -786,7 +786,7 @@ const ParentPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faPeopleRoof} />
               &nbsp;{t("parent-manager")}
             </span>
           ),
@@ -807,7 +807,7 @@ const ParentPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faPeopleRoof} />
               &nbsp;{t("parent-manager")}
             </span>
           ),

@@ -1,10 +1,503 @@
-const handlePickupSelected = (lat: number, lng: number, info: any) => {
-    console.log("Thông tin điểm được chọn:", lat, lng, info);
-  };
-
-  <LeafletMap
-        height={400}
-        enableSearch={true}
-        enableBaseLayers={true}
-        handlePickupSelected={handlePickupSelected}
-      />
+<div
+            className={
+              "admin-layout__main-map" +
+              (currentSelectedItem ? " has-info" : "")
+            }
+          >
+            <LeafletMap
+              type="detail"
+              routeDetailsList={demoData?.map((active) => ({
+                routeDetails: active?.schedule?.route?.routeDetails || [],
+                status: active.status!,
+              }))}
+              activePickups={demoData?.flatMap(
+                (active) => active?.activePickups || []
+              )}
+              handleSelectedPickup={handleSelectedPickup}
+              handleSelectedBus={handleSelectedBus}
+            />
+            {currentSelectedItem && (
+              <>
+                <div className="info">
+                  <div className="header">
+                    <p
+                      className={
+                        "title " +
+                        getStatisticColorByActiveStatus(
+                          currentSelectedItem.status!
+                        )
+                      }
+                    >
+                      Thông tin
+                    </p>
+                    <Button
+                      variant="filled"
+                      color="default"
+                      onClick={() => {
+                        setCurrentSelectedItem(null);
+                        setCurrentSelectedActivePickup(null);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faXmark}/>
+                    </Button>
+                  </div>
+                  <div
+                    className={
+                      "tags " +
+                      getStatisticColorByActiveStatus(
+                        currentSelectedItem.status!
+                      )
+                    }
+                  >
+                    <Tag
+                      color={getStatisticColorByActiveStatus(
+                        currentSelectedItem.status!
+                      )}
+                      className="tag"
+                    >
+                      <div className="header">
+                        <img src="https://cdn-icons-png.flaticon.com/512/854/854894.png" />
+                      </div>
+                      <div className="body">
+                        <p>
+                          <span>Tuyến:</span>
+                          <b>{currentSelectedItem?.schedule?.route?.name}</b>
+                        </p>
+                        <p>
+                          <span>Giờ:</span>
+                          <b>
+                            {currentSelectedItem?.schedule?.route?.startTime} -{" "}
+                            {currentSelectedItem?.schedule?.route?.endTime}
+                          </b>
+                        </p>
+                        <p>
+                          <span>Trạm BĐ:</span>
+                          <b>
+                            {currentSelectedItem?.schedule?.route?.startPickup}
+                          </b>
+                        </p>
+                        <p>
+                          <span>Trạm KT:</span>
+                          <b>
+                            {currentSelectedItem?.schedule?.route?.endPickup}
+                          </b>
+                        </p>
+                        {!currentSelectedActivePickup && (
+                          <List
+                            bordered
+                            itemLayout="horizontal"
+                            dataSource={currentSelectedItem?.activePickups?.map(
+                              (activePickup) => activePickup
+                            )}
+                            style={{ marginTop: 6 }}
+                            renderItem={(activePickup) => (
+                              <List.Item key={activePickup?.pickup?.id}>
+                                <List.Item.Meta
+                                  avatar={
+                                    <Avatar
+                                      src={
+                                        activePickup?.pickup?.category ===
+                                        PointTypeValue.school
+                                          ? "https://cdn-icons-png.flaticon.com/512/167/167707.png"
+                                          : activePickup?.pickup?.category ===
+                                            PointTypeValue.pickup
+                                          ? "https://cdn-icons-png.flaticon.com/512/6395/6395324.png"
+                                          : "https://cdn-icons-png.flaticon.com/512/1068/1068580.png"
+                                      }
+                                      size={36}
+                                    />
+                                  }
+                                  title={
+                                    <strong>
+                                      {activePickup?.pickup?.name}
+                                    </strong>
+                                  }
+                                  description={
+                                    <>
+                                      <div>
+                                        Loại: {activePickup?.pickup?.category}
+                                      </div>
+                                      <div>
+                                        Toạ độ x: {activePickup?.pickup?.lat}
+                                      </div>
+                                      <div>
+                                        Toạ độ y: {activePickup?.pickup?.lng}
+                                      </div>
+                                      <div>
+                                        Trạng thái:{" "}
+                                        <Tag
+                                          color={
+                                            activePickup?.status ===
+                                            ActivePickupStatusValue.confirmed
+                                              ? "green-inverse"
+                                              : activePickup?.status ===
+                                                ActivePickupStatusValue.canceled
+                                              ? "red-inverse"
+                                              : "default"
+                                          }
+                                        >
+                                          {activePickup?.status}
+                                        </Tag>
+                                      </div>
+                                    </>
+                                  }
+                                />
+                              </List.Item>
+                            )}
+                          />
+                        )}
+                      </div>
+                    </Tag>
+                    {currentSelectedActivePickup && (
+                      <Tag
+                        color={getStatisticColorByActiveStatus(
+                          currentSelectedItem.status!
+                        )}
+                        className="tag"
+                      >
+                        <div className="header">
+                          <img
+                            src={
+                              currentSelectedActivePickup?.pickup?.category ===
+                              PointTypeValue.school
+                                ? "https://cdn-icons-png.flaticon.com/512/167/167707.png"
+                                : currentSelectedActivePickup?.pickup
+                                    ?.category === PointTypeValue.pickup
+                                ? "https://cdn-icons-png.flaticon.com/512/6395/6395324.png"
+                                : "https://cdn-icons-png.flaticon.com/512/1068/1068580.png"
+                            }
+                          />
+                        </div>
+                        <div className="body">
+                          <p>
+                            <span>Trạm:</span>
+                            <b>{currentSelectedActivePickup?.pickup?.name}</b>
+                          </p>
+                          <p>
+                            <span>Loại:</span>
+                            <b>
+                              {currentSelectedActivePickup?.pickup?.category}
+                            </b>
+                          </p>
+                          <p>
+                            <span>Toạ độ x:</span>
+                            <b>{currentSelectedActivePickup?.pickup?.lat}</b>
+                          </p>
+                          <p>
+                            <span>Toạ độ y:</span>
+                            <b>{currentSelectedActivePickup?.pickup?.lng}</b>
+                          </p>
+                          <p>
+                            <span>Trạng thái:</span>
+                            <b>
+                              <Tag
+                                color={
+                                  currentSelectedActivePickup?.status ===
+                                  ActivePickupStatusValue.confirmed
+                                    ? "green-inverse"
+                                    : currentSelectedActivePickup?.status ===
+                                      ActivePickupStatusValue.canceled
+                                    ? "red-inverse"
+                                    : "default"
+                                }
+                              >
+                                {currentSelectedActivePickup?.status}{" "}
+                                {currentSelectedActivePickup?.status !==
+                                ActivePickupStatusValue.pending
+                                  ? "(" +
+                                    currentSelectedActivePickup?.time +
+                                    ")"
+                                  : ""}
+                              </Tag>
+                            </b>
+                          </p>
+                          <List
+                            itemLayout="horizontal"
+                            dataSource={currentSelectedItem?.activeStudents?.filter(
+                              (activeStudent) =>
+                                activeStudent?.student?.pickup?.id ===
+                                currentSelectedActivePickup?.pickup?.id
+                            )}
+                            bordered
+                            style={{ marginTop: 6 }}
+                            renderItem={(activeStudent) => (
+                              <List.Item key={activeStudent?.student?.id}>
+                                <List.Item.Meta
+                                  avatar={
+                                    <Avatar
+                                      src={activeStudent?.student?.avatar}
+                                      size={36}
+                                    />
+                                  }
+                                  title={
+                                    <strong>
+                                      {activeStudent?.student?.fullname}
+                                    </strong>
+                                  }
+                                  description={
+                                    <>
+                                      <div>
+                                        Mã học sinh: #
+                                        {activeStudent?.student?.id}
+                                      </div>
+                                      <div>
+                                        Ngày sinh:{" "}
+                                        {activeStudent?.student?.birthday}
+                                      </div>
+                                      <div>
+                                        Giới tính:{" "}
+                                        <Tag
+                                          color={
+                                            activeStudent?.student?.gender ===
+                                            CommonGenderValue.male
+                                              ? "blue"
+                                              : "magenta"
+                                          }
+                                        >
+                                          {activeStudent?.student?.gender}
+                                        </Tag>
+                                      </div>
+                                      <div>
+                                        Lớp:{" "}
+                                        {activeStudent?.student?.class?.name}
+                                      </div>
+                                      <div>
+                                        Phụ huynh:{" "}
+                                        {
+                                          activeStudent?.student?.parent
+                                            ?.fullname
+                                        }
+                                      </div>
+                                      <div>
+                                        ĐTPH:{" "}
+                                        {activeStudent?.student?.parent?.phone}
+                                      </div>
+                                      <div>
+                                        Trạng thái:{" "}
+                                        <Tag
+                                          color={
+                                            activeStudent?.status ===
+                                            ActiveStudentStatusValue.confirmed
+                                              ? "green-inverse"
+                                              : activeStudent?.status ===
+                                                ActiveStudentStatusValue.canceled
+                                              ? "red-inverse"
+                                              : activeStudent?.status ===
+                                                ActiveStudentStatusValue.leave
+                                              ? "orange-inverse"
+                                              : "default"
+                                          }
+                                        >
+                                          {activeStudent?.status}
+                                        </Tag>
+                                      </div>
+                                    </>
+                                  }
+                                />
+                              </List.Item>
+                            )}
+                          />
+                        </div>
+                      </Tag>
+                    )}
+                    {!currentSelectedActivePickup && (
+                      <>
+                        <Tag
+                          color={getStatisticColorByActiveStatus(
+                            currentSelectedItem.status!
+                          )}
+                          className="tag"
+                        >
+                          <div className="header">
+                            <img src="https://cdn-icons-png.flaticon.com/512/1068/1068580.png" />
+                          </div>
+                          <div className="body">
+                            <p>
+                              <span>Xe buýt:</span>
+                              <b>
+                                {
+                                  currentSelectedItem?.schedule?.bus
+                                    ?.licensePlate
+                                }
+                              </b>
+                            </p>
+                            <p>
+                              <span>Số chỗ:</span>
+                              <b>
+                                {currentSelectedItem?.schedule?.bus?.capacity}
+                              </b>
+                            </p>
+                          </div>
+                        </Tag>
+                        <Tag
+                          color={getStatisticColorByActiveStatus(
+                            currentSelectedItem.status!
+                          )}
+                          className="tag"
+                        >
+                          <div className="header">
+                            <img
+                              src={
+                                currentSelectedItem?.schedule?.driver?.avatar
+                                  ? "/src/assets/images/drivers/" +
+                                    currentSelectedItem?.schedule?.driver
+                                      ?.avatar
+                                  : "/src/assets/images/others/no-image.png"
+                              }
+                              className="avatar"
+                            />
+                          </div>
+                          <div className="body">
+                            <p>
+                              <span>Tài xế:</span>
+                              <b>
+                                {
+                                  currentSelectedItem?.schedule?.driver
+                                    ?.fullname
+                                }
+                              </b>
+                            </p>
+                            <p>
+                              <span>Ngày sinh:</span>
+                              <b>
+                                {
+                                  currentSelectedItem?.schedule?.driver
+                                    ?.birthday
+                                }
+                              </b>
+                            </p>
+                            <p>
+                              <span>Giới tính:</span>
+                              <b>
+                                {currentSelectedItem?.schedule?.driver?.gender}
+                              </b>
+                            </p>
+                            <p>
+                              <span>Số ĐT:</span>
+                              <b>
+                                {currentSelectedItem?.schedule?.driver?.phone}
+                              </b>
+                            </p>
+                            <p>
+                              <span>Email:</span>
+                              <b>
+                                {currentSelectedItem?.schedule?.driver?.email}
+                              </b>
+                            </p>
+                            <p>
+                              <span>Lịch chạy:</span>
+                              <b>
+                                {currentSelectedItem?.schedule?.startDate} -{" "}
+                                {currentSelectedItem?.schedule?.endDate}
+                              </b>
+                            </p>
+                          </div>
+                        </Tag>
+                        <Tag
+                          color={getStatisticColorByActiveStatus(
+                            currentSelectedItem.status!
+                          )}
+                          className="tag"
+                        >
+                          <div className="header">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2995/2995459.png" />
+                          </div>
+                          <div className="body">
+                            <List
+                              itemLayout="horizontal"
+                              dataSource={currentSelectedItem?.activeStudents?.map(
+                                (activeStudent) => activeStudent
+                              )}
+                              renderItem={(activeStudent) => (
+                                <List.Item key={activeStudent?.student?.id}>
+                                  <List.Item.Meta
+                                    avatar={
+                                      <Avatar
+                                        src={activeStudent?.student?.avatar}
+                                        size={36}
+                                      />
+                                    }
+                                    title={
+                                      <strong>
+                                        {activeStudent?.student?.fullname}
+                                      </strong>
+                                    }
+                                    description={
+                                      <>
+                                        <div>
+                                          Mã học sinh: #
+                                          {activeStudent?.student?.id}
+                                        </div>
+                                        <div>
+                                          Ngày sinh:{" "}
+                                          {activeStudent?.student?.birthday}
+                                        </div>
+                                        <div>
+                                          Giới tính:{" "}
+                                          <Tag
+                                            color={
+                                              activeStudent?.student?.gender ===
+                                              CommonGenderValue.male
+                                                ? "blue"
+                                                : "magenta"
+                                            }
+                                          >
+                                            {activeStudent?.student?.gender}
+                                          </Tag>
+                                        </div>
+                                        <div>
+                                          Lớp:{" "}
+                                          {activeStudent?.student?.class?.name}
+                                        </div>
+                                        <div>
+                                          Trạm:{" "}
+                                          {activeStudent?.student?.pickup?.name}
+                                        </div>
+                                        <div>
+                                          Phụ huynh:{" "}
+                                          {
+                                            activeStudent?.student?.parent
+                                              ?.fullname
+                                          }
+                                        </div>
+                                        <div>
+                                          ĐTPH:{" "}
+                                          {
+                                            activeStudent?.student?.parent
+                                              ?.phone
+                                          }
+                                        </div>
+                                        <div>
+                                          Trạng thái:{" "}
+                                          <Tag
+                                            color={
+                                              activeStudent?.status ===
+                                              ActiveStudentStatusValue.confirmed
+                                                ? "green-inverse"
+                                                : activeStudent?.status ===
+                                                  ActiveStudentStatusValue.canceled
+                                                ? "red-inverse"
+                                                : activeStudent?.status ===
+                                                  ActiveStudentStatusValue.leave
+                                                ? "orange-inverse"
+                                                : "default"
+                                            }
+                                          >
+                                            {activeStudent?.status}
+                                          </Tag>
+                                        </div>
+                                      </>
+                                    }
+                                  />
+                                </List.Item>
+                              )}
+                            />
+                          </div>
+                        </Tag>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>

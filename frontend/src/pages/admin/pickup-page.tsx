@@ -24,7 +24,7 @@ import {
   faLock,
   faLockOpen,
   faPenToSquare,
-  faUserGraduate,
+  faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
 import type { ColumnsType } from "antd/es/table";
 import type {
@@ -34,7 +34,7 @@ import type {
 import { ruleRequired } from "../../common/rules";
 import { CommonStatusValue, PointTypeValue } from "../../common/values";
 import type { PickupType } from "../../common/types";
-import LeafletMap from "../../components/leaflet-map";
+import LeafletMap, { type HandlePickupSelectedProps } from "../../components/leaflet-map";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
 
@@ -271,11 +271,12 @@ const PickupPage = () => {
     const [latValue, setLatValue] = useState<number>(0);
     const [lngValue, setLngValue] = useState<number>(0);
 
-    const handlePickupSelected = (lat: number, lng: number, info: any) => {
-      setLatValue(lat);
-      setLngValue(lng);
+    const handlePickupSelected = ({lat, lng, info}: HandlePickupSelectedProps) => {
+      setLatValue(lat!);
+      setLngValue(lng!);
       form.setFieldValue("lat", lat);
       form.setFieldValue("lng", lng);
+      console.log(info)
     };
 
     return (
@@ -434,9 +435,9 @@ const PickupPage = () => {
     const [latValue, setLatValue] = useState<number>(pickup.lat || 0);
     const [lngValue, setLngValue] = useState<number>(pickup.lng || 0);
 
-    const handlePickupSelected = (lat: number, lng: number, info: any) => {
-      setLatValue(lat);
-      setLngValue(lng);
+    const handlePickupSelected = ({lat, lng, info}: HandlePickupSelectedProps) => {
+      setLatValue(lat!);
+      setLngValue(lng!);
       form.setFieldValue("lat", lat);
       form.setFieldValue("lng", lng);
     };
@@ -640,7 +641,7 @@ const PickupPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faLocationDot} />
               &nbsp;{t("pickup-manager")}
             </span>
           ),
@@ -660,7 +661,7 @@ const PickupPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faLocationDot} />
               &nbsp;{t("pickup-manager")}
             </span>
           ),
@@ -681,7 +682,7 @@ const PickupPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faLocationDot} />
               &nbsp;{t("pickup-manager")}
             </span>
           ),
@@ -702,7 +703,7 @@ const PickupPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faLocationDot} />
               &nbsp;{t("pickup-manager")}
             </span>
           ),
@@ -723,7 +724,7 @@ const PickupPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faLocationDot} />
               &nbsp;{t("pickup-manager")}
             </span>
           ),
@@ -744,7 +745,7 @@ const PickupPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faLocationDot} />
               &nbsp;{t("pickup-manager")}
             </span>
           ),
