@@ -1,0 +1,77 @@
+@use "../abstracts/colors" as *;
+@use "../abstracts/mixins" as *;
+
+.drawer {
+  & .ant-drawer-header {
+    display: none;
+  }
+
+  & .ant-drawer-body {
+    padding: 0;
+    background: $primary-color;
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    background: $secondary-color;
+    padding: 14px 16px;
+    margin: 12px 12px 0;
+    border-radius: 6px;
+  }
+
+  &__info .avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+  }
+
+  &__info .text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__info .name {
+    color: $primary-color;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  &__info .greeting {
+    color: #555;
+    font-size: 1.5rem;
+  }
+
+  &__footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 12px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  &__footer .close-btn {
+    @include flexCenter();
+    @include size(100%, 40px);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 1.6rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (max-width: 991.98px) {
+    .ant-drawer-content-wrapper:has(&, &--default), .ant-drawer-content {
+      width: 80% !important;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .ant-drawer-content-wrapper:has(&, &--default), .ant-drawer-content {
+      width: 100% !important;
+    }
+  }
+}

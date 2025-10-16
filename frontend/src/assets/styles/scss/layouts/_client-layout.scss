@@ -1,0 +1,316 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/colors" as *;
+@use "../abstracts/mixins" as *;
+
+.client-layout {
+  $vertical-padding: 20px;
+  $header-height: 80px;
+  $main-info-menu-width: 20%;
+
+  &__header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    // height: $header-height;
+    height: auto;
+    background: $primary-color;
+    padding: 10px $vertical-padding;
+    // line-height: $header-height;
+    line-height: normal;
+  }
+
+  &__brand {
+    @media (max-width: 992px) {
+      width: 100% !important;
+    }
+  }
+
+  &__brand img {
+    @media (max-width: 992px) {
+      @include size(35px !important);
+    }
+  }
+
+  &__brand span {
+    @media (max-width: 992px) {
+      font-size: 2.4rem !important;
+    }
+  }
+
+  &__header .drawer-button {
+    position: absolute;
+    left: calc($vertical-padding + 10px);
+    color: #000;
+    font-size: 1.8rem;
+    font-weight: 500;
+  }
+
+  &__header .ant-menu {
+    background: $primary-color;
+    width: 66%;
+  }
+
+  &__header .ant-menu-item {
+    display: flex;
+    align-items: center;
+    font-size: 1.8rem;
+  }
+
+  &__header .ant-menu-item-icon {
+    font-size: 1.8rem !important;
+  }
+
+  &__drawer .ant-menu {
+    background: $primary-color;
+    padding: 12px;
+  }
+
+  &__drawer .ant-menu-item {
+    display: flex;
+    align-items: center;
+    height: 50px;
+    border-radius: 6px;
+    transition: 0.2s ease-in !important;
+    font-size: 2rem;
+    line-height: 50px;
+  }
+
+  &__drawer .ant-menu-item svg {
+    @include size(20px);
+    transition: inherit;
+  }
+
+  &__drawer .ant-menu-item span {
+    font-size: 1.8rem;
+    transition: inherit;
+  }
+
+  &__drawer .ant-menu-item span a {
+    transition: inherit;
+  }
+
+  &__drawer .ant-menu-item-icon {
+    font-size: 2rem !important;
+  }
+
+  &__drawer .ant-menu-item-selected {
+    background-color: #ffe08a !important;
+    color: #003366 !important;
+  }
+
+  &__drawer .ant-menu-item-selected .anticon {
+    color: #003366 !important;
+  }
+
+  &__drawer .ant-menu-item:hover {
+    background-color: #ffe08a !important;
+    color: #003366 !important;
+  }
+
+  &__drawer .ant-menu-item:hover .anticon {
+    color: #003366 !important;
+  }
+
+  &__drawer .ant-menu-item:not(:first-of-type) {
+    margin-top: 10px;
+  }
+
+  &__actions {
+    position: absolute;
+    right: $vertical-padding;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &__language,
+  &__logout {
+    @include flexCenter();
+    gap: 6px;
+    height: 40px;
+    background: #fff;
+    border-radius: 4px;
+    color: #000;
+    font-size: 1.6rem;
+    transition: 0.2s ease-in-out;
+    cursor: pointer;
+  }
+
+  &__language:hover {
+    background: #dedede !important;
+  }
+
+  &__logout {
+    background: #e74c3c;
+    padding: 0 20px;
+    color: #fff;
+  }
+
+  &__logout:hover {
+    color: #fff;
+    background: #c0392b;
+  }
+
+  &__main {
+    padding: $vertical-padding;
+  }
+
+  &__title {
+    display: none;
+    color: $primary-color;
+    font-size: 2rem;
+  }
+
+  &__title::after {
+    display: block;
+    content: "";
+    width: 100%;
+    height: 4px;
+    background: $primary-color;
+    border-radius: 4px;
+    margin-top: 2px;
+    margin-bottom: 14px;
+  }
+
+  &__title > span {
+    background: $secondary-color;
+    @include flexCenter();
+    gap: 4px;
+    @include size(24%, 40px);
+    border-radius: 4px 4px 0 0;
+  }
+
+  &__main .ant-card-head-title {
+    font-size: 1.8rem;
+  }
+
+  &__info {
+    gap: calc($vertical-padding);
+  }
+
+  &__info-menu {
+    width: calc($main-info-menu-width - calc($vertical-padding / 2));
+  }
+
+  &__info-menu .actions {
+    background: transparent;
+    // padding: 4px 6px;
+  }
+
+  &__info-menu .actions .ant-menu-item {
+    font-size: 1.6rem;
+  }
+
+  &__info-menu .actions .ant-menu-item-selected {
+    background: #ffe08a;
+  }
+
+  &__info-card {
+    width: calc(
+      calc(100% - $main-info-menu-width) - calc($vertical-padding / 2)
+    );
+  }
+
+  &__info-card .buttons {
+    width: 100%;
+  }
+
+  // Table
+  @media (max-width: 991.98px) {
+    &__actions {
+      right: calc($vertical-padding + 10px);
+      gap: 0;
+    }
+
+    &__language,
+    &__logout {
+      width: 40px;
+      background: transparent;
+    }
+
+    &__language {
+      font-size: 2rem;
+    }
+
+    &__logout {
+      color: #000;
+      padding: 0;
+    }
+
+    &__title {
+      display: block;
+    }
+
+    &__info {
+      flex-direction: column;
+    }
+
+    &__info > * {
+      width: 100%;
+    }
+
+    .parent .client-layout__students .ant-list-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .parent .client-layout__students .ant-list-item-meta {
+      width: 100%;
+    }
+
+    .parent .client-layout__students .ant-list-item-action {
+      @include flexCenter();
+      flex-wrap: wrap;
+      gap: 3px;
+      width: 100%;
+      margin-top: 10px;
+      margin-left: 0;
+    }
+
+    .parent .client-layout__students .ant-list-item-action li {
+      width: calc(100% / 3 - calc(3px * 2 / 3));
+    }
+
+    .parent .client-layout__students .ant-list-item-action button {
+      width: 100%;
+    }
+  }
+
+  // Mobile
+  @media (max-width: 767.98px) {
+    &__title > span {
+      width: 32%;
+    }
+
+    .parent .client-layout__students .ant-list-item {
+      padding: 8px 0;
+    }
+
+    .parent .client-layout__students .ant-list-item-meta-avatar {
+      margin-right: 8px;
+    }
+
+    .parent .client-layout__students .ant-list-item-meta-title {
+      font-size: 14px;
+    }
+
+    .parent .client-layout__students .ant-list-item-action {
+      gap: 6px;
+    }
+
+    .parent .client-layout__students .ant-list-item-action li {
+      width: 100%;
+      padding: 0;
+    }
+
+    .parent .client-layout__students .ant-list-item-action button {
+      font-size: 1.2rem;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    &__title > span {
+      width: 40%;
+    }
+  }
+}

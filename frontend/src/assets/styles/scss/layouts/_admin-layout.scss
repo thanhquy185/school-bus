@@ -78,39 +78,16 @@
   }
 
   /* Drawer */
-  .ant-drawer-content-wrapper:has(&__drawer) {
-    width: 80% !important;
-
-    @media (max-width: 768px) {
-      width: 100% !important;
-    }
+  &__drawer .brand {
+    padding: 12px 0 !important;
   }
 
-  &__drawer .ant-drawer-header {
-    display: none;
+  &__drawer .brand img {
+    @include size(35px);
   }
 
-  &__drawer .ant-drawer-body {
-    padding: 0;
-    background: $primary-color;
-  }
-
-  &__drawer-footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    padding: 12px;
-    border-top: 1px solid #f0f0f0;
-  }
-
-  &__drawer-footer .close-btn {
-    @include flexCenter();
-    @include size(100%, 40px);
-    border-radius: 6px;
-    color: #fff;
-    font-size: 1.6rem;
-    font-weight: 600;
-    cursor: pointer;
+  &__drawer .brand span {
+    font-size: 2.4rem;
   }
 
   /* Main */
@@ -188,8 +165,17 @@
     font-size: 2.4rem;
   }
 
+  &__main-table,
+  &__main-statistics,
+  &__main-map {
+    margin-top: $main-card-content-spacing;
+  }
+
   &__main-filter,
-  &__main-filter .left {
+  &__main-filter :is(.left, .right, .only),
+  &__main-statistics {
+    // &__main-map.has-info,
+    // &__main-map.has-info .header {
     display: flex;
     align-items: center;
   }
@@ -199,9 +185,17 @@
   }
 
   &__main-filter
-    :is(.ant-input-affix-wrapper, .ant-select, .ant-select-selector, a, button) {
-    height: $main-filter-height;
-    font-size: 1.6rem;
+    :is(
+      .ant-input-affix-wrapper,
+      .ant-select,
+      .ant-select-selector,
+      .ant-picker,
+      .ant-picker input,
+      a,
+      button
+    ) {
+    height: $main-filter-height !important;
+    font-size: 1.6rem !important;
   }
 
   &__main-filter :is(a, button) {
@@ -216,15 +210,19 @@
     width: 34%;
   }
 
+  &__main-filter .left .filter-time {
+    width: 40%;
+  }
+
   &__main-filter .left .filter-select {
-    width: 18%;
+    width: 20%;
   }
 
   &__main-filter .left .filter-reset {
     width: 12%;
   }
 
-  &__main-filter .left > :not(:first-child) {
+  &__main-filter :is(.only, .left) > :not(:first-child) {
     margin-left: $main-card-content-spacing;
   }
 
@@ -232,11 +230,172 @@
     width: $main-filter-right-width;
   }
 
-  &__main-filter .right :is(a, button) {
+  &__main-filter :is(.right) :is(a, button) {
     width: 100%;
   }
 
-  &__main-table {
-    margin-top: $main-card-content-spacing;
+  &__main-statistics {
+    gap: $main-card-content-spacing;
+  }
+
+  &__main-statistics .statistic {
+    width: calc(100% / 5 - calc($main-card-content-spacing * 4 / 5));
+    padding: 16px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  &__main-map #leaflet-map {
+    height: 480px !important;
+  }
+
+  // <========== ==========>
+  &__main-map.click-map {
+    display: flex;
+    gap: $main-card-content-spacing;
+  }
+
+  &__main-map.click-map #leaflet-map {
+    width: 56%;
+  }
+
+  &__main-map.click-map .click-info {
+    @include flexCenter();
+    flex-direction: column;
+    width: 44%;
+  }
+
+  &__main-map.click-map .click-info img {
+    @include size(100px);
+  }
+
+  &__main-map.click-map .click-info p {
+    margin-top: 14px;
+    font-size: 2.2rem;
+    font-weight: 700;
+  }
+
+  &__main-map.click-map .click-info span {
+    color: #555;
+    font-size: 1.6rem;
+  }
+
+  &__main-card.info {
+    margin-top: $admin-spacing;
+  }
+
+  &__main-card.info .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__main-card.info .tags {
+    position: relative;
+    display: flex;
+    gap: calc($main-card-content-spacing * 2);
+    flex-wrap: wrap;
+  }
+
+  &__main-card.info .tag {
+    width: calc(100% / 5 - calc(calc($main-card-content-spacing * 2) * 4 / 5));
+    margin: 0;
+  }
+
+  &__main-card.info .tag.no-align-stretch {
+    align-self: flex-start;
+  }
+
+  &__main-card.info .tag-wrapper:has(.tag.multiple-2),
+  &__main-card.info .tag.multiple-2 {
+    width: calc(
+      calc(100% / 5 - calc(calc($main-card-content-spacing * 2) * 4 / 5)) * 2 +
+        calc(calc($main-card-content-spacing * 2) * 4 / 5)
+    );
+  }
+
+  &__main-card.info .tag.multiple-3 {
+    width: calc(
+      calc(100% / 5 - calc(calc($main-card-content-spacing * 2) * 4 / 5)) * 3 +
+        calc(calc(calc($main-card-content-spacing * 2) * 4 / 5) * 2)
+    );
+  }
+
+  &__main-card.info .tag.multiple-4 {
+    width: calc(
+      calc(100% / 5 - calc(calc($main-card-content-spacing * 2) * 4 / 5)) * 4 +
+        calc(calc(calc($main-card-content-spacing * 2) * 4 / 5) * 3)
+    );
+  }
+
+  &__main-card.info .tag-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: $main-card-content-spacing;
+  }
+
+  &__main-card.info .tag-wrapper .tag {
+    @include size(100%);
+  }
+
+  &__main-card.info .tag > .header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+  }
+
+  &__main-card.info .tag > .header img {
+    @include size(24px);
+  }
+  
+  &__main-card.info .tag > .header img.avatar {
+    border-radius: 50%;
+  }
+
+  &__main-card.info .tag > .header b {
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+
+  &__main-card.info .tag > .ant-tag {
+    width: 100%;
+    height: calc(100% - 30px - 2px);
+    padding: 16px;
+    border-radius: 4px;
+    margin: 2px 0 0;
+  }
+
+  &__main-card.info .tag > .ant-tag .content.margin-top-0 {
+    margin-top: 0;
+  }
+
+  &__main-card.info .tag > .ant-tag .content p {
+    display: flex;
+    font-size: 1.5rem;
+    white-space: wrap;
+  }
+
+  &__main-card.info .tag > .ant-tag .content p:not(:first-of-type) {
+    margin-top: 4px;
+  }
+
+  &__main-card.info .tag > .ant-tag .content span:not(.ant-tag) {
+    display: inline-block;
+    width: 34%;
+  }
+
+  &__main-card.info .tag > .ant-tag .content b {
+    font-weight: 700;
+    width: 66%;
+  }
+
+  &__main-card.info .tag.multiple-2 > .ant-tag .content span:not(.ant-tag) {
+    width: 20%;
+  }
+
+  &__main-card.info .tag.multiple-2 > .ant-tag .content b {
+    width: 80%;
   }
 }

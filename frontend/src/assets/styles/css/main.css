@@ -191,7 +191,7 @@ img {
 }
 
 table {
-  table-layout: fixed;
+  table-layout: fixed !important;
 }
 
 table :is(th, td) {
@@ -217,9 +217,11 @@ table td.right {
   align-items: center;
   gap: 10px;
   background: #FFB612;
-  padding: 16px 12px;
-  margin: 16px;
   border-radius: 8px;
+}
+.brand.admin-layout__sider-brand {
+  margin: 16px;
+  padding: 16px 12px;
 }
 .brand__logo {
   width: 45px;
@@ -229,6 +231,82 @@ table td.right {
   color: #003366;
   font-size: 2.8rem;
   font-weight: 700;
+}
+.brand.client-layout__brand {
+  padding: 14px 20px;
+}
+.brand.client-layout__brand .brand__logo {
+  width: 40px;
+  height: 40px;
+}
+.brand.client-layout__brand .brand__text {
+  font-size: 2.6rem;
+}
+
+.drawer .ant-drawer-header {
+  display: none;
+}
+.drawer .ant-drawer-body {
+  padding: 0;
+  background: #003366;
+}
+.drawer__info {
+  display: flex;
+  align-items: center;
+  background: #FFB612;
+  padding: 14px 16px;
+  margin: 12px 12px 0;
+  border-radius: 6px;
+}
+.drawer__info .avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+}
+.drawer__info .text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.drawer__info .name {
+  color: #003366;
+  font-size: 2rem;
+  font-weight: 600;
+}
+.drawer__info .greeting {
+  color: #555;
+  font-size: 1.5rem;
+}
+.drawer__footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+.drawer__footer .close-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 40px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+@media (max-width: 991.98px) {
+  .ant-drawer-content-wrapper:has(.drawer, .drawer--default), .drawer .ant-drawer-content {
+    width: 80% !important;
+  }
+}
+@media (max-width: 767.98px) {
+  .ant-drawer-content-wrapper:has(.drawer, .drawer--default), .drawer .ant-drawer-content {
+    width: 100% !important;
+  }
 }
 
 .notification {
@@ -254,8 +332,13 @@ table td.right {
   font-size: 1.5rem;
 }
 .table-data.students td img {
-  width: 90%;
+  width: 100%;
   height: 100px;
+}
+.table-data:is(.drivers, .parents) td img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
 .table-data td.actions div {
   display: flex;
@@ -1358,39 +1441,15 @@ table td.right {
 .admin-layout__sider-menu .ant-menu-item:not(:first-of-type) {
   margin-top: 10px;
 }
-.ant-drawer-content-wrapper:has(.admin-layout__drawer) {
-  width: 80% !important;
+.admin-layout__drawer .brand {
+  padding: 12px 0 !important;
 }
-@media (max-width: 768px) {
-  .ant-drawer-content-wrapper:has(.admin-layout__drawer) {
-    width: 100% !important;
-  }
+.admin-layout__drawer .brand img {
+  width: 35px;
+  height: 35px;
 }
-.admin-layout__drawer .ant-drawer-header {
-  display: none;
-}
-.admin-layout__drawer .ant-drawer-body {
-  padding: 0;
-  background: #003366;
-}
-.admin-layout__drawer-footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding: 12px;
-  border-top: 1px solid #f0f0f0;
-}
-.admin-layout__drawer-footer .close-btn {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 40px;
-  border-radius: 6px;
-  color: #fff;
-  font-size: 1.6rem;
-  font-weight: 600;
-  cursor: pointer;
+.admin-layout__drawer .brand span {
+  font-size: 2.4rem;
 }
 .admin-layout__main-header {
   position: sticky;
@@ -1452,16 +1511,25 @@ table td.right {
 .admin-layout__main-card .ant-card-head-title {
   font-size: 2.4rem;
 }
-.admin-layout__main-filter, .admin-layout__main-filter .left {
+.admin-layout__main-table, .admin-layout__main-statistics, .admin-layout__main-map {
+  margin-top: 10px;
+}
+.admin-layout__main-filter, .admin-layout__main-filter :is(.left, .right, .only), .admin-layout__main-statistics {
   display: flex;
   align-items: center;
 }
 .admin-layout__main-filter {
   height: 40px;
 }
-.admin-layout__main-filter :is(.ant-input-affix-wrapper, .ant-select, .ant-select-selector, a, button) {
-  height: 40px;
-  font-size: 1.6rem;
+.admin-layout__main-filter :is(.ant-input-affix-wrapper,
+.ant-select,
+.ant-select-selector,
+.ant-picker,
+.ant-picker input,
+a,
+button) {
+  height: 40px !important;
+  font-size: 1.6rem !important;
 }
 .admin-layout__main-filter :is(a, button) {
   font-weight: 600;
@@ -1472,23 +1540,403 @@ table td.right {
 .admin-layout__main-filter .left .filter-find {
   width: 34%;
 }
+.admin-layout__main-filter .left .filter-time {
+  width: 40%;
+}
 .admin-layout__main-filter .left .filter-select {
-  width: 18%;
+  width: 20%;
 }
 .admin-layout__main-filter .left .filter-reset {
   width: 12%;
 }
-.admin-layout__main-filter .left > :not(:first-child) {
+.admin-layout__main-filter :is(.only, .left) > :not(:first-child) {
   margin-left: 10px;
 }
 .admin-layout__main-filter .right {
   width: 16%;
 }
-.admin-layout__main-filter .right :is(a, button) {
+.admin-layout__main-filter :is(.right) :is(a, button) {
   width: 100%;
 }
-.admin-layout__main-table {
+.admin-layout__main-statistics {
+  gap: 10px;
+}
+.admin-layout__main-statistics .statistic {
+  width: calc(20% - 8px);
+  padding: 16px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.admin-layout__main-map #leaflet-map {
+  height: 480px !important;
+}
+.admin-layout__main-map.click-map {
+  display: flex;
+  gap: 10px;
+}
+.admin-layout__main-map.click-map #leaflet-map {
+  width: 56%;
+}
+.admin-layout__main-map.click-map .click-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 44%;
+}
+.admin-layout__main-map.click-map .click-info img {
+  width: 100px;
+  height: 100px;
+}
+.admin-layout__main-map.click-map .click-info p {
+  margin-top: 14px;
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+.admin-layout__main-map.click-map .click-info span {
+  color: #555;
+  font-size: 1.6rem;
+}
+.admin-layout__main-card.info {
+  margin-top: 24px;
+}
+.admin-layout__main-card.info .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.admin-layout__main-card.info .tags {
+  position: relative;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.admin-layout__main-card.info .tag {
+  width: calc(20% - 16px);
+  margin: 0;
+}
+.admin-layout__main-card.info .tag.no-align-stretch {
+  align-self: flex-start;
+}
+.admin-layout__main-card.info .tag-wrapper:has(.tag.multiple-2), .admin-layout__main-card.info .tag.multiple-2 {
+  width: calc((20% - 16px) * 2 + 16px);
+}
+.admin-layout__main-card.info .tag.multiple-3 {
+  width: calc((20% - 16px) * 3 + 32px);
+}
+.admin-layout__main-card.info .tag.multiple-4 {
+  width: calc((20% - 16px) * 4 + 48px);
+}
+.admin-layout__main-card.info .tag-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.admin-layout__main-card.info .tag-wrapper .tag {
+  width: 100%;
+  height: 100%;
+}
+.admin-layout__main-card.info .tag > .header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+}
+.admin-layout__main-card.info .tag > .header img {
+  width: 24px;
+  height: 24px;
+}
+.admin-layout__main-card.info .tag > .header img.avatar {
+  border-radius: 50%;
+}
+.admin-layout__main-card.info .tag > .header b {
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+.admin-layout__main-card.info .tag > .ant-tag {
+  width: 100%;
+  height: calc(100% - 30px - 2px);
+  padding: 16px;
+  border-radius: 4px;
+  margin: 2px 0 0;
+}
+.admin-layout__main-card.info .tag > .ant-tag .content.margin-top-0 {
+  margin-top: 0;
+}
+.admin-layout__main-card.info .tag > .ant-tag .content p {
+  display: flex;
+  font-size: 1.5rem;
+  white-space: wrap;
+}
+.admin-layout__main-card.info .tag > .ant-tag .content p:not(:first-of-type) {
+  margin-top: 4px;
+}
+.admin-layout__main-card.info .tag > .ant-tag .content span:not(.ant-tag) {
+  display: inline-block;
+  width: 34%;
+}
+.admin-layout__main-card.info .tag > .ant-tag .content b {
+  font-weight: 700;
+  width: 66%;
+}
+.admin-layout__main-card.info .tag.multiple-2 > .ant-tag .content span:not(.ant-tag) {
+  width: 20%;
+}
+.admin-layout__main-card.info .tag.multiple-2 > .ant-tag .content b {
+  width: 80%;
+}
+
+.client-layout__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: auto;
+  background: #003366;
+  padding: 10px 20px;
+  line-height: normal;
+}
+@media (max-width: 992px) {
+  .client-layout__brand {
+    width: 100% !important;
+  }
+}
+@media (max-width: 992px) {
+  .client-layout__brand img {
+    width: 35px !important;
+    height: 35px !important;
+  }
+}
+@media (max-width: 992px) {
+  .client-layout__brand span {
+    font-size: 2.4rem !important;
+  }
+}
+.client-layout__header .drawer-button {
+  position: absolute;
+  left: 30px;
+  color: #000;
+  font-size: 1.8rem;
+  font-weight: 500;
+}
+.client-layout__header .ant-menu {
+  background: #003366;
+  width: 66%;
+}
+.client-layout__header .ant-menu-item {
+  display: flex;
+  align-items: center;
+  font-size: 1.8rem;
+}
+.client-layout__header .ant-menu-item-icon {
+  font-size: 1.8rem !important;
+}
+.client-layout__drawer .ant-menu {
+  background: #003366;
+  padding: 12px;
+}
+.client-layout__drawer .ant-menu-item {
+  display: flex;
+  align-items: center;
+  height: 50px;
+  border-radius: 6px;
+  transition: 0.2s ease-in !important;
+  font-size: 2rem;
+  line-height: 50px;
+}
+.client-layout__drawer .ant-menu-item svg {
+  width: 20px;
+  height: 20px;
+  transition: inherit;
+}
+.client-layout__drawer .ant-menu-item span {
+  font-size: 1.8rem;
+  transition: inherit;
+}
+.client-layout__drawer .ant-menu-item span a {
+  transition: inherit;
+}
+.client-layout__drawer .ant-menu-item-icon {
+  font-size: 2rem !important;
+}
+.client-layout__drawer .ant-menu-item-selected {
+  background-color: #ffe08a !important;
+  color: #003366 !important;
+}
+.client-layout__drawer .ant-menu-item-selected .anticon {
+  color: #003366 !important;
+}
+.client-layout__drawer .ant-menu-item:hover {
+  background-color: #ffe08a !important;
+  color: #003366 !important;
+}
+.client-layout__drawer .ant-menu-item:hover .anticon {
+  color: #003366 !important;
+}
+.client-layout__drawer .ant-menu-item:not(:first-of-type) {
   margin-top: 10px;
+}
+.client-layout__actions {
+  position: absolute;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.client-layout__language, .client-layout__logout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  background: #fff;
+  border-radius: 4px;
+  color: #000;
+  font-size: 1.6rem;
+  transition: 0.2s ease-in-out;
+  cursor: pointer;
+}
+.client-layout__language:hover {
+  background: #dedede !important;
+}
+.client-layout__logout {
+  background: #e74c3c;
+  padding: 0 20px;
+  color: #fff;
+}
+.client-layout__logout:hover {
+  color: #fff;
+  background: #c0392b;
+}
+.client-layout__main {
+  padding: 20px;
+}
+.client-layout__title {
+  display: none;
+  color: #003366;
+  font-size: 2rem;
+}
+.client-layout__title::after {
+  display: block;
+  content: "";
+  width: 100%;
+  height: 4px;
+  background: #003366;
+  border-radius: 4px;
+  margin-top: 2px;
+  margin-bottom: 14px;
+}
+.client-layout__title > span {
+  background: #FFB612;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 24%;
+  height: 40px;
+  border-radius: 4px 4px 0 0;
+}
+.client-layout__main .ant-card-head-title {
+  font-size: 1.8rem;
+}
+.client-layout__info {
+  gap: 20px;
+}
+.client-layout__info-menu {
+  width: calc(20% - 10px);
+}
+.client-layout__info-menu .actions {
+  background: transparent;
+}
+.client-layout__info-menu .actions .ant-menu-item {
+  font-size: 1.6rem;
+}
+.client-layout__info-menu .actions .ant-menu-item-selected {
+  background: #ffe08a;
+}
+.client-layout__info-card {
+  width: calc(80% - 10px);
+}
+.client-layout__info-card .buttons {
+  width: 100%;
+}
+@media (max-width: 991.98px) {
+  .client-layout__actions {
+    right: 30px;
+    gap: 0;
+  }
+  .client-layout__language, .client-layout__logout {
+    width: 40px;
+    background: transparent;
+  }
+  .client-layout__language {
+    font-size: 2rem;
+  }
+  .client-layout__logout {
+    color: #000;
+    padding: 0;
+  }
+  .client-layout__title {
+    display: block;
+  }
+  .client-layout__info {
+    flex-direction: column;
+  }
+  .client-layout__info > * {
+    width: 100%;
+  }
+  .client-layout .parent .client-layout__students .ant-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .client-layout .parent .client-layout__students .ant-list-item-meta {
+    width: 100%;
+  }
+  .client-layout .parent .client-layout__students .ant-list-item-action {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 3px;
+    width: 100%;
+    margin-top: 10px;
+    margin-left: 0;
+  }
+  .client-layout .parent .client-layout__students .ant-list-item-action li {
+    width: calc(33.3333333333% - 2px);
+  }
+  .client-layout .parent .client-layout__students .ant-list-item-action button {
+    width: 100%;
+  }
+}
+@media (max-width: 767.98px) {
+  .client-layout__title > span {
+    width: 32%;
+  }
+  .client-layout .parent .client-layout__students .ant-list-item {
+    padding: 8px 0;
+  }
+  .client-layout .parent .client-layout__students .ant-list-item-meta-avatar {
+    margin-right: 8px;
+  }
+  .client-layout .parent .client-layout__students .ant-list-item-meta-title {
+    font-size: 14px;
+  }
+  .client-layout .parent .client-layout__students .ant-list-item-action {
+    gap: 6px;
+  }
+  .client-layout .parent .client-layout__students .ant-list-item-action li {
+    width: 100%;
+    padding: 0;
+  }
+  .client-layout .parent .client-layout__students .ant-list-item-action button {
+    font-size: 1.2rem;
+  }
+}
+@media (max-width: 575.98px) {
+  .client-layout__title > span {
+    width: 40%;
+  }
 }
 
 .login {
@@ -1558,15 +2006,24 @@ table td.right {
   width: 100%;
   height: 35px;
   font-weight: 600;
-  margin-top: 20px;
+  margin-top: 14px;
+}
+.login__form a {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 1.4rem;
 }
 
-.ant-notification {
-  z-index: 9999;
+.ant-select-dropdown,
+.ant-notification,
+.ant-image-preview-wrap,
+.ant-image-preview,
+.ant-image-preview-operations-wrapper {
+  z-index: 9999 !important;
 }
 
 .ant-drawer {
-  z-index: 9900;
+  z-index: 1000;
 }
 
 .ant-dropdown {
@@ -1609,11 +2066,6 @@ table td.right {
 .ant-form > .ant-row.split-3 > .ant-col {
   width: 33.3333333333% !important;
 }
-@media (max-width: 768px) {
-  .ant-form > .ant-row.split-3 > .ant-col {
-    width: 100% !important;
-  }
-}
 .ant-form .ant-form-item {
   margin-bottom: 32px;
 }
@@ -1623,23 +2075,6 @@ table td.right {
 .ant-form .ant-form-item.multiple-2 {
   width: calc(200% + 20px);
   z-index: 100;
-}
-@media (max-width: 768px) {
-  .student-content .ant-form > .ant-row > .ant-col:nth-of-type(1) {
-    width: 100% !important;
-  }
-}
-@media (max-width: 768px) {
-  .student-content .ant-form > .ant-row > .ant-col:nth-of-type(2) {
-    width: 50% !important;
-    margin-top: 114px;
-  }
-}
-@media (max-width: 768px) {
-  .student-content .ant-form > .ant-row > .ant-col:nth-of-type(3) {
-    width: 50% !important;
-    margin-top: 114px;
-  }
 }
 .ant-form-item {
   position: relative;
@@ -1655,6 +2090,7 @@ input,
   font-size: 2rem !important;
 }
 .ant-form :is(input,
+.ant-input-number,
 .ant-select,
 .ant-select-selector,
 .ant-select-selection-placeholder,
@@ -1666,6 +2102,12 @@ input,
 .ant-form .ant-form-item-label {
   width: 100%;
   height: 32px;
+}
+.ant-form .ant-form-item.text-center input {
+  text-align: center;
+}
+.ant-form .ant-input-number {
+  width: 100%;
 }
 .ant-form :is(.ant-select-arrow svg, .ant-select-clear svg) {
   width: 14px !important;
@@ -1683,6 +2125,12 @@ input,
   margin-left: 50%;
   transform: translateX(-50%);
 }
+:is(.driver-content, .parent-content:not(.client), .student-content) .ant-form :is(.ant-image, img.image-preview, .ant-image-mask) {
+  margin-top: 48px;
+}
+.client-layout__info .ant-form :is(.ant-image, img.image-preview, .ant-image-mask) {
+  width: 58%;
+}
 .ant-form img.image-preview {
   padding: 4px;
   border: 1px solid #cecece;
@@ -1694,6 +2142,9 @@ input,
   left: 0;
   width: 100%;
 }
+:is(.driver-content, .parent-content:not(.client), .student-content) .ant-form .ant-upload {
+  top: 208px;
+}
 .ant-form .ant-upload button {
   width: 100%;
   height: 40px;
@@ -1704,6 +2155,12 @@ input,
   top: 352px;
   left: 10px;
 }
+:is(.driver-content, .parent-content:not(.client), .student-content) .ant-form .ant-form-item-control:has(.ant-upload) .ant-form-item-additional {
+  top: 456px;
+}
+.ant-form :is(.driver-content, .parent-content) .ant-upload button {
+  top: 456px !important;
+}
 .ant-form .ant-form-item.hidden {
   visibility: hidden;
 }
@@ -1712,46 +2169,117 @@ input,
   justify-content: center;
   align-items: center;
   margin-top: 30px;
+  gap: 10px;
 }
-.ant-form .submit-button {
-  width: 100%;
+.ant-form .buttons button {
   height: 35px;
   font-size: 1.4rem;
-  font-weight: 600;
+  font-weight: 500;
 }
-.ant-form .relation-students {
-  padding-top: 10px;
-  border-top: 1px solid #dedede;
+.ant-form .buttons button:first-of-type {
+  width: 80%;
 }
-.ant-form .relation-student {
+.ant-form .buttons button:last-of-type {
+  width: 20%;
+}
+.ant-form .buttons :is(.submit-button, button.only) {
+  width: 100%;
+}
+.ant-form-item {
+  position: relative;
+}
+.route-content .ant-form-item :is(.buttons, .buttons button) {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #e7f5ff;
-  padding: 10px;
-  border-radius: 8px;
 }
-.ant-form .relation-student img {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
+.route-content .ant-form-item .buttons {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  margin-top: 0;
 }
-.ant-form .relation-student b {
-  font-size: 1.5rem;
-  font-weight: 600;
+.route-content .ant-form-item .buttons button {
+  gap: 4px;
+  width: 100% !important;
+  height: auto !important;
+  padding: 4px 10px;
+  font-size: 1.2rem;
 }
-.ant-form .relation-student p {
-  color: #777;
-  font-size: 1.3rem;
+.bus-content .ant-form .buttons, :is(.driver-content, .parent-content).change-password .ant-form .buttons {
+  margin-top: 62px !important;
 }
-.ant-form .relation-student button {
-  width: 30px !important;
-  height: 30px !important;
-  padding: 0;
-  margin-left: auto;
+.ant-drawer .parent-content .ant-form :is(.ant-image, img.image-preview, .ant-image-mask) {
+  margin-top: 14px !important;
 }
-.ant-form .relation-student:not(:first-of-type) {
+.ant-drawer .parent-content .ant-form .ant-upload {
+  top: 130px !important;
+}
+.ant-drawer .parent-content .ant-form .ant-form-item:nth-of-type(2) {
+  margin-top: 114px;
+}
+:is(.route-content, .pickup-content) .ant-form:has(.has-map) #leaflet-map {
+  height: 456px !important;
+}
+.route-content .ant-form:has(.has-map.has-select) .select-pickup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 0;
+  margin-right: 0;
+}
+.route-content .ant-form:has(.has-map.has-select) .select-pickup :is(.ant-select,
+.ant-select-selector,
+.ant-select-selection-wrap,
+.ant-select-selection-placeholder,
+.ant-select-selection-search-input,
+.ant-select-selection-item,
+button) {
+  height: 32px !important;
+  line-height: 32px !important;
+  font-size: 1.4rem !important;
+}
+.route-content .ant-form:has(.has-map.has-select) .select-pickup .ant-select {
+  width: calc(80% - 3px);
+}
+.route-content .ant-form:has(.has-map.has-select) .select-pickup button {
+  width: calc(20% - 3px);
+  font-size: 1.2rem !important;
+}
+.route-content .ant-form:has(.has-map.has-select) #leaflet-map {
+  height: 410px !important;
   margin-top: 6px;
+}
+@media (max-width: 767.98px) {
+  .ant-form > .ant-row:is(.split-2, .split-3) > .ant-col {
+    width: 100% !important;
+  }
+  :is(.parent-content:not(.client-account), .student-content) .ant-form > .ant-row.split-2 > .ant-col:nth-of-type(2) {
+    margin-top: 124px;
+  }
+  .parent-content.client-account .ant-form .ant-form-item.multiple-2 {
+    width: 100%;
+  }
+  :is(.driver-content, .parent-content, .student-content) .ant-form > .ant-row.split-3 > .ant-col:nth-of-type(2) {
+    width: 50% !important;
+    margin-top: 124px;
+  }
+  :is(.driver-content, .parent-content, .student-content) .ant-form > .ant-row.split-3 > .ant-col:nth-of-type(3) {
+    width: 50% !important;
+    margin-top: 124px;
+  }
+  :is(.driver-content, .parent-content, .student-content) .ant-form :is(.ant-image, img.image-preview, .ant-image-mask) {
+    margin-top: 24px;
+  }
+  :is(.driver-content, .parent-content, .student-content) .ant-form .ant-upload {
+    top: 156px;
+  }
+  :is(.driver-content, .parent-content, .student-content) .ant-form .ant-form-item-control:has(.ant-upload) .ant-form-item-additional {
+    top: 352px;
+  }
+  .client-layout__info .ant-form :is(.ant-image, img.image-preview, .ant-image-mask) {
+    width: 70%;
+  }
 }
 
 .admin-layout__main-content .ant-alert-message {

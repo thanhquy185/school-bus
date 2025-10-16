@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import {
   Breadcrumb,
   Card,
-  Input,
   Image,
+  Input,
   Button,
   Select,
   Tag,
@@ -12,7 +12,6 @@ import {
   Col,
   Row,
   Alert,
-  DatePicker,
 } from "antd";
 import {
   SearchOutlined,
@@ -32,18 +31,17 @@ import {
   faLock,
   faLockOpen,
   faPenToSquare,
-  faChalkboardUser,
+  faPeopleRoof,
 } from "@fortawesome/free-solid-svg-icons";
 import { ruleRequired } from "../../common/rules";
-import { CommonGenderValue, CommonStatusValue } from "../../common/values";
-import type { DriverNotFormatType, DriverFormatType } from "../../common/types";
+import { CommonStatusValue } from "../../common/values";
+import type { ParentNotFormatType, ParentFormatType } from "../../common/types";
 import CustomUpload from "../../components/upload";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
-import dayjs from "dayjs";
 
-// Driver Page
-const DriverPage = () => {
+// Parent Page
+const ParentPage = () => {
   // Language
   const { t } = useTranslation();
 
@@ -51,20 +49,18 @@ const DriverPage = () => {
   const { openNotification } = useNotification();
 
   // Cấu hình bảng dữ liệu
-  const demoData: DriverFormatType[] = [
+  const demoData: ParentFormatType[] = [
     {
       id: 1,
       user: {
         id: 1,
-        role: "driver",
-        username: "taixe1",
-        password: "taixe1",
+        role: "parent",
+        username: "phuhuynh1",
+        password: "phuhuynh1",
       },
-      fullname: "Họ tên tài xế 1",
-      birthday: "2025-01-01",
-      gender: "Nữ",
+      fullname: "Họ tên phụ huynh 1",
       phone: "1234567890",
-      email: "taixe1@gmail.com",
+      email: "phuhuynh1@gmail.com",
       address: "Địa chỉ ở đâu không biết",
       status: "Hoạt động",
     },
@@ -72,20 +68,18 @@ const DriverPage = () => {
       id: 2,
       user: {
         id: 2,
-        role: "Driver",
-        username: "taixe2",
-        password: "taixe2",
+        role: "parent",
+        username: "phuhuynh2",
+        password: "phuhuynh2",
       },
-      fullname: "Họ tên tài xế 2",
-      birthday: "2025-02-02",
-      gender: "Nam",
+      fullname: "Họ tên phụ huynh 2",
       phone: "2234567890",
-      email: "taixe2@gmail.com",
+      email: "phuhuynh2@gmail.com",
       address: "Địa chỉ ở đâu không biết",
       status: "Tạm dừng",
     },
   ];
-  const columns: ColumnsType<DriverFormatType> = [
+  const columns: ColumnsType<ParentFormatType> = [
     {
       title: "#",
       dataIndex: "id",
@@ -102,7 +96,7 @@ const DriverPage = () => {
         <Image
           src={
             avatar!
-              ? "/src/assets/images/drivers/" + avatar
+              ? "/src/assets/images/parents/" + avatar
               : "/src/assets/images/others/no-image.png"
           }
           alt=""
@@ -117,18 +111,11 @@ const DriverPage = () => {
       sorter: (a, b) => a?.fullname!.localeCompare(b?.fullname!),
     },
     {
-      title: "Ngày sinh",
-      dataIndex: "birthday",
-      key: "birthday",
-      width: "10%",
-      sorter: (a, b) => a?.birthday!.localeCompare(b?.birthday!),
-    },
-    {
-      title: "Giới tính",
-      dataIndex: "gender",
-      key: "gender",
-      width: "10%",
-      sorter: (a, b) => a?.gender!.localeCompare(b?.gender!),
+      title: "Tên tài khoản",
+      key: "username",
+      width: "20%",
+      render: (record: ParentFormatType) => record.user?.username,
+      sorter: (a, b) => a?.user!.username!.localeCompare(b?.user!.username!),
     },
     {
       title: "Số điện thoại",
@@ -207,7 +194,7 @@ const DriverPage = () => {
 
   // State giữ đối tượng được chọn hiện tại
   const [currentSelectedItem, setCurrentSelectedItem] =
-    useState<DriverFormatType>();
+    useState<ParentFormatType>();
   // State giữ hành động hiện tại
   const [currentAction, setCurrentAction] = useState<string>("list");
   // State giữ breadcrumb items hiện tại
@@ -215,19 +202,17 @@ const DriverPage = () => {
     useState<Partial<BreadcrumbItemType & BreadcrumbSeparatorType>[]>();
   // State giữ card info hiện tại
   const [currentCardTitle, setCurrentCardTitle] = useState<string>(
-    t("driver-list")
+    t("parent-list")
   );
   const [currentCardContent, setCurrentCardContent] = useState<string>("list");
 
-  // Driver Actions
+  // parent Actions
   const defaultLabels = {
-    id: "Mã tài xế",
+    id: "Mã phụ huynh",
     username: "Tên tài khoản",
     password: "Mật khẩu",
     avatar: "Ảnh đại diện",
     fullname: "Họ và tên",
-    birthday: "Ngày sinh",
-    gender: "Giới tính",
     phone: "Số điện thoại",
     email: "Email",
     address: "Địa chỉ",
@@ -239,34 +224,30 @@ const DriverPage = () => {
     password: "Nhập Mật khẩu",
     avatar: "Tải ảnh lên",
     fullname: "Nhập Họ và tên",
-    birthday: "Chọn Ngày sinh",
-    gender: "Chọn Giới tính",
     phone: "Nhập Số điện thoại",
     email: "Nhập Email",
     address: "Nhập Địa chỉ",
     status: "Chọn Trạng thái",
   };
-  const DriverDetail: React.FC<{ driver: DriverFormatType }> = ({ driver }) => {
-    const [form] = Form.useForm<DriverNotFormatType>();
+  const ParentDetail: React.FC<{ parent: ParentFormatType }> = ({ parent }) => {
+    const [form] = Form.useForm<ParentNotFormatType>();
 
     return (
       <>
-        <div className="driver-content detail">
+        <div className="parent-content detail">
           <Form
             form={form}
             layout="vertical"
             initialValues={{
-              id: driver.id || undefined,
-              username: driver.user?.username || undefined,
+              id: parent.id || undefined,
+              username: parent.user?.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
-              avatar: driver.avatar || undefined,
-              fullname: driver.fullname || undefined,
-              birthday: driver.birthday ? dayjs(driver.birthday) : undefined,
-              gender: driver.gender || undefined,
-              phone: driver.phone || undefined,
-              email: driver.email || undefined,
-              address: driver.address || undefined,
-              status: driver.status || undefined,
+              avatar: parent.avatar || undefined,
+              fullname: parent.fullname || undefined,
+              phone: parent.phone || undefined,
+              email: parent.email || undefined,
+              address: parent.address || undefined,
+              status: parent.status || undefined,
             }}
           >
             <Row className="split-3">
@@ -277,10 +258,10 @@ const DriverPage = () => {
                   valuePropName="fileList"
                 >
                   <CustomUpload
-                    defaultSrc={driver.avatar! as string}
+                    defaultSrc={parent.avatar! as string}
                     alt="image-preview"
                     imageClassName="image-preview"
-                    imageCategoryName="drivers"
+                    imageCategoryName="parents"
                     uploadClassName="image-uploader"
                     labelButton={defaultInputs["avatar"]}
                     disabled={true}
@@ -294,7 +275,11 @@ const DriverPage = () => {
                 <Form.Item name="username" label={defaultLabels.username}>
                   <Input disabled />
                 </Form.Item>
-                <Form.Item name="fullname" label={defaultLabels.fullname}>
+                <Form.Item
+                  name="fullname"
+                  label={defaultLabels.fullname}
+                  className="multiple-2"
+                >
                   <Input disabled />
                 </Form.Item>
                 <Form.Item name="phone" label={defaultLabels.phone}>
@@ -315,18 +300,9 @@ const DriverPage = () => {
                 <Form.Item name="password" label={defaultLabels.password}>
                   <Input disabled />
                 </Form.Item>
-                <Row className="split-2">
-                  <Col>
-                    <Form.Item name="birthday" label={defaultLabels.birthday}>
-                      <DatePicker disabled />
-                    </Form.Item>
-                  </Col>
-                  <Col>
-                    <Form.Item name="gender" label={defaultLabels.gender}>
-                      <Select disabled />
-                    </Form.Item>
-                  </Col>
-                </Row>
+                <Form.Item label="." className="hidden">
+                  <Input />
+                </Form.Item>
                 <Form.Item name="email" label={defaultLabels.email}>
                   <Input disabled />
                 </Form.Item>
@@ -337,17 +313,13 @@ const DriverPage = () => {
       </>
     );
   };
-  const DriverCreate: React.FC = () => {
-    const [form] = Form.useForm<DriverNotFormatType>();
+  const ParentCreate: React.FC = () => {
+    const [form] = Form.useForm<ParentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
-
-    useEffect(() => {
-      form.setFieldValue("avatar", imageFile?.name);
-    }, [imageFile]);
 
     return (
       <>
-        <div className="driver-content create">
+        <div className="parent-content create">
           <Form
             form={form}
             layout="vertical"
@@ -357,8 +329,6 @@ const DriverPage = () => {
               password: undefined,
               avatar: undefined,
               fullname: undefined,
-              birthday: undefined,
-              gender: undefined,
               phone: undefined,
               email: undefined,
               address: undefined,
@@ -375,7 +345,6 @@ const DriverPage = () => {
                   htmlFor="create-avatar"
                   label={defaultLabels.avatar}
                   valuePropName="fileList"
-                  rules={[ruleRequired("Ảnh đại diện không được để trống !")]}
                 >
                   <CustomUpload
                     imageFile={imageFile}
@@ -407,6 +376,7 @@ const DriverPage = () => {
                   name="fullname"
                   label={defaultLabels.fullname}
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
+                  className="multiple-2"
                 >
                   <Input placeholder={defaultInputs.fullname} />
                 </Form.Item>
@@ -453,47 +423,9 @@ const DriverPage = () => {
                 >
                   <Input placeholder={defaultInputs.password} />
                 </Form.Item>
-                <Row className="split-2">
-                  <Col>
-                    <Form.Item
-                      name="birthday"
-                      htmlFor="create-birthday"
-                      label={defaultLabels.birthday}
-                      rules={[ruleRequired("Cần chọn Ngày sinh !")]}
-                    >
-                      <DatePicker
-                        allowClear
-                        mode="date"
-                        id="create-birthday"
-                        placeholder={defaultInputs.birthday}
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col>
-                    <Form.Item
-                      name="gender"
-                      htmlFor="create-gender"
-                      label={defaultLabels.gender}
-                      rules={[ruleRequired("Cần chọn Giới tính !")]}
-                    >
-                      <Select
-                        allowClear
-                        id="create-gender"
-                        placeholder={defaultInputs.gender}
-                        options={[
-                          {
-                            label: CommonGenderValue.male,
-                            value: CommonGenderValue.male,
-                          },
-                          {
-                            label: CommonGenderValue.female,
-                            value: CommonGenderValue.female,
-                          },
-                        ]}
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
+                <Form.Item label="." className="hidden">
+                  <Input />
+                </Form.Item>
                 <Form.Item name="email" label={defaultLabels.email}>
                   <Input placeholder={defaultInputs.email} />
                 </Form.Item>
@@ -513,32 +445,26 @@ const DriverPage = () => {
       </>
     );
   };
-  const DriverUpdate: React.FC<{ driver: DriverFormatType }> = ({ driver }) => {
-    const [form] = Form.useForm<DriverNotFormatType>();
+  const ParentUpdate: React.FC<{ parent: ParentFormatType }> = ({ parent }) => {
+    const [form] = Form.useForm<ParentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
-
-    useEffect(() => {
-      form.setFieldValue("avatar", imageFile?.name);
-    }, [imageFile]);
 
     return (
       <>
-        <div className="driver-content update">
+        <div className="parent-content update">
           <Form
             form={form}
             layout="vertical"
             initialValues={{
-              id: driver.id || undefined,
-              username: driver.user?.username || undefined,
+              id: parent.id || undefined,
+              username: parent.user?.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
-              avatar: driver.avatar || undefined,
-              fullname: driver.fullname || undefined,
-              birthday: driver.birthday ? dayjs(driver.birthday) : undefined,
-              gender: driver.gender || undefined,
-              phone: driver.phone || undefined,
-              email: driver.email || undefined,
-              address: driver.address || undefined,
-              status: driver.status || undefined,
+              avatar: parent.avatar || undefined,
+              fullname: parent.fullname || undefined,
+              phone: parent.phone || undefined,
+              email: parent.email || undefined,
+              address: parent.address || undefined,
+              status: parent.status || undefined,
             }}
             onFinish={() => {
               console.log("Form values:", form.getFieldsValue());
@@ -551,10 +477,9 @@ const DriverPage = () => {
                   htmlFor="create-avatar"
                   label={defaultLabels.avatar}
                   valuePropName="fileList"
-                  rules={[ruleRequired("Ảnh đại diện không được để trống !")]}
                 >
                   <CustomUpload
-                    defaultSrc={driver.avatar ? driver.avatar : ""}
+                    defaultSrc={parent.avatar ? parent.avatar : ""}
                     imageFile={imageFile}
                     setImageFile={setImageFile}
                     alt="image-preview"
@@ -580,6 +505,7 @@ const DriverPage = () => {
                   name="fullname"
                   label={defaultLabels.fullname}
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
+                  className="multiple-2"
                 >
                   <Input placeholder={defaultInputs.fullname} />
                 </Form.Item>
@@ -605,47 +531,9 @@ const DriverPage = () => {
                 <Form.Item name="password" label={defaultLabels.password}>
                   <Input disabled />
                 </Form.Item>
-                <Row className="split-2">
-                  <Col>
-                    <Form.Item
-                      name="birthday"
-                      htmlFor="update-birthday"
-                      label={defaultLabels.birthday}
-                      rules={[ruleRequired("Cần chọn Ngày sinh !")]}
-                    >
-                      <DatePicker
-                        allowClear
-                        mode="date"
-                        id="update-birthday"
-                        placeholder={defaultInputs.birthday}
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col>
-                    <Form.Item
-                      name="gender"
-                      htmlFor="update-gender"
-                      label={defaultLabels.gender}
-                      rules={[ruleRequired("Cần chọn Giới tính !")]}
-                    >
-                      <Select
-                        allowClear
-                        id="update-gender"
-                        placeholder={defaultInputs.gender}
-                        options={[
-                          {
-                            label: CommonGenderValue.male,
-                            value: CommonGenderValue.male,
-                          },
-                          {
-                            label: CommonGenderValue.female,
-                            value: CommonGenderValue.female,
-                          },
-                        ]}
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
+                <Form.Item label="." className="hidden">
+                  <Input />
+                </Form.Item>
                 <Form.Item name="email" label={defaultLabels.email}>
                   <Input placeholder={defaultInputs.email} />
                 </Form.Item>
@@ -665,24 +553,24 @@ const DriverPage = () => {
       </>
     );
   };
-  const DriverLock: React.FC<{ driver: DriverFormatType }> = ({ driver }) => {
+  const ParentLock: React.FC<{ parent: ParentFormatType }> = ({ parent }) => {
     return (
       <>
         <Alert
           message={
             "Học sinh: " +
             "#" +
-            driver?.id +
+            parent?.id +
             " - " +
-            driver?.fullname +
+            parent?.fullname +
             " - " +
-            driver?.phone
+            parent?.phone
           }
           showIcon
           icon={
             <FontAwesomeIcon
               icon={
-                driver?.status === CommonStatusValue.active
+                parent?.status === CommonStatusValue.active
                   ? faLock
                   : faLockOpen
               }
@@ -690,10 +578,10 @@ const DriverPage = () => {
           }
           description={
             "Bạn có chắc chắc muốn" +
-            (driver?.status === CommonStatusValue.active
+            (parent?.status === CommonStatusValue.active
               ? " khoá "
               : " mở khoá ") +
-            "tài xế này ? Hành động không thể hoàn tác !"
+            "phụ huynh này ? Hành động không thể hoàn tác !"
           }
           type="error"
           action={
@@ -716,14 +604,14 @@ const DriverPage = () => {
       </>
     );
   };
-  const DriverChangePassword: React.FC<{ driver: DriverFormatType }> = ({
-    driver,
+  const ParentChangePassword: React.FC<{ parent: ParentFormatType }> = ({
+    parent,
   }) => {
-    const [form] = Form.useForm<DriverNotFormatType>();
+    const [form] = Form.useForm<ParentNotFormatType>();
 
     return (
       <>
-        <div className="driver-content change-password">
+        <div className="parent-content change-password">
           <Form
             form={form}
             layout="vertical"
@@ -771,19 +659,19 @@ const DriverPage = () => {
       </>
     );
   };
-  const DriverActions = {
-    detail: (selectedDriver: DriverFormatType) => (
-      <DriverDetail driver={selectedDriver} />
+  const ParentActions = {
+    detail: (selectedParent: ParentFormatType) => (
+      <ParentDetail parent={selectedParent} />
     ),
-    create: () => <DriverCreate />,
-    update: (selectedDriver: DriverFormatType) => (
-      <DriverUpdate driver={selectedDriver} />
+    create: () => <ParentCreate />,
+    update: (selectedParent: ParentFormatType) => (
+      <ParentUpdate parent={selectedParent} />
     ),
-    lock: (selectedDriver: DriverFormatType) => (
-      <DriverLock driver={selectedDriver} />
+    lock: (selectedParent: ParentFormatType) => (
+      <ParentLock parent={selectedParent} />
     ),
-    changePassword: (selectedDriver: DriverFormatType) => (
-      <DriverChangePassword driver={selectedDriver} />
+    changePassword: (selectedParent: ParentFormatType) => (
+      <ParentChangePassword parent={selectedParent} />
     ),
   };
 
@@ -794,146 +682,146 @@ const DriverPage = () => {
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faChalkboardUser} />
-              &nbsp;{t("driver-manager")}
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
             </span>
           ),
         },
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              {t("driver-list")}
+              {t("parent-list")}
             </span>
           ),
         },
       ]);
-      setCurrentCardTitle(t("driver-list"));
+      setCurrentCardTitle(t("parent-list"));
       setCurrentCardContent("list");
     } else if (currentAction === "detail") {
       setCurrentBreadcrumbItems([
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faChalkboardUser} />
-              &nbsp;{t("driver-manager")}
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
             </span>
           ),
         },
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              {t("driver-list")}
+              {t("parent-list")}
             </span>
           ),
         },
-        { title: <span>{t("driver-detail")}</span> },
+        { title: <span>{t("parent-detail")}</span> },
       ]);
-      setCurrentCardTitle(t("driver-detail"));
+      setCurrentCardTitle(t("parent-detail"));
       setCurrentCardContent("detail");
     } else if (currentAction === "create") {
       setCurrentBreadcrumbItems([
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faChalkboardUser} />
-              &nbsp;{t("driver-manager")}
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
             </span>
           ),
         },
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              {t("driver-list")}
+              {t("parent-list")}
             </span>
           ),
         },
-        { title: <span>{t("driver-create")}</span> },
+        { title: <span>{t("parent-create")}</span> },
       ]);
-      setCurrentCardTitle(t("driver-create"));
+      setCurrentCardTitle(t("parent-create"));
       setCurrentCardContent("create");
     } else if (currentAction === "update") {
       setCurrentBreadcrumbItems([
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faChalkboardUser} />
-              &nbsp;{t("driver-manager")}
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
             </span>
           ),
         },
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              {t("driver-list")}
+              {t("parent-list")}
             </span>
           ),
         },
-        { title: <span>{t("driver-update")}</span> },
+        { title: <span>{t("parent-update")}</span> },
       ]);
-      setCurrentCardTitle(t("driver-update"));
+      setCurrentCardTitle(t("parent-update"));
       setCurrentCardContent("update");
     } else if (currentAction === "lock") {
       setCurrentBreadcrumbItems([
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faChalkboardUser} />
-              &nbsp;{t("driver-manager")}
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
             </span>
           ),
         },
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              {t("driver-list")}
+              {t("parent-list")}
             </span>
           ),
         },
-        { title: <span>{t("driver-lock")}</span> },
+        { title: <span>{t("parent-lock")}</span> },
       ]);
-      setCurrentCardTitle(t("driver-lock"));
+      setCurrentCardTitle(t("parent-lock"));
       setCurrentCardContent("lock");
     } else if (currentAction === "unlock") {
       setCurrentBreadcrumbItems([
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faChalkboardUser} />
-              &nbsp;{t("driver-manager")}
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
             </span>
           ),
         },
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              {t("driver-list")}
+              {t("parent-list")}
             </span>
           ),
         },
-        { title: <span>{t("driver-unlock")}</span> },
+        { title: <span>{t("parent-unlock")}</span> },
       ]);
-      setCurrentCardTitle(t("driver-unlock"));
+      setCurrentCardTitle(t("parent-unlock"));
       setCurrentCardContent("unlock");
     } else if (currentAction === "change-password") {
       setCurrentBreadcrumbItems([
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faChalkboardUser} />
-              &nbsp;{t("driver-manager")}
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
             </span>
           ),
         },
         {
           title: (
             <span onClick={() => setCurrentAction("list")}>
-              {t("driver-list")}
+              {t("parent-list")}
             </span>
           ),
         },
-        { title: <span>{t("driver-change-password")}</span> },
+        { title: <span>{t("parent-change-password")}</span> },
       ]);
-      setCurrentCardTitle(t("driver-change-password"));
+      setCurrentCardTitle(t("parent-change-password"));
       setCurrentCardContent("change-password");
     }
   }, [currentAction]);
@@ -949,12 +837,12 @@ const DriverPage = () => {
         {/* Card */}
         <Card title={currentCardTitle} className="admin-layout__main-card">
           {currentCardContent === "list" && (
-            <div className="driver-data">
+            <div className="parent-data">
               <div className="admin-layout__main-filter">
                 <div className="left">
                   <Input
                     prefix={<SearchOutlined />}
-                    placeholder="Tìm theo họ và tên tài xế"
+                    placeholder="Tìm theo họ và tên phụ huynh"
                     //   value={searchText}
                     //   onChange={(e) => setSearchText(e.target.value)}
                     className="filter-find"
@@ -990,33 +878,33 @@ const DriverPage = () => {
                     icon={<PlusOutlined />}
                     onClick={() => setCurrentAction("create")}
                   >
-                    {t("driver-create")}
+                    {t("parent-create")}
                   </Button>
                 </div>
               </div>
-              <CustomTableActions<DriverFormatType>
+              <CustomTableActions<ParentFormatType>
                 columns={columns}
                 data={demoData || []}
                 rowKey={(record) => String(record?.id)}
                 // loading={isLoading}
                 defaultPageSize={10}
-                className="admin-layout__main-table table-data drivers"
+                className="admin-layout__main-table table-data parents"
               />
             </div>
           )}
           {currentCardContent === "detail" &&
-            DriverActions.detail(currentSelectedItem!)}
-          {currentCardContent === "create" && DriverActions.create()}
+            ParentActions.detail(currentSelectedItem!)}
+          {currentCardContent === "create" && ParentActions.create()}
           {currentCardContent === "update" &&
-            DriverActions.update(currentSelectedItem!)}
+            ParentActions.update(currentSelectedItem!)}
           {(currentCardContent === "lock" || currentCardContent === "unlock") &&
-            DriverActions.lock(currentSelectedItem!)}
+            ParentActions.lock(currentSelectedItem!)}
           {currentCardContent === "change-password" &&
-            DriverActions.changePassword(currentSelectedItem!)}
+            ParentActions.changePassword(currentSelectedItem!)}
         </Card>
       </div>
     </>
   );
 };
 
-export default DriverPage;
+export default ParentPage;

@@ -8,8 +8,13 @@
   }
 
   &.students td img {
-    @include size(90%, 100px);
+    @include size(100%, 100px);
     // border-radius: 2px;
+  }
+
+  &:is(.drivers, .parents) td img {
+    @include size(40px);
+    border-radius: 50%;
   }
 
   & td.actions div {

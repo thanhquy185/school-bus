@@ -17,7 +17,6 @@ import {
 import {
   SearchOutlined,
   ReloadOutlined,
-  PlusOutlined,
 } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -25,17 +24,21 @@ import {
   faLock,
   faLockOpen,
   faPenToSquare,
+  faPlus,
   faUserGraduate,
 } from "@fortawesome/free-solid-svg-icons";
 import type { RcFile } from "antd/es/upload";
+import type { ColumnsType } from "antd/es/table";
 import type {
   BreadcrumbItemType,
   BreadcrumbSeparatorType,
 } from "antd/es/breadcrumb/Breadcrumb";
 import { ruleRequired } from "../../common/rules";
-import { CustomPaginationProps } from "../../common/prop";
 import { CommonGenderValue, CommonStatusValue } from "../../common/values";
-import type { StudentType } from "../../common/types";
+import type {
+  StudentFormatType,
+  StudentNotFormatType,
+} from "../../common/types";
 import CustomUpload from "../../components/upload";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
@@ -49,42 +52,64 @@ const StudentPage = () => {
   // Notification
   const { openNotification } = useNotification();
 
-  // Cấu hình bảng dữ liệu
-  const demoData: StudentType[] = [
+  // Cấu hình bảng dữ liệu (sau cập nhật lọc giới tính, phụ huynh, trạm và lớp)
+  const demoData: StudentFormatType[] = [
     {
       id: "1",
+      parent: {
+        id: 1,
+        fullname: "Phụ huynh 1",
+      },
+      pickup: {
+        id: 1,
+        name: "Trạm 1",
+      },
+      class: {
+        id: 1,
+        name: "Lớp 10A1",
+      },
       avatar: "test-1.png",
       fullname: "Học sinh 1",
       birthday: "01/01/2025",
       gender: "Nam",
-      class: "10C2",
       address: "Địa chỉ ở đâu không biết",
       status: "Hoạt động",
     },
     {
       id: "2",
+      parent: {
+        id: 2,
+        fullname: "Phụ huynh 2",
+      },
+      pickup: {
+        id: 2,
+        name: "Trạm 2",
+      },
+      class: {
+        id: 2,
+        name: "Lớp 10A2",
+      },
       avatar: "test-2.png",
       fullname: "Học sinh 2",
       birthday: "02/02/2025",
       gender: "Nam",
-      class: "20C2",
       address: "Địa chỉ ở đâu không biết",
       status: "Tạm dừng",
     },
   ];
-  const columns = [
+  const columns: ColumnsType<StudentFormatType> = [
     {
       title: "#",
       dataIndex: "id",
       key: "id",
-      sorter: true,
-      width: "10%",
+      width: "8%",
+      sorter: (a, b) => a?.id!.localeCompare(b?.id!),
     },
     {
       title: "Hình ảnh",
       dataIndex: "avatar",
       key: "avatar",
-      width: "10%",
+      width: "8%",
       render: (avatar: string) => (
         <Image
           src={
@@ -100,22 +125,36 @@ const StudentPage = () => {
       title: "Họ và tên",
       dataIndex: "fullname",
       key: "fullname",
-      sorter: true,
-      width: "40%",
+      width: "20%",
+      sorter: (a, b) => a?.fullname!.localeCompare(b?.fullname!),
     },
     {
       title: "Giới tính",
       dataIndex: "gender",
       key: "gender",
-      sorter: true,
-      width: "10%",
+      width: "8%",
+      sorter: (a, b) => a?.gender!.localeCompare(b?.gender!),
+    },
+    {
+      title: "Phụ huynh",
+      key: "parent",
+      width: "14%",
+      render: (record: StudentFormatType) =>
+        "#" + record.parent?.id + " - " + record.parent?.fullname,
+    },
+    {
+      title: "Trạm",
+      key: "pickup",
+      width: "14%",
+      render: (record: StudentFormatType) =>
+        "#" + record.pickup?.id + " - " + record.pickup?.name,
     },
     {
       title: "Lớp",
-      dataIndex: "class",
       key: "class",
-      sorter: true,
-      width: "10%",
+      width: "8%",
+      render: (record: StudentFormatType) =>
+        "#" + record.class?.id + " - " + record.class?.name,
     },
     {
       title: "Trạng thái",
@@ -174,20 +213,10 @@ const StudentPage = () => {
       className: "actions",
     },
   ];
-  const {
-    currentItems,
-    handleTableChange,
-    paginationProps,
-    sortField,
-    sortOrder,
-  } = CustomPaginationProps(
-    demoData || [],
-    10,
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-  );
 
   // State giữ đối tượng được chọn hiện tại
-  const [currentSelectedItem, setCurrentSelectedItem] = useState<StudentType>();
+  const [currentSelectedItem, setCurrentSelectedItem] =
+    useState<StudentFormatType>();
   // State giữ hành động hiện tại
   const [currentAction, setCurrentAction] = useState<string>("list");
   // State giữ breadcrumb items hiện tại
@@ -203,25 +232,31 @@ const StudentPage = () => {
   const defaultLabels = {
     id: "Mã học sinh",
     avatar: "Ảnh đại diện",
+    parent: "Phụ huynh",
+    pickup: "Trạm xe buýt",
+    class: "Lớp",
     fullname: "Họ và tên",
     birthday: "Ngày sinh",
     gender: "Giới tính",
-    class: "Lớp",
     address: "Địa chỉ",
     status: "Trạng thái",
   };
   const defaultInputs = {
     id: "Nhập Mã học sinh",
+    parent: "Chọn Phụ huynh",
+    pickup: "Chọn Trạm xe buýt",
+    class: "Chọn Lớp",
     avatar: "Tải ảnh lên",
     fullname: "Nhập Họ và tên",
     birthday: "Chọn Ngày sinh",
     gender: "Chọn Giới tính",
-    class: "Chọn Lớp",
     address: "Nhập Địa chỉ",
     status: "Chọn Trạng thái",
   };
-  const StudentDetail: React.FC<{ student: StudentType }> = ({ student }) => {
-    const [form] = Form.useForm<StudentType>();
+  const StudentDetail: React.FC<{ student: StudentFormatType }> = ({
+    student,
+  }) => {
+    const [form] = Form.useForm<StudentNotFormatType>();
 
     return (
       <>
@@ -231,11 +266,13 @@ const StudentPage = () => {
             layout="vertical"
             initialValues={{
               id: student.id || undefined,
+              parent: student.parent?.id || undefined,
+              pickup: student.pickup?.id || undefined,
+              class: student.class?.id || undefined,
               avatar: student.avatar || undefined,
               fullname: student.fullname || undefined,
               birthday: student.birthday ? dayjs(student.birthday) : undefined,
               gender: student.gender || undefined,
-              class: student.class || undefined,
               address: student.address || undefined,
               status: student.status || undefined,
             }}
@@ -261,6 +298,18 @@ const StudentPage = () => {
               <Col>
                 <Form.Item name="id" label={defaultLabels.id}>
                   <Input disabled />
+                </Form.Item>
+                <Form.Item name="parent" label={defaultLabels.parent}>
+                  <Select
+                    options={[
+                      {
+                        label:
+                          student.parent?.id + " - " + student.parent?.fullname,
+                        value: student.parent?.id,
+                      },
+                    ]}
+                    disabled
+                  />
                 </Form.Item>
                 <Form.Item
                   name="fullname"
@@ -293,11 +342,31 @@ const StudentPage = () => {
                 <Form.Item name="status" label={defaultLabels.status}>
                   <Select disabled />
                 </Form.Item>
+                <Form.Item name="pickup" label={defaultLabels.pickup}>
+                  <Select
+                    options={[
+                      {
+                        label:
+                          student.pickup?.id + " - " + student.pickup?.name,
+                        value: student.pickup?.id,
+                      },
+                    ]}
+                    disabled
+                  />
+                </Form.Item>
                 <Form.Item label="." className="hidden">
                   <Input />
                 </Form.Item>
                 <Form.Item name="class" label={defaultLabels.class}>
-                  <Select disabled />
+                  <Select
+                    options={[
+                      {
+                        label: student.class?.id + " - " + student.class?.name,
+                        value: student.class?.id,
+                      },
+                    ]}
+                    disabled
+                  />
                 </Form.Item>
               </Col>
             </Row>
@@ -307,7 +376,7 @@ const StudentPage = () => {
     );
   };
   const StudentCreate: React.FC = () => {
-    const [form] = Form.useForm<StudentType>();
+    const [form] = Form.useForm<StudentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
 
     useEffect(() => {
@@ -322,11 +391,13 @@ const StudentPage = () => {
             layout="vertical"
             initialValues={{
               id: undefined,
+              parent: undefined,
+              pickup: undefined,
+              class: undefined,
               avatar: undefined,
               fullname: undefined,
               birthday: undefined,
               gender: undefined,
-              class: undefined,
               address: undefined,
               status: undefined,
             }}
@@ -362,6 +433,29 @@ const StudentPage = () => {
                   rules={[ruleRequired("Mã học sinh không được để trống !")]}
                 >
                   <Input id="create-id" placeholder={defaultInputs.id} />
+                </Form.Item>
+                <Form.Item
+                  name="parent"
+                  htmlFor="create-parent"
+                  label={defaultLabels.parent}
+                  rules={[ruleRequired("Phụ huynh không được để trống !")]}
+                >
+                  <Select
+                    showSearch
+                    allowClear
+                    id="create-parent"
+                    placeholder={defaultInputs.parent}
+                    options={[
+                      {
+                        label: "#1 - Họ tên phụ huynh 1 - SĐT 1",
+                        value: 1,
+                      },
+                      {
+                        label: "#2 - Họ tên phụ huynh 2 - SĐT 2",
+                        value: 2,
+                      },
+                    ]}
+                  />
                 </Form.Item>
                 <Form.Item
                   name="fullname"
@@ -452,6 +546,29 @@ const StudentPage = () => {
                     ]}
                   />
                 </Form.Item>
+                <Form.Item
+                  name="pickup"
+                  htmlFor="create-pickup"
+                  label={defaultLabels.pickup}
+                  rules={[ruleRequired("Trạm xe buýt không được để trống !")]}
+                >
+                  <Select
+                    showSearch
+                    allowClear
+                    id="create-pickup"
+                    placeholder={defaultInputs.pickup}
+                    options={[
+                      {
+                        label: "#1 - Trạm 1123",
+                        value: 1,
+                      },
+                      {
+                        label: "#2 - Trạm 12418",
+                        value: 2,
+                      },
+                    ]}
+                  />
+                </Form.Item>
                 <Form.Item label="." className="hidden">
                   <Input />
                 </Form.Item>
@@ -468,12 +585,12 @@ const StudentPage = () => {
                     placeholder={defaultInputs.class}
                     options={[
                       {
-                        label: "Lớp 10C2",
-                        value: "Lớp 10C2",
+                        label: "Lớp 10C1",
+                        value: 1,
                       },
                       {
                         label: "Lớp 12A1",
-                        value: "Lớp 12A1",
+                        value: 2,
                       },
                     ]}
                   />
@@ -494,8 +611,10 @@ const StudentPage = () => {
       </>
     );
   };
-  const StudentUpdate: React.FC<{ student: StudentType }> = ({ student }) => {
-    const [form] = Form.useForm<StudentType>();
+  const StudentUpdate: React.FC<{ student: StudentFormatType }> = ({
+    student,
+  }) => {
+    const [form] = Form.useForm<StudentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
 
     useEffect(() => {
@@ -504,17 +623,19 @@ const StudentPage = () => {
 
     return (
       <>
-        <div className="student-content create">
+        <div className="student-content update">
           <Form
             form={form}
             layout="vertical"
             initialValues={{
               id: student.id || undefined,
+              parent: student.parent?.id || undefined,
+              pickup: student.pickup?.id || undefined,
+              class: student.class?.id || undefined,
               avatar: student.avatar || undefined,
               fullname: student.fullname || undefined,
               birthday: student.birthday ? dayjs(student.birthday) : undefined,
               gender: student.gender || undefined,
-              class: student.class || undefined,
               address: student.address || undefined,
               status: student.status || undefined,
             }}
@@ -526,7 +647,7 @@ const StudentPage = () => {
               <Col>
                 <Form.Item
                   name="avatar"
-                  htmlFor="create-avatar"
+                  htmlFor="update-avatar"
                   label={defaultLabels.avatar}
                   valuePropName="fileList"
                   rules={[ruleRequired("Ảnh đại diện không được để trống !")]}
@@ -538,7 +659,7 @@ const StudentPage = () => {
                     imageFile={imageFile}
                     setImageFile={setImageFile}
                     alt="image-preview"
-                    htmlFor="create-avatar"
+                    htmlFor="update-avatar"
                     imageCategoryName="students"
                     imageClassName="image-preview"
                     uploadClassName="image-uploader"
@@ -551,14 +672,37 @@ const StudentPage = () => {
                   <Input disabled />
                 </Form.Item>
                 <Form.Item
+                  name="parent"
+                  htmlFor="update-parent"
+                  label={defaultLabels.parent}
+                  rules={[ruleRequired("Phụ huynh không được để trống !")]}
+                >
+                  <Select
+                    showSearch
+                    allowClear
+                    id="update-parent"
+                    placeholder={defaultInputs.parent}
+                    options={[
+                      {
+                        label: "#1 - Họ tên phụ huynh 1 - SĐT 1",
+                        value: 1,
+                      },
+                      {
+                        label: "#2 - Họ tên phụ huynh 2 - SĐT 2",
+                        value: 2,
+                      },
+                    ]}
+                  />
+                </Form.Item>
+                <Form.Item
                   name="fullname"
-                  htmlFor="create-fullname"
+                  htmlFor="update-fullname"
                   label={defaultLabels.fullname}
                   className="multiple-2"
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                 >
                   <Input
-                    id="create-fullname"
+                    id="update-fullname"
                     placeholder={defaultInputs.fullname}
                   />
                 </Form.Item>
@@ -566,14 +710,14 @@ const StudentPage = () => {
                   <Col>
                     <Form.Item
                       name="birthday"
-                      htmlFor="create-birthday"
+                      htmlFor="update-birthday"
                       label={defaultLabels.birthday}
                       rules={[ruleRequired("Cần chọn Ngày sinh !")]}
                     >
                       <DatePicker
                         allowClear
                         mode="date"
-                        id="create-birthday"
+                        id="update-birthday"
                         placeholder={defaultInputs.birthday}
                       />
                     </Form.Item>
@@ -581,13 +725,13 @@ const StudentPage = () => {
                   <Col>
                     <Form.Item
                       name="gender"
-                      htmlFor="create-gender"
+                      htmlFor="update-gender"
                       label={defaultLabels.gender}
                       rules={[ruleRequired("Cần chọn Giới tính !")]}
                     >
                       <Select
                         allowClear
-                        id="create-gender"
+                        id="update-gender"
                         placeholder={defaultInputs.gender}
                         options={[
                           {
@@ -605,13 +749,13 @@ const StudentPage = () => {
                 </Row>
                 <Form.Item
                   name="address"
-                  htmlFor="create-address"
+                  htmlFor="update-address"
                   label={defaultLabels.address}
                   className="multiple-2"
                   rules={[ruleRequired("Địa chỉ không được để trống !")]}
                 >
                   <Input
-                    id="create-address"
+                    id="update-address"
                     placeholder={defaultInputs.address}
                   />
                 </Form.Item>
@@ -620,28 +764,51 @@ const StudentPage = () => {
                 <Form.Item name="status" label={defaultLabels.status}>
                   <Select disabled />
                 </Form.Item>
+                <Form.Item
+                  name="pickup"
+                  htmlFor="update-pickup"
+                  label={defaultLabels.pickup}
+                  rules={[ruleRequired("Trạm xe buýt không được để trống !")]}
+                >
+                  <Select
+                    showSearch
+                    allowClear
+                    id="update-pickup"
+                    placeholder={defaultInputs.pickup}
+                    options={[
+                      {
+                        label: "#1 - Trạm 1",
+                        value: 1,
+                      },
+                      {
+                        label: "#2 - Trạm 2",
+                        value: 2,
+                      },
+                    ]}
+                  />
+                </Form.Item>
                 <Form.Item label="." className="hidden">
                   <Input />
                 </Form.Item>
                 <Form.Item
                   name="class"
-                  htmlFor="create-class"
+                  htmlFor="update-class"
                   label={defaultLabels.class}
                   rules={[ruleRequired("Lớp không được để trống !")]}
                 >
                   <Select
                     showSearch
                     allowClear
-                    id="create-class"
+                    id="update-class"
                     placeholder={defaultInputs.class}
                     options={[
                       {
-                        label: "Lớp 10C2",
-                        value: "Lớp 10C2",
+                        label: "#1 - Lớp 1",
+                        value: 1,
                       },
                       {
-                        label: "Lớp 12A1",
-                        value: "Lớp 12A1",
+                        label: "#2 - Lớp 2",
+                        value: 2,
                       },
                     ]}
                   />
@@ -662,7 +829,9 @@ const StudentPage = () => {
       </>
     );
   };
-  const StudentLock: React.FC<{ student: StudentType }> = ({ student }) => {
+  const StudentLock: React.FC<{ student: StudentFormatType }> = ({
+    student,
+  }) => {
     return (
       <>
         <Alert
@@ -673,7 +842,7 @@ const StudentPage = () => {
             " - " +
             student?.fullname +
             " - " +
-            student?.class
+            student?.class?.name
           }
           showIcon
           icon={
@@ -714,14 +883,14 @@ const StudentPage = () => {
     );
   };
   const StudentActions = {
-    detail: (selectedStudent: StudentType) => (
+    detail: (selectedStudent: StudentFormatType) => (
       <StudentDetail student={selectedStudent} />
     ),
     create: () => <StudentCreate />,
-    update: (selectedStudent: StudentType) => (
+    update: (selectedStudent: StudentFormatType) => (
       <StudentUpdate student={selectedStudent} />
     ),
-    lock: (selectedStudent: StudentType) => (
+    lock: (selectedStudent: StudentFormatType) => (
       <StudentLock student={selectedStudent} />
     ),
   };
@@ -880,8 +1049,14 @@ const StudentPage = () => {
                   allowClear
                   placeholder="Chọn Trạng thái"
                   options={[
-                    { label: CommonStatusValue.active, value: CommonStatusValue.active },
-                    { label: CommonStatusValue.inactive, value: CommonStatusValue.inactive },
+                    {
+                      label: CommonStatusValue.active,
+                      value: CommonStatusValue.active,
+                    },
+                    {
+                      label: CommonStatusValue.inactive,
+                      value: CommonStatusValue.inactive,
+                    },
                   ]}
                   className="filter-select"
                 />
@@ -898,20 +1073,20 @@ const StudentPage = () => {
               <div className="right">
                 <Button
                   type="primary"
-                  icon={<PlusOutlined />}
+                  icon={<FontAwesomeIcon icon={faPlus}/>}
                   onClick={() => setCurrentAction("create")}
                 >
                   {t("student-create")}
                 </Button>
               </div>
             </div>
-            <CustomTableActions
+            <CustomTableActions<StudentFormatType>
               columns={columns}
-              rowKey={(record) => record?.id!}
-              data={currentItems}
-              pagination={paginationProps}
+              data={demoData || []}
+              rowKey={(record) => String(record?.id)}
+              // loading={isLoading}
+              defaultPageSize={10}
               className="admin-layout__main-table table-data students"
-              onChange={handleTableChange}
             />
           </div>
         )}

@@ -56,6 +56,7 @@ const LoginPage = () => {
             <Button type="primary" htmlType="submit">
               Đăng nhập
             </Button>
+            <a href="javascrip:void(0)">Quên mật khẩu</a>
           </Form>
         </div>
       </div>

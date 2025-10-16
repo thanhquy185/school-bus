@@ -1,11 +1,15 @@
 @use "../abstracts/mixins" as *;
 
-.ant-notification {
-  z-index: 9999;
+.ant-select-dropdown,
+.ant-notification,
+.ant-image-preview-wrap,
+.ant-image-preview,
+.ant-image-preview-operations-wrapper {
+  z-index: 9999 !important;
 }
 
 .ant-drawer {
-  z-index: 9900;
+  z-index: 1000;
 }
 
 .ant-dropdown {
@@ -61,10 +65,6 @@
 
   & > .ant-row.split-3 > .ant-col {
     width: calc(100% / 3) !important;
-
-    @media (max-width: 768px) {
-      width: 100% !important;
-    }
   }
 
   & .ant-form-item {
@@ -78,26 +78,6 @@
   & .ant-form-item.multiple-2 {
     width: calc(100% * 2 + $form-spacing);
     z-index: 100;
-  }
-
-  .student-content & > .ant-row > .ant-col:nth-of-type(1) {
-    @media (max-width: 768px) {
-      width: 100% !important;
-    }
-  }
-
-  .student-content & > .ant-row > .ant-col:nth-of-type(2) {
-    @media (max-width: 768px) {
-      width: 50% !important;
-      margin-top: 114px;
-    }
-  }
-
-  .student-content & > .ant-row > .ant-col:nth-of-type(3) {
-    @media (max-width: 768px) {
-      width: 50% !important;
-      margin-top: 114px;
-    }
   }
 
   // Label, Input and Select...
@@ -126,6 +106,7 @@
   &
     :is(
       input,
+      .ant-input-number,
       .ant-select,
       .ant-select-selector,
       .ant-select-selection-placeholder,
@@ -138,6 +119,14 @@
 
   & .ant-form-item-label {
     @include size(100%, $form-label-height);
+  }
+
+  & .ant-form-item.text-center input {
+    text-align: center;
+  }
+
+  & .ant-input-number {
+    width: 100%;
   }
 
   & :is(.ant-select-arrow svg, .ant-select-clear svg) {
@@ -155,6 +144,16 @@
     margin-top: 24px;
     margin-left: 50%;
     transform: translateX(-50%);
+  }
+
+  :is(.driver-content, .parent-content:not(.client), .student-content)
+    &
+    :is(.ant-image, img.image-preview, .ant-image-mask) {
+    margin-top: 48px;
+  }
+
+  .client-layout__info & :is(.ant-image, img.image-preview, .ant-image-mask) {
+    width: 58%;
   }
 
   & img.image-preview {
@@ -176,6 +175,18 @@
     width: 100%;
   }
 
+  :is(.driver-content, .parent-content:not(.client), .student-content)
+    &
+    .ant-upload {
+    top: calc(
+      calc(
+          calc(
+              $form-item-margin-bottom + $form-label-height + $form-input-height
+            ) * 4
+        ) / 2
+    );
+  }
+
   & .ant-upload button {
     @include size(100%, $form-input-height);
     font-size: 1.6rem;
@@ -190,6 +201,23 @@
     left: calc($form-spacing / 2);
   }
 
+  :is(.driver-content, .parent-content:not(.client), .student-content)
+    &
+    .ant-form-item-control:has(.ant-upload)
+    .ant-form-item-additional {
+    top: calc(
+      calc($form-item-margin-bottom + $form-label-height) * 4 +
+        calc($form-input-height * 5)
+    );
+  }
+
+  :is(.driver-content, .parent-content) .ant-upload button {
+    top: calc(
+      calc($form-item-margin-bottom + $form-label-height) * 4 +
+        calc($form-input-height * 5)
+    ) !important;
+  }
+
   & .ant-form-item.hidden {
     visibility: hidden;
   }
@@ -197,51 +225,183 @@
   & .buttons {
     @include flexCenter();
     margin-top: 30px;
+    gap: 10px;
   }
 
-  & .submit-button {
-    @include size(100%, 35px);
+  & .buttons button {
+    height: 35px;
     font-size: 1.4rem;
-    font-weight: 600;
+    font-weight: 500;
   }
 
-  & .relation-students {
-    padding-top: 10px;
-    border-top: 1px solid #dedede;
+  & .buttons button:first-of-type {
+    width: 80%;
   }
 
-  & .relation-student  {
+  & .buttons button:last-of-type {
+    width: 20%;
+  }
+
+  & .buttons :is(.submit-button, button.only) {
+    width: 100%;
+  }
+
+  &-item {
+    position: relative;
+  }
+
+  .route-content &-item :is(.buttons, .buttons button) {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: #e7f5ff;
-    padding: 10px;
-    border-radius: 8px;
   }
 
-  & .relation-student img {
-    @include size(45px);
-    border-radius: 50%;
+  .route-content &-item .buttons {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    margin-top: 0;
   }
 
-  & .relation-student b {
-    font-size: 1.5rem;
-    font-weight: 600;
+  .route-content &-item .buttons button {
+    gap: 4px;
+    @include size(100% !important, auto !important);
+    padding: 4px 10px;
+    font-size: 1.2rem;
   }
 
-  & .relation-student p {
-    color: #777;
-    font-size: 1.3rem;
+  .bus-content & .buttons,
+  :is(.driver-content, .parent-content).change-password & .buttons {
+    margin-top: calc($form-item-margin-bottom + 30px) !important;
   }
 
-   & .relation-student button {
-     @include size(30px !important);
-     padding: 0;
-    margin-left: auto;
-   }
+  .ant-drawer
+    .parent-content
+    &
+    :is(.ant-image, img.image-preview, .ant-image-mask) {
+    margin-top: 14px !important;
+  }
 
-  & .relation-student:not(:first-of-type) {
+  .ant-drawer .parent-content & .ant-upload {
+    top: 130px !important;
+  }
+
+  .ant-drawer .parent-content & .ant-form-item:nth-of-type(2) {
+    margin-top: 114px;
+  }
+
+  :is(.route-content, .pickup-content) &:has(.has-map) #leaflet-map {
+    height: calc(
+      calc($form-item-margin-bottom + $form-label-height) * 4 +
+        calc($form-input-height * 5)
+    ) !important;
+  }
+
+  .route-content &:has(.has-map.has-select) .select-pickup {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .route-content
+    &:has(.has-map.has-select)
+    .select-pickup
+    :is(
+      .ant-select,
+      .ant-select-selector,
+      .ant-select-selection-wrap,
+      .ant-select-selection-placeholder,
+      .ant-select-selection-search-input,
+      .ant-select-selection-item,
+      button
+    ) {
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 1.4rem !important;
+  }
+
+  .route-content &:has(.has-map.has-select) .select-pickup .ant-select {
+    width: calc(80% - calc(6px / 2));
+  }
+
+  .route-content &:has(.has-map.has-select) .select-pickup button {
+    width: calc(20% - calc(6px / 2));
+    font-size: 1.2rem !important;
+  }
+
+  .route-content &:has(.has-map.has-select) #leaflet-map {
+    height: calc(
+      calc($form-item-margin-bottom + $form-label-height) * 4 +
+        calc($form-input-height * 5) - $form-input-height - 6px
+    ) !important;
     margin-top: 6px;
+  }
+
+  // Mobile
+  @media (max-width: 767.98px) {
+    & > .ant-row:is(.split-2, .split-3) > .ant-col {
+      width: 100% !important;
+    }
+
+    :is(.parent-content:not(.client-account), .student-content)
+      &
+      > .ant-row.split-2
+      > .ant-col:nth-of-type(2) {
+      margin-top: 124px;
+    }
+
+    .parent-content.client-account & .ant-form-item.multiple-2 {
+      width: 100%;
+    }
+
+    :is(.driver-content, .parent-content, .student-content)
+      &
+      > .ant-row.split-3
+      > .ant-col:nth-of-type(2) {
+      width: 50% !important;
+      margin-top: 124px;
+    }
+
+    :is(.driver-content, .parent-content, .student-content)
+      &
+      > .ant-row.split-3
+      > .ant-col:nth-of-type(3) {
+      width: 50% !important;
+      margin-top: 124px;
+    }
+
+    :is(.driver-content, .parent-content, .student-content)
+      &
+      :is(.ant-image, img.image-preview, .ant-image-mask) {
+      margin-top: 24px;
+    }
+
+    :is(.driver-content, .parent-content, .student-content) & .ant-upload {
+      top: calc(
+        calc(
+            calc(
+                $form-item-margin-bottom + $form-label-height +
+                  $form-input-height
+              ) * 3
+          ) / 2
+      );
+    }
+
+    :is(.driver-content, .parent-content, .student-content)
+      &
+      .ant-form-item-control:has(.ant-upload)
+      .ant-form-item-additional {
+      top: calc(
+        calc($form-item-margin-bottom + $form-label-height) * 3 +
+          calc($form-input-height * 4)
+      );
+    }
+
+    .client-layout__info & :is(.ant-image, img.image-preview, .ant-image-mask) {
+      width: 70%;
+    }
   }
 }
 

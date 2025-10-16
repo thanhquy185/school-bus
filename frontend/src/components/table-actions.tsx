@@ -1,49 +1,55 @@
-import React from "react";
+import React, { useState } from "react";
 import { Table } from "antd";
-import type { TablePaginationConfig, TableProps } from "antd";
-import type { SorterResult } from "antd/es/table/interface";
+import type { TablePaginationConfig, TableProps, ColumnsType } from "antd/es/table";
 
-// Generic component: T là kiểu dữ liệu mỗi dòng
-type CustomTableActionsProps<T> = {
-  columns: TableProps<T>["columns"];
-  rowKey: (record: T) => React.Key;
+type CustomTableProps<T> = {
+  columns: ColumnsType<T>;
   data: T[];
+  rowKey?: string | ((record: T) => React.Key); // cho phép tự định nghĩa
   loading?: boolean;
-  pagination?: {
-    current?: number;
-    pageSize?: number;
-    total?: number;
-    showSizeChanger?: boolean;
-    pageSizeOptions?: number[];
-  };
+  defaultPageSize?: number;
+  pageSizeOptions?: number[];
   className?: string;
-  onChange?: (
-    pagination: TablePaginationConfig,
-    _filters: any,
-    sorter: SorterResult<T> | SorterResult<T>[]
-  ) => void;
 };
 
-const CustomTableActions = <T,>({
+function CustomTable<T>({
   columns,
-  rowKey,
-  loading = false,
   data,
-  pagination,
+  rowKey = "id", // mặc định là "id", nhưng có thể override
+  loading = false,
+  defaultPageSize = 10,
+  pageSizeOptions = [10, 20, 30, 40, 50, 100],
   className,
-  onChange,
-}: CustomTableActionsProps<T>) => {
+}: CustomTableProps<T>) {
+  const [pagination, setPagination] = useState<TablePaginationConfig>({
+    current: 1,
+    pageSize: defaultPageSize,
+  });
+
+  const handleTableChange: TableProps<T>["onChange"] = (newPagination) => {
+    setPagination({
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+    });
+  };
+
   return (
     <Table<T>
       columns={columns}
-      rowKey={rowKey}
       dataSource={data}
+      rowKey={rowKey}
       loading={loading}
-      pagination={pagination}
+      pagination={{
+        ...pagination,
+        showSizeChanger: true,
+        pageSizeOptions,
+        showTotal: (total, range) =>
+          `${range[0]}-${range[1]} trong tổng số ${total} bản ghi`,
+      }}
+      onChange={handleTableChange}
       className={className}
-      onChange={onChange}
     />
   );
-};
+}
 
-export default CustomTableActions;
+export default CustomTable;
