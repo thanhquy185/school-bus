@@ -34,7 +34,9 @@ import type {
 import { ruleRequired } from "../../common/rules";
 import { CommonStatusValue, PointTypeValue } from "../../common/values";
 import type { PickupType } from "../../common/types";
-import LeafletMap, { type HandlePickupSelectedProps } from "../../components/leaflet-map";
+import LeafletMap, {
+  type HandleSelectedPickupProps,
+} from "../../components/leaflet-map";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
 
@@ -267,16 +269,20 @@ const PickupPage = () => {
   const PickupCreate: React.FC = () => {
     const [form] = Form.useForm<PickupType>();
     // Dữ liệu giúp đồng nhất với bản đồ
-    const [categoryValue, setCategoryValue] = useState<string>("");
-    const [latValue, setLatValue] = useState<number>(0);
-    const [lngValue, setLngValue] = useState<number>(0);
+    const [latValue, setLatValue] = useState<number | undefined>(undefined);
+    const [lngValue, setLngValue] = useState<number | undefined>(undefined);
+    const [categoryValue, setCategoryValue] = useState<string | undefined>(undefined);
 
-    const handlePickupSelected = ({lat, lng, info}: HandlePickupSelectedProps) => {
+    const handleSelectedPickup = ({
+      lat,
+      lng,
+      info,
+    }: HandleSelectedPickupProps) => {
       setLatValue(lat!);
       setLngValue(lng!);
       form.setFieldValue("lat", lat);
       form.setFieldValue("lng", lng);
-      console.log(info)
+      console.log(info);
     };
 
     return (
@@ -402,11 +408,11 @@ const PickupPage = () => {
                   className="has-map multiple-2"
                 >
                   <LeafletMap
-                    pointType={categoryValue}
                     lat={latValue}
                     lng={lngValue}
+                    pointType={categoryValue}
                     type="select"
-                    handlePickupSelected={handlePickupSelected}
+                    handleSelectedPickup={handleSelectedPickup}
                   />
                 </Form.Item>
               </Col>
@@ -435,7 +441,11 @@ const PickupPage = () => {
     const [latValue, setLatValue] = useState<number>(pickup.lat || 0);
     const [lngValue, setLngValue] = useState<number>(pickup.lng || 0);
 
-    const handlePickupSelected = ({lat, lng, info}: HandlePickupSelectedProps) => {
+    const handleSelectedPickup = ({
+      lat,
+      lng,
+      info,
+    }: HandleSelectedPickupProps) => {
       setLatValue(lat!);
       setLngValue(lng!);
       form.setFieldValue("lat", lat);
@@ -550,7 +560,7 @@ const PickupPage = () => {
                     lat={latValue}
                     lng={lngValue}
                     type="select"
-                    handlePickupSelected={handlePickupSelected}
+                    handleSelectedPickup={handleSelectedPickup}
                   />
                 </Form.Item>
               </Col>

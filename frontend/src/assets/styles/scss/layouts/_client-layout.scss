@@ -6,6 +6,7 @@
   $vertical-padding: 20px;
   $header-height: 80px;
   $main-info-menu-width: 20%;
+  $parent-block-height: 620px;
 
   &__header {
     position: relative;
@@ -181,7 +182,7 @@
   }
 
   &__main .ant-card-head-title {
-    font-size: 1.8rem;
+    font-size: 2.2rem;
   }
 
   &__info {
@@ -215,6 +216,130 @@
     width: 100%;
   }
 
+  &__journey .row {
+    gap: $vertical-padding;
+  }
+
+  &__journey .tabs-wrapper {
+    width: calc(70% - calc($vertical-padding / 2));
+  }
+
+  &__journey .tabs-wrapper .ant-tabs-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 1.6rem;
+  }
+
+  &__journey .tabs-wrapper .ant-tabs-tab-active {
+    border-color: #1677ff;
+  }
+
+  &__journey .tabs-wrapper .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #1677ff;
+  }
+
+  // &__journey .tabs-wrapper .map-info {
+  //   height: 200px;
+  //   border: 1px solid #dedede;
+  //   border-radius: 6px;
+  // }
+
+  &__journey .tabs-wrapper .leaflet-map {
+    height: $parent-block-height !important;
+  }
+
+  // &__journey .tabs-wrapper:has(.map-infos) .leaflet-map {
+  //   height: calc($parent-block-height - 200px - calc($vertical-padding / 2)) !important;
+  //   margin-top: calc($vertical-padding / 2);
+  // }
+
+  &__journey .tabs-wrapper .route-infos {
+    height: $parent-block-height;
+    background: red;
+  }
+
+  &__journey .tabs-wrapper .notification-tags-wrapper {
+    overflow: auto;
+    height: $parent-block-height;
+  }
+
+  &__journey .tabs-wrapper .notification-tags {
+    display: flex;
+    flex-direction: column;
+    gap: calc($vertical-padding / 2);
+  }
+
+  &__journey .tabs-wrapper .notification-tag {
+    width: 100%;
+    padding: 16px;
+  }
+
+  &__journey .tabs-wrapper .notification-tag .title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+
+  &__journey .tabs-wrapper .notification-tag .title img {
+    @include size(20px);
+  }
+
+  &__journey .tabs-wrapper .notification-tag .description {
+    font-size: 1.6rem;
+    margin-top: 6px;
+  }
+
+  &__journey .students-wrapper {
+    width: calc(30% - calc($vertical-padding / 2));
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+  }
+
+  &__journey .students-wrapper .ant-list {
+    border-radius: 6px;
+  }
+
+  &__journey .students-wrapper .ant-list-item {
+    padding: 10px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease-in-out;
+    cursor: pointer;
+  }
+
+  &__journey .students-wrapper .ant-list-item:hover {
+    background: #f5f5f5;
+  }
+
+  &__journey .students-wrapper .ant-list-item.active {
+    background: #ffe08a;
+    // background: #e6f7ff;
+  }
+
+  &__journey
+    .students-wrapper
+    .ant-list-item-meta-avatar
+    :is(.ant-avatar, img) {
+    @include size(36px);
+  }
+
+  &__journey .students-wrapper .ant-list-item-meta-title {
+    font-size: 1.6rem !important;
+    font-weight: 600;
+     transition: color 0.2s ease-in-out;
+  }
+
+  &__journey .students-wrapper .ant-list-item.active .ant-list-item-meta-title {
+    color: $primary-color;
+  }
+
+  &__journey .students-wrapper .ant-list-item-meta-description p {
+    font-size: 1.4rem !important;
+  }
+
   // Table
   @media (max-width: 991.98px) {
     &__actions {
@@ -241,6 +366,10 @@
       display: block;
     }
 
+    &__main .ant-card-head-title {
+      font-size: 1.8rem;
+    }
+
     &__info {
       flex-direction: column;
     }
@@ -248,6 +377,7 @@
     &__info > * {
       width: 100%;
     }
+    
 
     .parent .client-layout__students .ant-list-item {
       flex-direction: column;

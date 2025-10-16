@@ -1,14 +1,20 @@
-import { useEffect, useState } from "react";
+import { act, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Breadcrumb,
   Card,
   Button,
+  Image,
   Select,
   Tag,
   DatePicker,
   Avatar,
   List,
+  Modal,
+  Form,
+  Input,
+  Row,
+  Col,
 } from "antd";
 import {
   ReloadOutlined,
@@ -17,6 +23,8 @@ import {
   ClockCircleOutlined,
   ExclamationCircleOutlined,
   QuestionCircleOutlined,
+  EyeOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import type {
   BreadcrumbItemType,
@@ -34,13 +42,17 @@ import {
 import type {
   ActiveFormatType,
   ActivePickupFormatType,
+  ActiveStudentFormatType,
 } from "../../common/types";
 import LeafletMap, {
+  type HandleGetBusInfoProps,
+  type HandleGetRouteInfoProps,
   type HandleSelectedBusProps,
   type HandleSelectedPickupProps,
 } from "../../components/leaflet-map";
 import CustomStatistic from "../../components/statistic";
 import { useNotification } from "../../utils/showNotification";
+import dayjs from "dayjs";
 
 // Map Page
 const MapPage = () => {
@@ -51,7 +63,7 @@ const MapPage = () => {
   const { openNotification } = useNotification();
 
   //
-  const demoData: ActiveFormatType[] = [
+  const data: ActiveFormatType[] = [
     {
       id: 1,
       schedule: {
@@ -114,7 +126,11 @@ const MapPage = () => {
         startDate: "2025-10-01",
         endDate: "2025-10-31",
       },
-      startTime: "2025-10-11 04:56:20",
+      createTime: "2025-10-11 04:56:20",
+      startTime: "2025-10-11 05:00:20",
+      busLat: 10.786197005344277,
+      busLng: 106.66577696800232,
+      busSpeed: 1000,
       status: "Đã hoàn thành",
       activeStudents: [
         {
@@ -148,7 +164,7 @@ const MapPage = () => {
             },
             avatar: "test-1.png",
             fullname: "Học sinh 1",
-            birthday: "01/01/2025",
+            birthday: "2025-01-01",
             gender: "Nam",
             address: "Địa chỉ ở đâu không biết",
             status: "Hoạt động",
@@ -189,7 +205,7 @@ const MapPage = () => {
             },
             avatar: "test-2.png",
             fullname: "Học sinh 2",
-            birthday: "02/02/2025",
+            birthday: "2025-02-02",
             gender: "Nam",
             address: "Địa chỉ ở đâu không biết",
             status: "Tạm dừng",
@@ -221,7 +237,7 @@ const MapPage = () => {
             status: "Hoạt động",
           },
           time: "2025-10-01 08:10:23",
-          status: "Đã đến trạm",
+          status: "Đang đến trạm",
         },
       ],
     },
@@ -298,7 +314,10 @@ const MapPage = () => {
         startDate: "2025-10-01",
         endDate: "2025-10-31",
       },
-      startTime: "2025-10-11 08:56:20",
+      createTime: "2025-10-11 08:56:20",
+      startTime: "2025-10-11 09:00:20",
+      busLat: 10.778231651587179,
+      busLng: 106.68071896686253,
       status: "Đang chạy xe",
       activeStudents: [
         {
@@ -332,7 +351,7 @@ const MapPage = () => {
             },
             avatar: "test-3.png",
             fullname: "Học sinh 3",
-            birthday: "03/03/2025",
+            birthday: "2025-03-03",
             gender: "Nữ",
             address: "Địa chỉ ở đâu không biết",
             status: "Hoạt động",
@@ -364,7 +383,7 @@ const MapPage = () => {
             status: "Hoạt động",
           },
           time: "2025-10-01 08:10:23",
-          status: "Đã huỷ trạm",
+          status: "Đang đến trạm",
         },
         {
           pickup: {
@@ -476,7 +495,7 @@ const MapPage = () => {
             },
             avatar: "test-4.png",
             fullname: "Học sinh 4",
-            birthday: "04/04/2025",
+            birthday: "2025-04-04",
             gender: "Nữ",
             address: "Địa chỉ ở đâu không biết",
             status: "Hoạt động",
@@ -513,12 +532,17 @@ const MapPage = () => {
       ],
     },
   ];
+  const [actives, setActives] = useState<ActiveFormatType[]>(data);
 
   // State giữ đối tượng được chọn hiện tại
   const [currentSelectedItem, setCurrentSelectedItem] =
     useState<ActiveFormatType | null>(null);
+  // State giữ trạm được chọn hiện tại
   const [currentSelectedActivePickup, setCurrentSelectedActivePickup] =
     useState<ActivePickupFormatType | null>(null);
+  // State giữ học sinh được chọn hiện tại
+  const [currentSelectedActiveStudent, setCurrentSelectedActiveStudent] =
+    useState<ActiveStudentFormatType | null>(null);
   // State giữ hành động hiện tại
   const [currentAction, setCurrentAction] = useState<string>("journey");
   // State giữ breadcrumb items hiện tại
@@ -546,6 +570,12 @@ const MapPage = () => {
   // const [currentCardContent, setCurrentCardContent] =
   //   useState<string>("journey");
 
+  //
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
   // Các biến giữ giá trị cho việc hiển thị thông số trên card
   const [totalActiveCardValue, setTotalActiveCardValue] = useState<number>(0);
   const [successCardValue, setSuccessCardValue] = useState<number>(0);
@@ -554,18 +584,46 @@ const MapPage = () => {
   const [pendingCardValue, setPendingCardValue] = useState<number>(0);
 
   //
+  const handleGetBusInfo = ({
+    activeId,
+    busLat,
+    busLng,
+  }: HandleGetBusInfoProps) => {
+    // console.log(activeId, busLat, busLng);
+    const newActives = actives?.map((active) => {
+      if (active.id === activeId) {
+        return {
+          ...active,
+          busLat: busLat,
+          busLng: busLng,
+        };
+      }
+
+      return active;
+    });
+    // setActives(newActives);
+  };
+  //
+  const handleGetRouteInfo = ({
+    distance,
+    duration,
+  }: HandleGetRouteInfoProps) => {
+    console.log(distance);
+    console.log(duration);
+  };
+  //
   const handleSelectedPickup = ({ id }: HandleSelectedPickupProps) => {
     // - ĐANG NGU CHỖ NÀY
-    // const item = demoData?.map((active) => active.route?.routeDetails)?.find((routeDetail) => routeDetail?.)
+    // const item = actives?.map((active) => active.route?.routeDetails)?.find((routeDetail) => routeDetail?.)
 
     let active: ActiveFormatType | null = null;
     let activePickup: ActivePickupFormatType | null = null;
-    for (let i = 0; i < demoData.length; i++) {
+    for (let i = 0; i < actives.length; i++) {
       const activePickups: ActivePickupFormatType[] =
-        demoData[i]?.activePickups || [];
+        actives[i]?.activePickups || [];
       for (let j = 0; j < activePickups.length; j++) {
         if (activePickups[j].pickup?.id === id) {
-          active = demoData[i];
+          active = actives[i];
           activePickup = activePickups[j];
           break;
         }
@@ -575,21 +633,23 @@ const MapPage = () => {
     setCurrentSelectedItem(active);
     setCurrentSelectedActivePickup(activePickup);
   };
-  const handleSelectedBus = ({ activePickupId }: HandleSelectedBusProps) => {
+  //
+  const handleSelectedBus = ({ activeId }: HandleSelectedBusProps) => {
     // - ĐANG NGU CHỖ NÀY
-    // const item = demoData?.map((active) => active.route?.routeDetails)?.find((routeDetail) => routeDetail?.)
+    // const item = actives?.map((active) => active.route?.routeDetails)?.find((routeDetail) => routeDetail?.)
+    // let active: ActiveFormatType | null = null;
+    // for (let i = 0; i < actives.length; i++) {
+    // const activePickups: ActivePickupFormatType[] =
+    //   actives[i]?.activePickups || [];
+    // for (let j = 0; j < activePickups.length; j++) {
+    //   if (activePickups[j].pickup?.id === activePickupId) {
+    //     active = actives[i];
+    //     break;
+    //   }
+    // }
+    // }
 
-    let active: ActiveFormatType | null = null;
-    for (let i = 0; i < demoData.length; i++) {
-      const activePickups: ActivePickupFormatType[] =
-        demoData[i]?.activePickups || [];
-      for (let j = 0; j < activePickups.length; j++) {
-        if (activePickups[j].pickup?.id === activePickupId) {
-          active = demoData[i];
-          break;
-        }
-      }
-    }
+    const active = actives?.find((active) => active?.id === activeId)!;
 
     setCurrentSelectedItem(active);
     setCurrentSelectedActivePickup(null);
@@ -602,7 +662,7 @@ const MapPage = () => {
       newIncident = 0,
       newPending = 0;
 
-    demoData?.forEach((active) => {
+    actives?.forEach((active) => {
       newTotalActive += 1;
       if (active.status === ActiveStatusValue.success) {
         newSuccess += 1;
@@ -633,7 +693,7 @@ const MapPage = () => {
   //
   useEffect(() => {
     updateCard();
-  }, [demoData]);
+  }, [actives]);
 
   return (
     <>
@@ -738,14 +798,24 @@ const MapPage = () => {
             }
           >
             <LeafletMap
+              id="map-summary"
               type="detail"
-              routeDetailsList={demoData?.map((active) => ({
+              busInfos={actives?.map((active) => ({
+                activeId: active?.id,
+                busLat: active?.busLat,
+                busLng: active?.busLng,
+                busSpeed: active?.busSpeed,
+              }))}
+              routeDetailsList={actives?.map((active) => ({
+                activeId: active?.id,
                 routeDetails: active?.schedule?.route?.routeDetails || [],
                 status: active.status!,
               }))}
-              activePickups={demoData?.flatMap(
-                (active) => active?.activePickups || []
-              )}
+              activePickupsList={actives?.flatMap((active) => ({
+                activeId: active?.id,
+                activePickups: active?.activePickups,
+              }))}
+              handleGetBusInfo={handleGetBusInfo}
               handleSelectedPickup={handleSelectedPickup}
               handleSelectedBus={handleSelectedBus}
             />
@@ -794,7 +864,7 @@ const MapPage = () => {
             <div className="tags">
               <div className="tag-wrapper">
                 {/* Tuyến */}
-                <div className="tag multiple-2">
+                <div className="tag multiple-2 no-align-stretch">
                   <div className="header">
                     <img src="https://cdn-icons-png.flaticon.com/512/854/854894.png" />
                     <b>Tuyến đường</b>
@@ -826,13 +896,151 @@ const MapPage = () => {
                         <span>Trạm KT:</span>
                         <b>{currentSelectedItem?.schedule?.route?.endPickup}</b>
                       </p>
+                      <LeafletMap
+                        id="map-route"
+                        type="detail"
+                        enableZoom={false}
+                        enableSearch={false}
+                        enableBaseLayers={false}
+                        busInfos={[
+                          {
+                            activeId: currentSelectedItem?.id,
+                            busLat: currentSelectedItem?.busLat,
+                            busLng: currentSelectedItem?.busLng,
+                            busSpeed: currentSelectedItem?.busSpeed,
+                          },
+                        ]}
+                        routeDetailsList={[
+                          {
+                            activeId: currentSelectedItem?.id,
+                            routeDetails:
+                              currentSelectedItem?.schedule?.route
+                                ?.routeDetails || [],
+                            status: currentSelectedItem.status!,
+                          },
+                        ]}
+                        activePickupsList={[
+                          {
+                            activeId: currentSelectedItem?.id,
+                            activePickups: currentSelectedItem?.activePickups,
+                          },
+                        ]}
+                        handleGetRouteInfo={handleGetRouteInfo}
+                      />
                     </div>
                   </Tag>
                 </div>
-                {currentSelectedActivePickup && (
+                {!currentSelectedActivePickup && (
+                  <>
+                    {/* Xe buýt */}
+                    <div className="tag multiple-2">
+                      <div className="header">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1068/1068580.png" />
+                        <b>Xe buýt</b>
+                      </div>
+                      <Tag
+                        color={getStatisticColorByActiveStatus(
+                          currentSelectedItem.status!
+                        )}
+                      >
+                        <div className="content">
+                          <p>
+                            <span>Biển số:</span>
+                            <b>
+                              {currentSelectedItem?.schedule?.bus?.licensePlate}
+                            </b>
+                          </p>
+                          <p>
+                            <span>Số chỗ:</span>
+                            <b>
+                              {currentSelectedItem?.schedule?.bus?.capacity}
+                            </b>
+                          </p>
+                          <p>
+                            <span>Vận tốc:</span>
+                            <b>{currentSelectedItem?.busSpeed} km/h</b>
+                          </p>
+                          <p>
+                            <span>Đã đi:</span>
+                            <b>m</b>
+                          </p>
+                          <p>
+                            <span>Còn lại:</span>
+                            <b>m</b>
+                          </p>
+                        </div>
+                      </Tag>
+                    </div>
+                    {/* Tài xế */}
+                    <div className="tag multiple-2">
+                      <div className="header">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2684/2684225.png" />
+                        <b>Tài xế</b>
+                      </div>
+                      <Tag
+                        color={getStatisticColorByActiveStatus(
+                          currentSelectedItem.status!
+                        )}
+                        className="tag multiple-2"
+                      >
+                        <div className="content">
+                          <img
+                            src={
+                              currentSelectedItem?.schedule?.driver?.avatar
+                                ? "/src/assets/images/drivers/" +
+                                  currentSelectedItem?.schedule?.driver?.avatar
+                                : "/src/assets/images/others/no-image.png"
+                            }
+                            className="avatar"
+                          />
+                          <p>
+                            <span>Họ tên:</span>
+                            <b>
+                              {currentSelectedItem?.schedule?.driver?.fullname}
+                            </b>
+                          </p>
+                          <p>
+                            <span>Ngày sinh:</span>
+                            <b>
+                              {currentSelectedItem?.schedule?.driver?.birthday}
+                            </b>
+                          </p>
+                          <p>
+                            <span>Giới tính:</span>
+                            <b>
+                              {currentSelectedItem?.schedule?.driver?.gender}
+                            </b>
+                          </p>
+                          <p>
+                            <span>Số ĐT:</span>
+                            <b>
+                              {currentSelectedItem?.schedule?.driver?.phone}
+                            </b>
+                          </p>
+                          <p>
+                            <span>Email:</span>
+                            <b>
+                              {currentSelectedItem?.schedule?.driver?.email}
+                            </b>
+                          </p>
+                          <p>
+                            <span>Lịch chạy:</span>
+                            <b>
+                              {currentSelectedItem?.schedule?.startDate} -{" "}
+                              {currentSelectedItem?.schedule?.endDate}
+                            </b>
+                          </p>
+                        </div>
+                      </Tag>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="tag-wrapper">
+                {currentSelectedActivePickup ? (
                   <>
                     {/* Trạm xe */}
-                    <div className="tag multiple-2 no-align-stretch">
+                    <div className="tag multiple-3 no-align-stretch">
                       <div className="header">
                         <img
                           src={
@@ -853,319 +1061,469 @@ const MapPage = () => {
                         )}
                       >
                         <div className="content">
-                          <p>
-                            <span>Tên:</span>
-                            <b>{currentSelectedActivePickup?.pickup?.name}</b>
-                          </p>
-                          <p>
-                            <span>Loại:</span>
-                            <b>
-                              {currentSelectedActivePickup?.pickup?.category}
-                            </b>
-                          </p>
-                          <p>
-                            <span>Toạ độ x:</span>
-                            <b>{currentSelectedActivePickup?.pickup?.lat}</b>
-                          </p>
-                          <p>
-                            <span>Toạ độ y:</span>
-                            <b>{currentSelectedActivePickup?.pickup?.lng}</b>
-                          </p>
-                          <p>
-                            <span>Trạng thái:</span>
-                            <b>
-                              <Tag
-                                color={
-                                  currentSelectedActivePickup?.status ===
-                                  ActivePickupStatusValue.confirmed
-                                    ? "green-inverse"
-                                    : currentSelectedActivePickup?.status ===
-                                      ActivePickupStatusValue.canceled
-                                    ? "red-inverse"
-                                    : "default"
+                          <div className="left">
+                            <p>
+                              <span>Thứ tự:</span>
+                              <b>
+                                {
+                                  currentSelectedItem?.schedule?.route?.routeDetails?.find(
+                                    (routeDetail) =>
+                                      routeDetail?.pickup?.id ===
+                                      currentSelectedActivePickup?.pickup?.id
+                                  )?.order
                                 }
-                              >
-                                {currentSelectedActivePickup?.status}{" "}
-                                {currentSelectedActivePickup?.status !==
-                                ActivePickupStatusValue.pending
-                                  ? "(" +
-                                    currentSelectedActivePickup?.time +
-                                    ")"
-                                  : ""}
-                              </Tag>
-                            </b>
-                          </p>
+                              </b>
+                            </p>
+                            <p>
+                              <span>Tên:</span>
+                              <b>{currentSelectedActivePickup?.pickup?.name}</b>
+                            </p>
+                            <p>
+                              <span>Loại:</span>
+                              <b>
+                                {currentSelectedActivePickup?.pickup?.category}
+                              </b>
+                            </p>
+                            <p>
+                              <span>Toạ độ x:</span>
+                              <b>{currentSelectedActivePickup?.pickup?.lat}</b>
+                            </p>
+                            <p>
+                              <span>Toạ độ y:</span>
+                              <b>{currentSelectedActivePickup?.pickup?.lng}</b>
+                            </p>
+                            <p>
+                              <span>Trạng thái:</span>
+                              <b>
+                                <Tag
+                                  color={
+                                    currentSelectedActivePickup?.status ===
+                                    ActivePickupStatusValue.confirmed
+                                      ? "green-inverse"
+                                      : currentSelectedActivePickup?.status ===
+                                        ActivePickupStatusValue.canceled
+                                      ? "red-inverse"
+                                      : "default"
+                                  }
+                                >
+                                  {currentSelectedActivePickup?.status}{" "}
+                                  {currentSelectedActivePickup?.status !==
+                                  ActivePickupStatusValue.pending
+                                    ? "(" +
+                                      currentSelectedActivePickup?.time +
+                                      ")"
+                                    : ""}
+                                </Tag>
+                              </b>
+                            </p>
+                          </div>
+                          <div className="right">
+                            <LeafletMap
+                              id={"map-pickup"}
+                              type="detail"
+                              lat={currentSelectedActivePickup?.pickup?.lat}
+                              lng={currentSelectedActivePickup?.pickup?.lng}
+                              pointType={
+                                currentSelectedActivePickup?.pickup?.category
+                              }
+                            />
+                          </div>
+                        </div>
+                      </Tag>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Danh sách trạm */}
+                    <div className="tag pickups multiple-2 no-align-stretch">
+                      <div className="header">
+                        <img src="https://cdn-icons-png.flaticon.com/512/854/854901.png" />
+                        <b>Danh sách trạm</b>
+                      </div>
+                      <Tag
+                        color={getStatisticColorByActiveStatus(
+                          currentSelectedItem.status!
+                        )}
+                      >
+                        <div className="body">
+                          <List
+                            bordered
+                            itemLayout="horizontal"
+                            dataSource={currentSelectedItem?.activePickups?.map(
+                              (activePickup) => activePickup
+                            )}
+                            style={{ marginTop: 6 }}
+                            renderItem={(activePickup) => (
+                              <List.Item key={activePickup?.pickup?.id}>
+                                <List.Item.Meta
+                                  avatar={
+                                    <Avatar
+                                      src={
+                                        activePickup?.pickup?.category ===
+                                        PointTypeValue.school
+                                          ? "https://cdn-icons-png.flaticon.com/512/167/167707.png"
+                                          : activePickup?.pickup?.category ===
+                                            PointTypeValue.pickup
+                                          ? "https://cdn-icons-png.flaticon.com/512/6395/6395324.png"
+                                          : "https://cdn-icons-png.flaticon.com/512/1068/1068580.png"
+                                      }
+                                      size={36}
+                                    />
+                                  }
+                                  title={
+                                    <strong>
+                                      {
+                                        currentSelectedItem?.schedule?.route?.routeDetails?.find(
+                                          (routeDetail) =>
+                                            routeDetail?.pickup?.id ===
+                                            activePickup?.pickup?.id
+                                        )?.order
+                                      }{" "}
+                                      - {activePickup?.pickup?.name}
+                                    </strong>
+                                  }
+                                  description={
+                                    <>
+                                      <div className="block-flex">
+                                        <div className="left">
+                                          <div>
+                                            Loại:{" "}
+                                            {activePickup?.pickup?.category}
+                                          </div>
+                                          <div>
+                                            Toạ độ x:{" "}
+                                            {activePickup?.pickup?.lat}
+                                          </div>
+                                          <div>
+                                            Toạ độ y:{" "}
+                                            {activePickup?.pickup?.lng}
+                                          </div>
+                                          <div>
+                                            Trạng thái:{" "}
+                                            <Tag
+                                              color={
+                                                activePickup?.status ===
+                                                ActivePickupStatusValue.confirmed
+                                                  ? "green-inverse"
+                                                  : activePickup?.status ===
+                                                    ActivePickupStatusValue.driving
+                                                  ? "orange-inverse"
+                                                  : activePickup?.status ===
+                                                    ActivePickupStatusValue.canceled
+                                                  ? "red-inverse"
+                                                  : "default"
+                                              }
+                                            >
+                                              {activePickup?.status}
+                                            </Tag>
+                                          </div>
+                                        </div>
+                                        <div className="right">
+                                          <LeafletMap
+                                            id={
+                                              "map-pickup-" +
+                                              activePickup?.pickup?.id
+                                            }
+                                            type="detail"
+                                            enableZoom={false}
+                                            enableSearch={false}
+                                            enableBaseLayers={false}
+                                            lat={activePickup?.pickup?.lat}
+                                            lng={activePickup?.pickup?.lng}
+                                            pointType={
+                                              activePickup?.pickup?.category
+                                            }
+                                          />
+                                        </div>
+                                      </div>
+                                    </>
+                                  }
+                                />
+                              </List.Item>
+                            )}
+                          />
                         </div>
                       </Tag>
                     </div>
                   </>
                 )}
-              </div>
-              {!currentSelectedActivePickup && (
-                <>
-                  {/* Xe buýt */}
-                  <div className="tag">
-                    <div className="header">
-                      <img src="https://cdn-icons-png.flaticon.com/512/1068/1068580.png" />
-                      <b>Xe buýt</b>
-                    </div>
-                    <Tag
-                      color={getStatisticColorByActiveStatus(
-                        currentSelectedItem.status!
-                      )}
-                    >
-                      <div className="content">
-                        <p>
-                          <span>Biển số:</span>
-                          <b>
-                            {currentSelectedItem?.schedule?.bus?.licensePlate}
-                          </b>
-                        </p>
-                        <p>
-                          <span>Số chỗ:</span>
-                          <b>{currentSelectedItem?.schedule?.bus?.capacity}</b>
-                        </p>
-                      </div>
-                    </Tag>
+                {/* Danh sách học sinh */}
+                <div className="tag multiple-3 no-align-stretch students">
+                  <div className="header">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2995/2995459.png" />
+                    <b>
+                      Danh sách học sinh{" "}
+                      {currentSelectedActivePickup ? "theo trạm" : ""}
+                    </b>
                   </div>
-                  {/* Tài xế */}
-                  <div className="tag multiple-2">
-                    <div className="header">
-                      <img
-                        src={
-                          currentSelectedItem?.schedule?.driver?.avatar
-                            ? "/src/assets/images/drivers/" +
-                              currentSelectedItem?.schedule?.driver?.avatar
-                            : "/src/assets/images/others/no-image.png"
+                  <Tag
+                    color={getStatisticColorByActiveStatus(
+                      currentSelectedItem.status!
+                    )}
+                  >
+                    <div className="content">
+                      <List
+                        bordered
+                        itemLayout="horizontal"
+                        dataSource={
+                          currentSelectedActivePickup
+                            ? currentSelectedItem?.activeStudents?.filter(
+                                (activeStudent) =>
+                                  activeStudent?.student?.pickup?.id ===
+                                  currentSelectedActivePickup?.pickup?.id
+                              )
+                            : currentSelectedItem?.activeStudents?.map(
+                                (activeStudent) => activeStudent
+                              )
                         }
-                        className="avatar"
+                        renderItem={(activeStudent) => (
+                          <List.Item
+                            key={activeStudent?.student?.id}
+                            actions={[
+                              <Button
+                                variant="solid"
+                                color="blue"
+                                icon={<EyeOutlined />}
+                                onClick={() => {
+                                  setCurrentSelectedActiveStudent(
+                                    activeStudent
+                                  );
+                                  showModal();
+                                }}
+                              >
+                                Chi tiết
+                              </Button>,
+                            ]}
+                          >
+                            <List.Item.Meta
+                              avatar={
+                                <Avatar
+                                  src={activeStudent?.student?.avatar}
+                                  size={36}
+                                />
+                              }
+                              title={
+                                <strong>
+                                  {activeStudent?.student?.fullname}
+                                </strong>
+                              }
+                              description={
+                                <>
+                                  <div>Mã: {activeStudent?.student?.id}</div>
+                                  <div>
+                                    Lớp: {activeStudent?.student?.class?.name}
+                                  </div>
+                                  <div>
+                                    Phụ huynh:{" "}
+                                    {activeStudent?.student?.parent?.fullname}
+                                  </div>
+                                  {!currentSelectedActivePickup && (
+                                    <div>
+                                      Trạm:{" "}
+                                      {activeStudent?.student?.pickup?.name}
+                                    </div>
+                                  )}
+                                  <div>
+                                    Trạng thái:{" "}
+                                    <Tag
+                                      color={
+                                        activeStudent?.status ===
+                                        ActiveStudentStatusValue.confirmed
+                                          ? "green-inverse"
+                                          : activeStudent?.status ===
+                                            ActiveStudentStatusValue.canceled
+                                          ? "red-inverse"
+                                          : activeStudent?.status ===
+                                            ActiveStudentStatusValue.leave
+                                          ? "orange-inverse"
+                                          : "default"
+                                      }
+                                    >
+                                      {activeStudent?.status}
+                                    </Tag>
+                                  </div>
+                                </>
+                              }
+                            />
+                          </List.Item>
+                        )}
                       />
-                      <b>Tài xế</b>
                     </div>
-                    <Tag
-                      color={getStatisticColorByActiveStatus(
-                        currentSelectedItem.status!
-                      )}
-                      className="tag multiple-2"
-                    >
-                      <div className="content">
-                        <p>
-                          <span>Họ tên:</span>
-                          <b>
-                            {currentSelectedItem?.schedule?.driver?.fullname}
-                          </b>
-                        </p>
-                        <p>
-                          <span>Ngày sinh:</span>
-                          <b>
-                            {currentSelectedItem?.schedule?.driver?.birthday}
-                          </b>
-                        </p>
-                        <p>
-                          <span>Giới tính:</span>
-                          <b>{currentSelectedItem?.schedule?.driver?.gender}</b>
-                        </p>
-                        <p>
-                          <span>Số ĐT:</span>
-                          <b>{currentSelectedItem?.schedule?.driver?.phone}</b>
-                        </p>
-                        <p>
-                          <span>Email:</span>
-                          <b>{currentSelectedItem?.schedule?.driver?.email}</b>
-                        </p>
-                        <p>
-                          <span>Lịch chạy:</span>
-                          <b>
-                            {currentSelectedItem?.schedule?.startDate} -{" "}
-                            {currentSelectedItem?.schedule?.endDate}
-                          </b>
-                        </p>
-                      </div>
-                    </Tag>
-                  </div>
-                  {/* Danh sách trạm */}
-                  <div className="tag multiple-2 no-align-stretch">
-                    <div className="header">
-                      <img src="https://cdn-icons-png.flaticon.com/512/854/854901.png" />
-                      <b>Danh sách trạm</b>
-                    </div>
-                    <Tag
-                      color={getStatisticColorByActiveStatus(
-                        currentSelectedItem.status!
-                      )}
-                    >
-                      <div className="body">
-                        <List
-                          bordered
-                          itemLayout="horizontal"
-                          dataSource={currentSelectedItem?.activePickups?.map(
-                            (activePickup) => activePickup
-                          )}
-                          style={{ marginTop: 6 }}
-                          renderItem={(activePickup) => (
-                            <List.Item key={activePickup?.pickup?.id}>
-                              <List.Item.Meta
-                                avatar={
-                                  <Avatar
-                                    src={
-                                      activePickup?.pickup?.category ===
-                                      PointTypeValue.school
-                                        ? "https://cdn-icons-png.flaticon.com/512/167/167707.png"
-                                        : activePickup?.pickup?.category ===
-                                          PointTypeValue.pickup
-                                        ? "https://cdn-icons-png.flaticon.com/512/6395/6395324.png"
-                                        : "https://cdn-icons-png.flaticon.com/512/1068/1068580.png"
-                                    }
-                                    size={36}
-                                  />
-                                }
-                                title={
-                                  <strong>{activePickup?.pickup?.name}</strong>
-                                }
-                                description={
-                                  <>
-                                    <div>
-                                      Loại: {activePickup?.pickup?.category}
-                                    </div>
-                                    <div>
-                                      Toạ độ x: {activePickup?.pickup?.lat}
-                                    </div>
-                                    <div>
-                                      Toạ độ y: {activePickup?.pickup?.lng}
-                                    </div>
-                                    <div>
-                                      Trạng thái:{" "}
-                                      <Tag
-                                        color={
-                                          activePickup?.status ===
-                                          ActivePickupStatusValue.confirmed
-                                            ? "green-inverse"
-                                            : activePickup?.status ===
-                                              ActivePickupStatusValue.canceled
-                                            ? "red-inverse"
-                                            : "default"
-                                        }
-                                      >
-                                        {activePickup?.status}
-                                      </Tag>
-                                    </div>
-                                  </>
-                                }
-                              />
-                            </List.Item>
-                          )}
-                        />
-                      </div>
-                    </Tag>
-                  </div>
-                </>
-              )}
-              {/* Danh sách học sinh */}
-              <div className="tag multiple-3 no-align-stretch">
-                <div className="header">
-                  <img src="https://cdn-icons-png.flaticon.com/512/2995/2995459.png" />
-                  <b>Danh sách học sinh</b>
+                  </Tag>
                 </div>
-                <Tag
-                  color={getStatisticColorByActiveStatus(
-                    currentSelectedItem.status!
-                  )}
-                >
-                  <div className="content">
-                    <List
-                      bordered
-                      itemLayout="horizontal"
-                      dataSource={
-                        currentSelectedActivePickup
-                          ? currentSelectedItem?.activeStudents?.filter(
-                              (activeStudent) =>
-                                activeStudent?.student?.pickup?.id ===
-                                currentSelectedActivePickup?.pickup?.id
-                            )
-                          : currentSelectedItem?.activeStudents?.map(
-                              (activeStudent) => activeStudent
-                            )
-                      }
-                      renderItem={(activeStudent) => (
-                        <List.Item key={activeStudent?.student?.id}>
-                          <List.Item.Meta
-                            avatar={
-                              <Avatar
-                                src={activeStudent?.student?.avatar}
-                                size={36}
-                              />
-                            }
-                            title={
-                              <strong>
-                                {activeStudent?.student?.fullname}
-                              </strong>
-                            }
-                            description={
-                              <>
-                                <div>
-                                  Mã học sinh: #{activeStudent?.student?.id}
-                                </div>
-                                <div>
-                                  Ngày sinh: {activeStudent?.student?.birthday}
-                                </div>
-                                <div>
-                                  Giới tính:{" "}
-                                  <Tag
-                                    color={
-                                      activeStudent?.student?.gender ===
-                                      CommonGenderValue.male
-                                        ? "blue"
-                                        : "magenta"
-                                    }
-                                  >
-                                    {activeStudent?.student?.gender}
-                                  </Tag>
-                                </div>
-                                <div>
-                                  Lớp: {activeStudent?.student?.class?.name}
-                                </div>
-                                <div>
-                                  Trạm: {activeStudent?.student?.pickup?.name}
-                                </div>
-                                <div>
-                                  Phụ huynh:{" "}
-                                  {activeStudent?.student?.parent?.fullname}
-                                </div>
-                                <div>
-                                  ĐTPH: {activeStudent?.student?.parent?.phone}
-                                </div>
-                                <div>
-                                  Trạng thái:{" "}
-                                  <Tag
-                                    color={
-                                      activeStudent?.status ===
-                                      ActiveStudentStatusValue.confirmed
-                                        ? "green-inverse"
-                                        : activeStudent?.status ===
-                                          ActiveStudentStatusValue.canceled
-                                        ? "red-inverse"
-                                        : activeStudent?.status ===
-                                          ActiveStudentStatusValue.leave
-                                        ? "orange-inverse"
-                                        : "default"
-                                    }
-                                  >
-                                    {activeStudent?.status}
-                                  </Tag>
-                                </div>
-                              </>
-                            }
-                          />
-                        </List.Item>
-                      )}
-                    />
-                  </div>
-                </Tag>
               </div>
             </div>
           </Card>
         )}
       </div>
+      <Modal
+        centered
+        footer={null}
+        title="Chi tiết học sinh"
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        className={
+          "modal map-admin " +
+          getStatisticColorByActiveStatus(currentSelectedItem?.status!)
+        }
+      >
+        <div className="form-group">
+          <p className="title">
+            <span>Thông tin học sinh</span>
+          </p>
+          <Form
+            initialValues={{
+              id: currentSelectedActiveStudent?.student?.id,
+              fullname: currentSelectedActiveStudent?.student?.fullname,
+              birthday: currentSelectedActiveStudent?.student?.birthday
+                ? dayjs(
+                    currentSelectedActiveStudent?.student?.birthday,
+                    "YYYY-MM-DD"
+                  )
+                : "",
+              gender: currentSelectedActiveStudent?.student?.gender,
+              class: currentSelectedActiveStudent?.student?.class?.name,
+              parent:
+                currentSelectedActiveStudent?.student?.parent?.fullname +
+                " - " +
+                currentSelectedActiveStudent?.student?.parent?.phone,
+              address: currentSelectedActiveStudent?.student?.address,
+              status: currentSelectedActiveStudent?.student?.status,
+            }}
+            layout="horizontal"
+            variant="filled"
+            disabled
+          >
+            <Row className="split-3">
+              <Col>
+                <Image
+                  src="/src/assets/images/others/no-image.png"
+                  alt=""
+                  className="avatar"
+                />
+              </Col>
+              <Col>
+                <Form.Item
+                  name="id"
+                  label="Mã học sinh"
+                  className="text-center"
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="fullname"
+                  label="Họ và tên"
+                  className="multiple-2"
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="birthday"
+                  label="Ngày sinh"
+                  className="text-center"
+                >
+                  <DatePicker type="date" format="YYYY-MM-DD" />
+                </Form.Item>
+                <Form.Item name="class" label="Lớp học" className="multiple-2">
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="parent"
+                  label="Phụ huynh"
+                  className="multiple-2"
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="address"
+                  label="Địa chỉ"
+                  className="multiple-2"
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item
+                  name="status"
+                  label="Trạng thái"
+                  className="text-center"
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item label="." className="hidden">
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="gender"
+                  label="Giới tính"
+                  className="text-center"
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </div>
+        {!currentSelectedActivePickup && (
+          <>
+            <div className="form-group">
+              <div className="title">
+                <span>Thông tin trạm</span>
+              </div>
+              <Form
+                initialValues={{
+                  pickupName:
+                    currentSelectedActiveStudent?.student?.pickup?.name,
+                  pickupCategory:
+                    currentSelectedActiveStudent?.student?.pickup?.category,
+                  pickupLat: currentSelectedActiveStudent?.student?.pickup?.lat,
+                  pickupLng: currentSelectedActiveStudent?.student?.pickup?.lng,
+                }}
+                layout="horizontal"
+                variant="filled"
+                disabled
+              >
+                <Row className="split-3">
+                  <Col>
+                    <Form.Item name="pickupName" label="Tên trạm">
+                      <Input />
+                    </Form.Item>
+                    <Form.Item name="pickupCategory" label="Loại trạm">
+                      <Input />
+                    </Form.Item>
+                    <Form.Item name="pickupLat" label="Toạ độ x">
+                      <Input />
+                    </Form.Item>
+                    <Form.Item name="pickupLng" label="Toạ độ y">
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col>
+                    <Form.Item name="pickupLng" className="multiple-2">
+                      <LeafletMap
+                        id={
+                          "map-pickup-" +
+                          currentSelectedActiveStudent?.student?.pickup?.id +
+                          "-" +
+                          currentSelectedActiveStudent?.student?.id
+                        }
+                        type="detail"
+                        lat={currentSelectedActiveStudent?.student?.pickup?.lat}
+                        lng={currentSelectedActiveStudent?.student?.pickup?.lng}
+                        pointType={
+                          currentSelectedActiveStudent?.student?.pickup
+                            ?.category
+                        }
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col></Col>
+                </Row>
+              </Form>
+            </div>
+          </>
+        )}
+      </Modal>
     </>
   );
 };

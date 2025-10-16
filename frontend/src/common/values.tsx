@@ -29,6 +29,7 @@ export const ActiveStudentStatusValue = {
 // Trạng thái vận hành xe buýt - trạm xe buýt
 export const ActivePickupStatusValue = {
   pending: "Đang chờ xác nhận",
+  driving: "Đang đến trạm",
   canceled: "Đã huỷ trạm",
   confirmed: "Đã đến trạm",
 }

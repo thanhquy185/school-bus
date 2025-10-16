@@ -79,8 +79,8 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ role }) => {
         ? [
             {
               key: "1",
-              label: "Bản đồ",
-              link: "/parent/map",
+              label: "Hành trình",
+              link: "/parent/journey",
               icon: <FontAwesomeIcon icon={faMapLocationDot} />,
             },
             {

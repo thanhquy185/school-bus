@@ -218,8 +218,6 @@ const ParentStudentPage = () => {
                 title={<strong>{student.fullname}</strong>}
                 description={
                   <>
-                    {/* <div>Mã học sinh: #{student.id}</div>
-                    <div>Ngày sinh: {student.birthday}</div> */}
                     <div>
                       Giới tính:{" "}
                       <Tag
@@ -254,6 +252,7 @@ const ParentStudentPage = () => {
           >
             <Form.Item>
               <LeafletMap
+                id={"map-" + pickupValue?.id}
                 pointType={pickupValue?.category}
                 lat={pickupValue?.lat}
                 lng={pickupValue?.lng}
@@ -267,8 +266,8 @@ const ParentStudentPage = () => {
               rules={[ruleRequired("Trạm xe buýt không được để trống !")]}
             >
               <Select
-              allowClear
-              showSearch
+                allowClear
+                showSearch
                 id="pickup"
                 placeholder="Chọn Trạm xe buýt"
                 options={pickupData?.map((pickup) => ({
@@ -281,7 +280,9 @@ const ParentStudentPage = () => {
                     pickup?.category,
                   value: pickup?.id,
                 }))}
-                onChange={(val: number) => setPickupValue(getItemById(pickupData, val))}
+                onChange={(val: number) =>
+                  setPickupValue(getItemById(pickupData, val))
+                }
               />
             </Form.Item>
             {/* <Form.Item label="Ghi chú" name="note">

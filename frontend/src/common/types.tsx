@@ -15,13 +15,25 @@ export interface ClassType {
 
 // <========== HIỆN TẠI TÔI CHỈ VIẾT ĐỂ CÓ CÁI LÀM TRÊN GIAO DIỆN THÔI NHA ===========>
 // <========== NHÓM BÀN VỚI NHAU RỒI SỬA LẠI, CHỨ KHÔNG PHẢI LÀM THEO KIỂU NÀY ===========>
+// Kiểu dữ liệu thông tin xe vận hành
+export interface BusInfoType {
+  activeId?: number;
+  busLat?: number;
+  busLng?: number;
+  busSpeed?: number;
+}
+
 // Kiểu dữ liệu vận hành xe
 // - Chưa format
 export interface ActiveNotFormatType {
   id?: number;
   scheduleId?: number;
+  createTime?: string;
   startTime?: string;
   endTime?: string;
+  busLat?: number;
+  busLng?: number;
+  busSpeed?: number;
   status?: string;
   activePickups?: ActivePickupNotFormatType[];
   activeStudents?: ActiveStudentNotFormatType[]; 
@@ -30,8 +42,12 @@ export interface ActiveNotFormatType {
 export interface ActiveFormatType {
   id?: number;
   schedule?: ScheduleFormatType;
+  createTime?: string;
   startTime?: string;
   endTime?: string;
+  busLat?: number;
+  busLng?: number;
+  busSpeed?: number;
   status?: string;
   activePickups?: ActivePickupFormatType[];
   activeStudents?: ActiveStudentFormatType[]; 

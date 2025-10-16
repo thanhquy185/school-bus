@@ -1,0 +1,146 @@
+@use "../abstracts/colors" as *;
+@use "../abstracts/mixins" as *;
+
+.modal {
+  width: 90% !important;
+  margin: 24px 0;
+
+  & :is(.ant-modal-content, .ant-modal-header) {
+    background: $tag-bg-gray-color;
+  }
+
+  & .ant-modal-content {
+    border: 1px solid $tag-bor-gray-color;
+  }
+
+  & .ant-modal-title {
+    color: $tag-fg-gray-color;
+    font-size: 2.4rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  &.purple :is(.ant-modal-content, .ant-modal-header) {
+    background: $tag-bg-purple-color;
+  }
+
+  &.purple .ant-modal-content {
+    border-color: $tag-bor-purple-color;
+  }
+
+  &.purple .ant-modal-title {
+    color: $tag-fg-purple-color;
+  }
+
+  &.green :is(.ant-modal-content, .ant-modal-header) {
+    background: $tag-bg-green-color;
+  }
+
+  &.green .ant-modal-content {
+    border-color: $tag-bor-green-color;
+  }
+
+  &.green .ant-modal-title {
+    color: $tag-fg-green-color;
+  }
+
+  &.red :is(.ant-modal-content, .ant-modal-header) {
+    background: $tag-bg-red-color;
+  }
+
+  &.red .ant-modal-content {
+    border-color: $tag-bor-red-color;
+  }
+
+  &.red .ant-modal-title {
+    color: $tag-fg-red-color;
+  }
+
+  & .form-group:not(:first-of-type) {
+    margin-top: 32px;
+  }
+
+  & .form-group .title {
+    color: #fff;
+    font-size: 1.6rem;
+    font-weight: 600;
+    padding-bottom: 2px;
+    border-bottom: 2px solid $tag-fg-gray-color;
+  }
+
+  & .form-group .title span {
+    background: $tag-fg-gray-color;
+    padding: 4px 14px;
+    border-radius: 4px 4px 0 0;
+  }
+  
+  &.purple .form-group .title {
+    border-color: $tag-fg-purple-color;
+  }
+  
+  &.purple .form-group .title span {
+    background: $tag-fg-purple-color;
+  }
+
+  &.green .form-group .title {
+    border-color: $tag-fg-green-color;
+  }
+
+  &.green .form-group .title span {
+    background: $tag-fg-green-color;
+  }
+
+  &.red .form-group .title {
+    border-color: $tag-fg-red-color;
+  }
+
+  &.red .form-group .title span {
+    background: $tag-fg-red-color;
+  }
+
+  & .form-group .ant-form {
+    margin-top: 20px;
+  }
+
+  & .form-group .ant-form-item-row {
+    display: flex;
+    align-items: center;
+  }
+
+  & .form-group .ant-form-item-label {
+    width: 30% !important;
+    text-align: left;
+  }
+
+  & .form-group .ant-form-item-control {
+    width: 70%;
+  }
+
+  & .form-group .multiple-2 .ant-form-item-label {
+    width: 15% !important;
+  }
+
+  & .form-group .multiple-2 .ant-form-item-control {
+    width: 85% !important;
+  }
+
+  & .form-group .ant-col:has(.avatar) {
+    @include flexCenter();
+  }
+
+  & .form-group :is(.avatar, .ant-image, .ant-image-mask) {
+    @include size(140px, 180px);
+    border-radius: 4px;
+  }
+
+  & .form-group :is(.ant-image, .ant-image-mask) {
+    margin-top: 0;
+    margin-left: 0;
+    transform: translateX(0);
+  }
+
+  & .form-group :is(input, .ant-picker) {
+    // background: transparent;
+  }
+}

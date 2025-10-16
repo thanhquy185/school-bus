@@ -643,14 +643,6 @@ const RoutePage = () => {
                   <div className="buttons">
                     <Button
                       variant="solid"
-                      color="blue"
-                      onClick={() => setShowMap(!showMap)}
-                    >
-                      <FontAwesomeIcon icon={!showMap ? faMap : faList} />
-                      <span>Xem {!showMap ? "bản đồ" : "danh sách"}</span>
-                    </Button>
-                    <Button
-                      variant="solid"
                       color="green"
                       onClick={() => {
                         setShowAddPickup(!showAddPickup);
@@ -674,6 +666,14 @@ const RoutePage = () => {
                     >
                       <FontAwesomeIcon icon={faXmark} />
                       <span>Xoá trạm</span>
+                    </Button>
+                    <Button
+                      variant="solid"
+                      color="blue"
+                      onClick={() => setShowMap(!showMap)}
+                    >
+                      <FontAwesomeIcon icon={!showMap ? faMap : faList} />
+                      <span>Xem {!showMap ? "bản đồ" : "danh sách"}</span>
                     </Button>
                   </div>
                   {showAddPickup && (
@@ -992,14 +992,6 @@ const RoutePage = () => {
                   <div className="buttons">
                     <Button
                       variant="solid"
-                      color="blue"
-                      onClick={() => setShowMap(!showMap)}
-                    >
-                      <FontAwesomeIcon icon={!showMap ? faMap : faList} />
-                      <span>Xem {!showMap ? "bản đồ" : "danh sách"}</span>
-                    </Button>
-                    <Button
-                      variant="solid"
                       color="green"
                       onClick={() => {
                         setShowAddPickup(!showAddPickup);
@@ -1023,6 +1015,14 @@ const RoutePage = () => {
                     >
                       <FontAwesomeIcon icon={faXmark} />
                       <span>Xoá trạm</span>
+                    </Button>
+                    <Button
+                      variant="solid"
+                      color="blue"
+                      onClick={() => setShowMap(!showMap)}
+                    >
+                      <FontAwesomeIcon icon={!showMap ? faMap : faList} />
+                      <span>Xem {!showMap ? "bản đồ" : "danh sách"}</span>
                     </Button>
                   </div>
                   {showAddPickup && (

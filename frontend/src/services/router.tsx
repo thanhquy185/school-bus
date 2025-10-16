@@ -14,7 +14,7 @@ import ParentStudentPage from "../pages/parents/student-page";
 import LoginPage from "../pages/public/login-page";
 import ErrorPage from "../pages/public/error-page";
 import UnauthorizedPage from "../pages/public/unauthorized-page";
-import ParentMapPage from "../pages/parents/map-page";
+import ParentJourneyPage from "../pages/parents/journey-page";
 
 // Router giúp chuyển hướng trang
 export const getRouter = async (): Promise<
@@ -72,8 +72,8 @@ export const getRouter = async (): Promise<
       errorElement: <ErrorPage />,
       children: [
         {
-          path: "map",
-          element: <ParentMapPage />,
+          path: "journey",
+          element: <ParentJourneyPage />,
         },
         {
           path: "info",

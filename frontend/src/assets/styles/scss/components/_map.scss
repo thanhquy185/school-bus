@@ -1,0 +1,39 @@
+.leaflet-map {
+    & .leaflet-control-container > * {
+        z-index: 999;
+    }
+
+    & .info-block {
+        background: #fff;
+        padding: 6px;
+        border: 2px solid #aeaeae;
+        border-radius: 4px;
+    }
+
+    & .info-block .title {
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    & .info-block .description {
+        color: #555;
+        font-size: 1.2rem;
+    }
+
+    & .info-block .description b {
+        font-weight: 500;
+    }
+
+    & .info-block.in-tag .title {
+        font-size: 1.2rem !important;
+    }
+    
+    & .info-block.in-tag .description {
+        font-size: 1rem !important;
+    }
+
+    & .info-block.in-tag .description b {
+        width: auto !important;
+        margin-left: 2px;
+    }
+}
