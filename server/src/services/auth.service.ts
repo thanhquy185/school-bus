@@ -1,26 +1,50 @@
-import { prisma } from "../configs/prisma";
-import { loginShema, registerShema } from "../schemas/auth.schema";
+import prisma from "../configs/prisma.config";
+import { BAD_CODE, BAD_MESSAGE } from "../configs/respose.config";
+import { RestResponse } from "../responses/rest.response";
+import { loginSchema } from "../schemas/auth.schema"
+import { comparePassword } from "../utils/bcypt.util";
+import { generateToken } from "../utils/jwt.util";
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-export const register = async (input: any) => {
-    const data = registerShema.parse(input);
-    const existing = await prisma.users.findUnique({ where: { username: data.username } });
-    if (existing) throw new Error("Tài khoản đã tồn tại");
-    if (data.password !== data.passwordConfirm) throw new Error("Mật khẩu xác nhận không chính xác");
-    const user = await prisma.users.create({
-        data: {
-            username: data.username,
-            password: data.password,
-            status: "ACTIVE"
+const AuthService = {
+    async login(input: unknown) {
+        const data = loginSchema.parse(input);
+        const account = await prisma.accounts.findFirst({
+            where: {
+                username: data.username
+            }
+        });
+         
+        if (!account) {
+            return {
+                statusCode: BAD_CODE,
+                result: false,
+                message: BAD_MESSAGE,
+                data: null,
+                errorMessage: "Tài khoản không tồn tại"
+            } as RestResponse;
         }
-    });
-    return { id: user.id, email: user.username };
+
+        const isMatch = await comparePassword(data.password, account?.password || "");
+        if (!isMatch) {
+            return {
+                statusCode: BAD_CODE,
+                result: false,
+                message: BAD_MESSAGE,
+                data: null,
+                errorMessage: "Tài khoản hoặc mật khẩu không đúng"
+            } as RestResponse;
+        }
+
+        const auth = generateToken({ id: account.id, username: account.username, role: account.role });
+        return {
+            statusCode: 200,
+            result: true,
+            message: "Đăng nhập thành công",
+            data: auth,
+            errorMessage: null
+        } as RestResponse;
+    }
 }
 
-export const login = async (input: any) => {
-    const data = loginShema.parse(input);
-    const user = await prisma.users.findUnique({ where: { username: data.username, password: data.password }});
-    if (!user) throw new Error("Tài khoản hoặc mật khẩu không chính xác");
-    return { id: user.id, email: user.username };
-}
+
+export default AuthService;

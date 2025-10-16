@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PARENT
+  DRIVER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum StudentStatus {
+  STUDYING
+  DROPPED_OUT
+  UNKNOWN
+}
+
+enum BusStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+enum RouteStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model accounts {
+  id       Int           @id @default(autoincrement())
+  username String        @unique
+  password String
+  role     Role          @default(PARENT)
+  status   AccountStatus @default(ACTIVE)
+
+  parents parents?
+  drivers drivers?
+}
+
+model classes {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  students students[]
+}
+
+model buses {
+  id            Int    @id @default(autoincrement())
+  license_plate String @unique
+  capacity      Int
+  status        BusStatus @default(ACTIVE)
+
+  schedule schedules?
+}
+
+model routes {
+  id         Int    @id @default(autoincrement())
+  name        String
+  start_pickup String
+  end_pickup   String
+  start_time  String
+  end_time    String
+  status    RouteStatus @default(ACTIVE)
+
+  schedules schedules[]
+}
+
+model parents {
+  id        Int    @id @default(autoincrement())
+  avatar    String
+  full_name String
+  phone     String @unique
+  email     String @unique
+  address   String
+
+  students  students[]
+
+  account_id Int      @unique
+  account    accounts @relation(fields: [account_id], references: [id])
+}
+
+model students {
+  id         Int      @id @default(autoincrement())
+  avatar     String
+  full_name  String
+  birth_date DateTime
+  gender     Gender   @default(OTHER)
+  status    StudentStatus @default(UNKNOWN)
+
+  parent_id Int
+  parent    parents   @relation(fields: [parent_id], references: [id])
+
+  class_id Int
+  class    classes   @relation(fields: [class_id], references: [id])
+}
+
+model drivers {
+  id         Int      @id @default(autoincrement())
+  avatar     String
+  full_name  String
+  birth_date DateTime
+  phone      String   @unique
+  email      String   @unique
+  address    String
+
+  schedule schedules?
+
+  account_id Int      @unique
+  account    accounts @relation(fields: [account_id], references: [id])
+}
+
+model schedules {
+  id        Int      @id @default(autoincrement())
+  work_schedule String
+
+  driver_id Int @unique
+  driver drivers @relation(fields: [driver_id], references: [id])
+
+  bus_id Int @unique
+  bus buses @relation(fields: [bus_id], references: [id])
+
+  route_id Int
+  route routes @relation(fields: [route_id], references: [id])
+}
