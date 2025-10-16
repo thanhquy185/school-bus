@@ -1,12 +1,12 @@
 import z from "zod";
 
-export const registerShema = z.object({
+export const registerSchema = z.object({
     username: z.string(),
-    password: z.string().min(6),
-    passwordConfirm: z.string().min(6)
+    password: z.string(),
+    passwordConfirm: z.string()
 });
 
-export const loginShema = z.object({
-    username: z.string(),
+export const loginSchema = z.object({
+    username: z.string().nonempty("Username is required"),
     password: z.string()
 });
