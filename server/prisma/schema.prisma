@@ -41,6 +41,16 @@ enum RouteStatus {
   INACTIVE
 }
 
+enum PickupStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PickupCategory {
+  SCHOOL
+  PICKUP
+}
+
 model accounts {
   id       Int           @id @default(autoincrement())
   username String        @unique
@@ -78,6 +88,7 @@ model routes {
   status    RouteStatus @default(ACTIVE)
 
   schedules schedules[]
+  pickups   pickupToRoute[]
 }
 
 model parents {
@@ -136,4 +147,25 @@ model schedules {
 
   route_id Int
   route routes @relation(fields: [route_id], references: [id])
+}
+
+model pickups {
+  id        Int @id @default(autoincrement())
+  name      String
+  category  PickupCategory
+  lat       Float
+  lng       Float
+  status    PickupStatus @default(ACTIVE)
+
+  routes    pickupToRoute[]
+}
+
+model pickupToRoute {
+  route_id    Int
+  pickup_id   Int
+  order       Int
+
+  @@id([route_id, pickup_id])
+  route   routes @relation(fields: [route_id], references: [id], onDelete: Cascade)
+  pickup  pickups @relation(fields: [pickup_id], references: [id], onDelete: Cascade)
 }
