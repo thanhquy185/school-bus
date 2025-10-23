@@ -32,7 +32,8 @@
     "react-spinners": "^0.17.0",
     "sweetalert2": "^11.25.0",
     "timezone": "^1.0.23",
-    "utc": "^0.1.0"
+    "utc": "^0.1.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",

@@ -36,6 +36,10 @@ import { CommonStatusValue } from "../../common/values";
 import type { BusType } from "../../common/types";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
+import axios from "axios";
+import { createSchema, updateSchema } from "../../../../server/src/schemas/bus.schema";
+import { z } from "zod";
+
 
 // Bus Page
 const BusPage = () => {
@@ -45,20 +49,26 @@ const BusPage = () => {
   // Notification
   const { openNotification } = useNotification();
 
-  // Cấu hình bảng dữ liệu (sau cập nhật lọc giới tính, phụ huynh, trạm và lớp)
-  const demoData: BusType[] = [
-    {
-      id: 1,
-      licensePlate: "AA00-0000",
-      capacity: 20,
-      status: "Hoạt động",
-    },
-    {
-      id: 2,
-      licensePlate: "AA99-9999",
-      capacity: 30,
-      status: "Tạm dừng",
-    },
+  const [busList, setBusList] = useState<BusType[]>([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Thêm state để lưu filter
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "Hoạt động";
+      case "INACTIVE":
+        return "Tạm dừng";
+      default:
+        return "Không xác định";
+    }
+  };
+  const statusOptions = [
+    { value: "ACTIVE", label: getStatusLabel("ACTIVE") },
+    { value: "INACTIVE", label: getStatusLabel("INACTIVE") },
   ];
   const columns: ColumnsType<BusType> = [
     {
@@ -87,8 +97,8 @@ const BusPage = () => {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={status === CommonStatusValue.active ? "green" : "red"}>
-          {status}
+        <Tag color={getStatusLabel(status) === CommonStatusValue.active ? "green" : "red"}>
+          {getStatusLabel(status)}
         </Tag>
       ),
       width: "15%",
@@ -122,14 +132,14 @@ const BusPage = () => {
             variant="filled"
             onClick={() => {
               setCurrentAction(
-                record.status === CommonStatusValue.active ? "lock" : "unlock"
+                getStatusLabel(record.status) ===  CommonStatusValue.active ? "lock" : "unlock"
               );
               setCurrentSelectedItem(record);
             }}
           >
             <FontAwesomeIcon
               icon={
-                record.status === CommonStatusValue.active ? faLock : faLockOpen
+                getStatusLabel(record.status) === CommonStatusValue.active ? faLock : faLockOpen
               }
             />
           </Button>
@@ -179,7 +189,7 @@ const BusPage = () => {
               id: bus.id || undefined,
               licensePlate: bus.licensePlate || undefined,
               capacity: bus.capacity || undefined,
-              status: bus.status || undefined,
+              status: getStatusLabel(bus.status ?? "") || undefined,
             }}
           >
             <Row className="split-3">
@@ -221,20 +231,16 @@ const BusPage = () => {
             form={form}
             layout="vertical"
             initialValues={{
-              id: undefined,
               licensePlate: undefined,
               capacity: undefined,
               status: undefined,
             }}
-            onFinish={() => {
-              console.log("Form values:", form.getFieldsValue());
-            }}
+            onFinish={(values) => {handleSubmitCreateForm(values)}}
           >
             <Row className="split-3">
               <Col></Col>
               <Col>
                 <Form.Item
-                  name="id"
                   label={defaultLabels.id}
                   className="text-center"
                 >
@@ -253,11 +259,11 @@ const BusPage = () => {
                     options={[
                       {
                         label: CommonStatusValue.active,
-                        value: CommonStatusValue.active,
+                        value: "ACTIVE",
                       },
                       {
                         label: CommonStatusValue.inactive,
-                        value: CommonStatusValue.inactive,
+                        value: "INACTIVE",
                       },
                     ]}
                   />
@@ -266,23 +272,29 @@ const BusPage = () => {
                   name="licensePlate"
                   htmlFor="create-licensePlate"
                   label={defaultLabels.licensePlate}
-                  rules={[ruleRequired("Số đăng ký xe không được để trống !")]}
+                  rules={[
+                    // ruleRequired("Số đăng ký xe không được để trống !"),
+                    zodFieldRule(createSchema, "licensePlate"),
+                  ]}
                 >
                   <Input
                     id="create-licensePlate"
-                    placeholder={defaultInputs.licensePlate}
+                    placeholder="VD: 52N-89341"
                   />
                 </Form.Item>
                 <Form.Item
                   name="capacity"
                   htmlFor="create-capacity"
                   label={defaultLabels.capacity}
-                  rules={[ruleRequired("Số chỗ ngồi không được để trống !")]}
+                  rules={[
+                    // ruleRequired("Số chỗ ngồi không được để trống !"),
+                    zodFieldRule(createSchema, "capacity"),
+                  ]}
                 >
                   <InputNumber
                     min={0}
                     id="create-capacity"
-                    placeholder={defaultInputs.capacity}
+                    placeholder="Nhập số chỗ ngồi"
                   />
                 </Form.Item>
                 <div className="buttons">
@@ -317,9 +329,7 @@ const BusPage = () => {
               capacity: bus.capacity || undefined,
               status: bus.status || undefined,
             }}
-            onFinish={() => {
-              console.log("Form values:", form.getFieldsValue());
-            }}
+            onFinish={(values) => {handleSubmitUpdateForm(values)}}
           >
             <Row className="split-3">
               <Col></Col>
@@ -332,13 +342,15 @@ const BusPage = () => {
                   <Input disabled />
                 </Form.Item>
                 <Form.Item name="status" label={defaultLabels.status}>
-                  <Select disabled />
+                  <Select disabled options={statusOptions}/>
                 </Form.Item>
                 <Form.Item
                   name="licensePlate"
                   htmlFor="create-licensePlate"
                   label={defaultLabels.licensePlate}
-                  rules={[ruleRequired("Số đăng ký xe không được để trống !")]}
+                  rules={[
+                    zodFieldRule(updateSchema, "licensePlate"),
+                  ]}
                 >
                   <Input
                     id="create-licensePlate"
@@ -349,7 +361,10 @@ const BusPage = () => {
                   name="capacity"
                   htmlFor="create-capacity"
                   label={defaultLabels.capacity}
-                  rules={[ruleRequired("Số chỗ ngồi không được để trống !")]}
+                  rules={[
+                    // ruleRequired("Số chỗ ngồi không được để trống !"),
+                    zodFieldRule(updateSchema, "capacity"),
+                  ]}
                 >
                   <InputNumber
                     min={0}
@@ -391,13 +406,13 @@ const BusPage = () => {
           icon={
             <FontAwesomeIcon
               icon={
-                bus?.status === CommonStatusValue.active ? faLock : faLockOpen
+                getStatusLabel(bus?.status ?? "") === CommonStatusValue.active ? faLock : faLockOpen
               }
             />
           }
           description={
             "Bạn có chắc chắc muốn" +
-            (bus?.status === CommonStatusValue.active
+            (getStatusLabel(bus?.status ?? "") === CommonStatusValue.active
               ? " khoá "
               : " mở khoá ") +
             "xe buýt này ? Hành động không thể hoàn tác !"
@@ -407,13 +422,9 @@ const BusPage = () => {
             <Button
               color="danger"
               variant="solid"
+              loading={loading}
               onClick={() => {
-                openNotification({
-                  type: "success",
-                  message: "Thành công",
-                  description: "123 !",
-                  duration: 1.5,
-                });
+                handleConfirmLockUnlock(bus)
               }}
             >
               Xác nhận
@@ -430,135 +441,206 @@ const BusPage = () => {
     lock: (selectedBus: BusType) => <BusLock bus={selectedBus} />,
   };
 
-  // Effect cập nhật Card Content
+  // Gom 2 cái effect lại
   useEffect(() => {
+    // 🧭 Cập nhật Breadcrumb + Tiêu đề + Nội dung
+    const baseBreadcrumb = [
+      {
+        title: (
+          <span onClick={() => setCurrentAction("list")}>
+            <FontAwesomeIcon icon={faBus} />
+            &nbsp;{t("bus-manager")}
+          </span>
+        ),
+      },
+      {
+        title: (
+          <span onClick={() => setCurrentAction("list")}>
+            {t("bus-list")}
+          </span>
+        ),
+      },
+    ];
+
+    switch (currentAction) {
+      case "list":
+        setCurrentBreadcrumbItems(baseBreadcrumb);
+        setCurrentCardTitle(t("bus-list"));
+        setCurrentCardContent("list");
+        break;
+      case "detail":
+        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("bus-detail")}</span> }]);
+        setCurrentCardTitle(t("bus-detail"));
+        setCurrentCardContent("detail");
+        break;
+      case "create":
+        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("bus-create")}</span> }]);
+        setCurrentCardTitle(t("bus-create"));
+        setCurrentCardContent("create");
+        break;
+      case "update":
+        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("bus-update")}</span> }]);
+        setCurrentCardTitle(t("bus-update"));
+        setCurrentCardContent("update");
+        break;
+      case "lock":
+        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("bus-lock")}</span> }]);
+        setCurrentCardTitle(t("bus-lock"));
+        setCurrentCardContent("lock");
+        break;
+      case "unlock":
+        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("bus-unlock")}</span> }]);
+        setCurrentCardTitle(t("bus-unlock"));
+        setCurrentCardContent("unlock");
+        break;
+    }
+
+    // 📦 Nếu đang ở chế độ "list" thì gọi API
     if (currentAction === "list") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faBus} />
-              &nbsp;{t("bus-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("bus-list")}
-            </span>
-          ),
-        },
-      ]);
-      setCurrentCardTitle(t("bus-list"));
-      setCurrentCardContent("list");
-    } else if (currentAction === "detail") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faBus} />
-              &nbsp;{t("bus-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("bus-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("bus-detail")}</span> },
-      ]);
-      setCurrentCardTitle(t("bus-detail"));
-      setCurrentCardContent("detail");
-    } else if (currentAction === "create") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faBus} />
-              &nbsp;{t("bus-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("bus-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("bus-create")}</span> },
-      ]);
-      setCurrentCardTitle(t("bus-create"));
-      setCurrentCardContent("create");
-    } else if (currentAction === "update") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faBus} />
-              &nbsp;{t("bus-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("bus-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("bus-update")}</span> },
-      ]);
-      setCurrentCardTitle(t("bus-update"));
-      setCurrentCardContent("update");
-    } else if (currentAction === "lock") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faBus} />
-              &nbsp;{t("bus-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("bus-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("bus-lock")}</span> },
-      ]);
-      setCurrentCardTitle(t("bus-lock"));
-      setCurrentCardContent("lock");
-    } else if (currentAction === "unlock") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faBus} />
-              &nbsp;{t("bus-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("bus-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("bus-unlock")}</span> },
-      ]);
-      setCurrentCardTitle(t("bus-unlock"));
-      setCurrentCardContent("unlock");
+      const fetchBuses = async () => {
+        setLoading(true);
+        try {
+          const res = await axios.get("http://localhost:5000/api/buses");
+          setBusList(res.data.data);
+        } catch (error) {
+          console.error("Lỗi khi lấy dữ liệu bus:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchBuses();
     }
   }, [currentAction]);
+
+  // Hàm chuyển zod -> rule của Ant Design
+  const zodFieldRule = (schema: any, fieldName: keyof z.infer<typeof schema>) => ({
+    validator: async (_: any, value: any) => {
+      try {
+        schema.pick({ [fieldName]: true }).parse({ [fieldName]: value });
+        return Promise.resolve();
+      } catch (err: any) {
+        if (err instanceof z.ZodError) {
+          const firstError = err.issues
+            .find((e: any) => e.path[0] === fieldName)?.message || "Giá trị không hợp lệ";
+
+          return Promise.reject(new Error(firstError));
+        }
+
+        return Promise.reject(new Error("Giá trị không hợp lệ"));
+      }
+    },
+  });
+
+  // Nút xác nhận form Create
+  const handleSubmitCreateForm = async (values: any) => {
+    try {
+      console.log("Giá trị form:", values);
+      const formattedValues = {
+        licensePlate: values.licensePlate,
+        capacity: Number(values.capacity),
+        status: values.status,
+      };
+
+      // Kiểm tra bằng zod
+      createSchema.parse(formattedValues);
+      const res = await axios.post("http://localhost:5000/api/buses", {
+        licensePlate: formattedValues.licensePlate,
+        capacity: formattedValues.capacity,
+        status: formattedValues.status,
+      });
+
+      if (res.status === 201 || res.status === 200) {
+        console.log("✅ Tạo xe buýt thành công:", res.data);
+        setCurrentAction("list");
+      } else {
+        console.log("❌ Không thể thêm xe buýt. Vui lòng thử lại.");
+      }
+    } catch (error: any) {
+      console.log("🚨 Lỗi khi tạo xe buýt:", error);
+    }
+  };
+
+  // Nút xác nhận form Update
+  const handleSubmitUpdateForm = async (values: any) => {
+    try {
+      console.log("Giá trị form:", values);
+      const formattedValues = {
+        id: Number(values.id),
+        licensePlate: values.licensePlate?.trim(),
+        capacity: Number(values.capacity),
+        status: values.status,
+      };
+
+      // Kiểm tra bằng zod
+      updateSchema.parse(formattedValues);
+
+      const res = await axios.put(`http://localhost:5000/api/buses/${formattedValues.id}`, {
+        licensePlate: formattedValues.licensePlate,
+        capacity: formattedValues.capacity,
+        status: formattedValues.status,
+      });
+
+      if (res.status === 201 || res.status === 200) {
+        console.log("✅ Cập nhật xe buýt thành công:", res.data);
+        setCurrentAction("list");
+      } else {
+        console.log("❌ Không thể thêm xe buýt. Vui lòng thử lại.");
+      }
+    } catch (error: any) {
+      console.log("🚨 Lỗi khi tạo xe buýt:", error);
+    }
+  };
+
+  // Nút xác nhận Lock/Unlock
+  const handleConfirmLockUnlock = async (bus: BusType) => {
+    const newStatus = bus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+
+    try {
+      setLoading(true); // nếu muốn hiển thị spinner
+      const res = await axios.put(`http://localhost:5000/api/buses/${bus.id}`, {
+        ...bus,
+        status: newStatus,
+      });
+
+      if (res.status === 200 || res.status === 201) {
+        openNotification({
+          type: "success",
+          message: "Thành công",
+          description: `Xe buýt #${bus.id} đã được ${
+            newStatus === "ACTIVE" ? "mở khóa" : "khóa"
+          }`,
+          duration: 2,
+        });
+        setCurrentAction("list"); // quay về danh sách
+      } else {
+        openNotification({
+          type: "error",
+          message: "Lỗi",
+          description: "Không thể thay đổi trạng thái. Vui lòng thử lại!",
+        });
+      }
+    } catch (error) {
+      console.error("Lỗi khi lock/unlock:", error);
+      openNotification({
+        type: "error",
+        message: "Lỗi",
+        description: "Đã xảy ra lỗi khi gửi yêu cầu!",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Hàm lọc busList
+  const filteredBusList = busList.filter((bus) => {
+    const matchesLicensePlate = bus.licensePlate
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase());
+    const matchesStatus = statusFilter
+      ? bus.status === statusFilter
+      : true;
+    return matchesLicensePlate && matchesStatus;
+  });
 
   return (
     <div className="admin-layout__main-content">
@@ -575,23 +657,19 @@ const BusPage = () => {
               <div className="left">
                 <Input
                   prefix={<SearchOutlined />}
-                  placeholder="Tìm theo họ và tên xe buýt"
-                  //   value={searchText}
-                  //   onChange={(e) => setSearchText(e.target.value)}
+                  placeholder="Tìm theo số đăng ký xe buýt"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
                   className="filter-find"
                 />
                 <Select
                   allowClear
                   placeholder="Chọn Trạng thái"
+                  value={statusFilter}
+                  onChange={(value) => setStatusFilter(value)}
                   options={[
-                    {
-                      label: CommonStatusValue.active,
-                      value: CommonStatusValue.active,
-                    },
-                    {
-                      label: CommonStatusValue.inactive,
-                      value: CommonStatusValue.inactive,
-                    },
+                    { label: CommonStatusValue.active, value: "ACTIVE" },
+                    { label: CommonStatusValue.inactive, value: "INACTIVE" },
                   ]}
                   className="filter-select"
                 />
@@ -599,7 +677,10 @@ const BusPage = () => {
                   color="blue"
                   variant="filled"
                   icon={<ReloadOutlined />}
-                  //   onClick={() => setSearchText("")}
+                  onClick={() => {
+                    setSearchText("");
+                    setStatusFilter(undefined);
+                  }}
                   className="filter-reset"
                 >
                   Làm mới
@@ -617,9 +698,9 @@ const BusPage = () => {
             </div>
             <CustomTableActions<BusType>
               columns={columns}
-              data={demoData || []}
+              data={filteredBusList || []}
               rowKey={(record) => String(record?.id)}
-              // loading={isLoading}
+              loading={loading}
               defaultPageSize={10}
               className="admin-layout__main-table table-data Buss"
             />

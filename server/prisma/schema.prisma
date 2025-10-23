@@ -71,7 +71,7 @@ model classes {
 
 model buses {
   id            Int    @id @default(autoincrement())
-  license_plate String @unique
+  licensePlate  String @unique
   capacity      Int
   status        BusStatus @default(ACTIVE)
 
