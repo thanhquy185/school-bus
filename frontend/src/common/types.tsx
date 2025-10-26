@@ -213,6 +213,7 @@ export interface DriverFormatType {
 // - Chưa format
 export interface ParentNotFormatType {
   id?: number;
+  account_id?: number;
   username?: string;
   password?: string;
   avatar?: string;
@@ -227,8 +228,9 @@ export interface ParentNotFormatType {
 export interface ParentFormatType {
   id?: number;
   user?: UserType;
+  account?: UserType;
   avatar?: string;
-  fullname?: string;
+  full_name?: string;
   phone?: string;
   email?: string;
   address?: string;

@@ -39,6 +39,11 @@ import type { ParentNotFormatType, ParentFormatType } from "../../common/types";
 import CustomUpload from "../../components/upload";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
+import axios from "axios";
+import { Spin } from "antd";
+import { data } from "react-router-dom";
+import Password from "antd/es/input/Password";
+
 
 // Parent Page
 const ParentPage = () => {
@@ -48,37 +53,21 @@ const ParentPage = () => {
   // Notification
   const { openNotification } = useNotification();
 
-  // Cấu hình bảng dữ liệu
-  const demoData: ParentFormatType[] = [
-    {
-      id: 1,
-      user: {
-        id: 1,
-        role: "parent",
-        username: "phuhuynh1",
-        password: "phuhuynh1",
-      },
-      fullname: "Họ tên phụ huynh 1",
-      phone: "1234567890",
-      email: "phuhuynh1@gmail.com",
-      address: "Địa chỉ ở đâu không biết",
-      status: "Hoạt động",
-    },
-    {
-      id: 2,
-      user: {
-        id: 2,
-        role: "parent",
-        username: "phuhuynh2",
-        password: "phuhuynh2",
-      },
-      fullname: "Họ tên phụ huynh 2",
-      phone: "2234567890",
-      email: "phuhuynh2@gmail.com",
-      address: "Địa chỉ ở đâu không biết",
-      status: "Tạm dừng",
-    },
-  ];
+  const [dataParents, setParents] = useState<ParentFormatType[]>([]);
+
+useEffect(() => {
+  fetch("http://localhost:5000/api/parents")
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("📦 API trả về:", data); // In toàn bộ dữ liệu API trả về
+      console.log("📋 Danh sách phụ huynh:", data.result); // In phần result
+      setParents(data.data); // ✅ Đúng biến: data chứ không phải d
+    })
+    .catch((err) => console.error("❌ Lỗi fetchd dữ liệu:", err));
+}, []);
+
+
+ 
   const columns: ColumnsType<ParentFormatType> = [
     {
       title: "#",
@@ -105,18 +94,19 @@ const ParentPage = () => {
     },
     {
       title: "Họ và tên",
-      dataIndex: "fullname",
-      key: "fullname",
+      dataIndex: "full_name",
+      key: "full_name",
       width: "30%",
-      sorter: (a, b) => a?.fullname!.localeCompare(b?.fullname!),
+      sorter: (a, b) => a?.full_name!.localeCompare(b?.full_name!),
     },
-    {
+      {
       title: "Tên tài khoản",
-      key: "username",
+      key: "account",
       width: "20%",
-      render: (record: ParentFormatType) => record.user?.username,
-      sorter: (a, b) => a?.user!.username!.localeCompare(b?.user!.username!),
+      render: (record: ParentFormatType) => record.account?.username,
+      sorter: (a, b) => a.account!.username!.localeCompare(b.account!.username!),
     },
+
     {
       title: "Số điện thoại",
       dataIndex: "phone",
@@ -126,15 +116,16 @@ const ParentPage = () => {
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => (
-        <Tag color={status === CommonStatusValue.active ? "green" : "red"}>
-          {status}
+      key: "accountStatus",
+      render: (_: any, record: ParentFormatType) => (
+        <Tag color={record.account?.status === "ACTIVE" ? "green" : "red"}>
+          {record.account?.status}
         </Tag>
       ),
+      sorter: (a, b) => (a.account?.status || "").localeCompare(b.account?.status || ""),
       width: "10%",
     },
+
     {
       title: "",
       render: (record: any) => (
@@ -164,14 +155,14 @@ const ParentPage = () => {
             variant="filled"
             onClick={() => {
               setCurrentAction(
-                record.status === CommonStatusValue.active ? "lock" : "unlock"
+                record.account?.status === "ACTIVE"  ? "lock" : "unlock"
               );
               setCurrentSelectedItem(record);
             }}
           >
             <FontAwesomeIcon
               icon={
-                record.status === CommonStatusValue.active ? faLock : faLockOpen
+                record.account?.status === "ACTIVE"  ? faLock : faLockOpen
               }
             />
           </Button>
@@ -191,6 +182,8 @@ const ParentPage = () => {
       className: "actions",
     },
   ];
+
+
 
   // State giữ đối tượng được chọn hiện tại
   const [currentSelectedItem, setCurrentSelectedItem] =
@@ -229,7 +222,141 @@ const ParentPage = () => {
     address: "Nhập Địa chỉ",
     status: "Chọn Trạng thái",
   };
+
+ const validateAndGetPassword = (form: any, openNotification: any) => {
+  console.log(form)
+
+  // Nếu không nhập mật khẩu mới thì bỏ qua
+  if (!form.newPassword && !form.newPassword2) return null;
+
+  // Kiểm tra độ dài
+  if (form.newPassword.length < 6) {
+    openNotification({
+      type: "error",
+      message: "Mật khẩu quá ngắn",
+      description: "Mật khẩu phải có ít nhất 6 ký tự.",
+    });
+    return null;
+  }
+
+  // Kiểm tra khớp nhau
+  if (form.newPassword !== form.newPassword2) {
+    openNotification({
+      type: "error",
+      message: "Mật khẩu không khớp",
+      description: "Vui lòng nhập lại mật khẩu xác nhận cho đúng.",
+    });
+    return null;
+  }
+
+
+  return { password: form.newPassword };
+};
+
+ const handleSubmitUpdate = async (values: ParentNotFormatType) => {
+  try {
+
+    const payload: any = {};
+    if (values.id) payload.id = values.id;
+    if (values.fullname) payload.full_name = values.fullname;
+    if (values.phone) payload.phone = values.phone;
+    if (values.email) payload.email = values.email;
+    if (values.address) payload.address = values.address;
+    if (values.status) payload.status = values.status;
+    if(values.account_id) payload.account_id = values.account_id;
+
+    if (values.password && values.password.trim() !== "") {
+      payload.password = values.password;
+    }
+
+    console.log(" Dữ liệu gửi lên:", payload);
+    const res = await axios.put(
+      `http://localhost:5000/api/parents/${values.id}`,
+      payload
+    );
+
+    if (res.status === 200 || res.status === 201) {
+ 
+      const response = await fetch("http://localhost:5000/api/parents");
+      const result = await response.json();
+
+      setParents(result.data);
+      setCurrentAction("list");
+      console.log(" Phụ huynh đã được cập nhật:", res.data);
+      openNotification({
+        type: "success",
+        message: "Thành công",
+        description: "Đã cập nhật phụ huynh thành công!",
+        duration: 1.5,
+      });
+    } else {
+      openNotification({
+        type: "error",
+        message: "Thất bại",
+        description: "Không thể cập nhật phụ huynh. Vui lòng thử lại!",
+      });
+    }
+  } catch (error: any) {
+    console.error(" Lỗi khi cập nhật phụ huynh:", error);
+
+  }
+};
+  const handleSubmitCreate = async (values: ParentNotFormatType) => {
+    try {
+      const payload: any = {};
+      if (values.fullname) payload.full_name = values.fullname;
+      if (values.phone) payload.phone = values.phone;
+      if (values.email) payload.email = values.email;
+      if (values.address) payload.address = values.address;
+      if (values.username) payload.username = values.username;
+      if (values.password) payload.password = values.password;
+      if (values.status) {
+      if (values.status === "Hoạt động") payload.status = "ACTIVE";
+      else if (values.status === "Không hoạt động") payload.status = "INACTIVE";
+      else payload.status = values.status; // phòng trường hợp đã đúng enum
+    }
+
+      if (values.avatar) payload.avatar = values.avatar;
+
+      console.log(" Dữ liệu gửi lên:", payload);
+      const res = await axios.post("http://localhost:5000/api/parents", payload);
+
+      if (res.status === 200 || res.status === 201) {
+        // Cập nhật lại danh sách sau khi tạo mới
+        const response = await fetch("http://localhost:5000/api/parents");
+        const result = await response.json();
+
+        setParents(result.data);
+        setCurrentAction("list");
+
+        console.log(" Phụ huynh đã được tạo:", res.data);
+
+        openNotification({
+          type: "success",
+          message: "Thành công",
+          description: "Tạo phụ huynh mới thành công!",
+          duration: 1.5,
+        });
+      } else {
+        openNotification({
+          type: "error",
+          message: "Thất bại",
+          description: "Không thể tạo phụ huynh. Vui lòng thử lại!",
+        });
+      }
+    } catch (error: any) {
+      console.error(" Lỗi khi tạo phụ huynh:", error);
+      openNotification({
+        type: "error",
+        message: "Lỗi hệ thống",
+        description: "Đã xảy ra lỗi khi gửi dữ liệu lên máy chủ.",
+      });
+    }
+  };
+
+
   const ParentDetail: React.FC<{ parent: ParentFormatType }> = ({ parent }) => {
+    console.log("Parent props:", parent);
     const [form] = Form.useForm<ParentNotFormatType>();
 
     return (
@@ -240,14 +367,14 @@ const ParentPage = () => {
             layout="vertical"
             initialValues={{
               id: parent.id || undefined,
-              username: parent.user?.username || undefined,
+              username: parent.account?.username || undefined, 
               password: "Mật khẩu đã được mã hoá !",
               avatar: parent.avatar || undefined,
-              fullname: parent.fullname || undefined,
+              fullname: parent.full_name || undefined, 
               phone: parent.phone || undefined,
               email: parent.email || undefined,
               address: parent.address || undefined,
-              status: parent.status || undefined,
+              status: parent.account?.status || undefined,
             }}
           >
             <Row className="split-3">
@@ -336,6 +463,8 @@ const ParentPage = () => {
             }}
             onFinish={() => {
               console.log("Form values:", form.getFieldsValue());
+              handleSubmitCreate(form.getFieldsValue());
+              
             }}
           >
             <Row className="split-3">
@@ -457,17 +586,18 @@ const ParentPage = () => {
             layout="vertical"
             initialValues={{
               id: parent.id || undefined,
-              username: parent.user?.username || undefined,
+              username: parent.account?.username || undefined, 
               password: "Mật khẩu đã được mã hoá !",
               avatar: parent.avatar || undefined,
-              fullname: parent.fullname || undefined,
+              fullname: parent.full_name || undefined,
               phone: parent.phone || undefined,
               email: parent.email || undefined,
               address: parent.address || undefined,
-              status: parent.status || undefined,
+              status: parent.account?.status || undefined,
             }}
             onFinish={() => {
               console.log("Form values:", form.getFieldsValue());
+              handleSubmitUpdate(form.getFieldsValue());
             }}
           >
             <Row className="split-3">
@@ -562,7 +692,7 @@ const ParentPage = () => {
             "#" +
             parent?.id +
             " - " +
-            parent?.fullname +
+            parent?.full_name +
             " - " +
             parent?.phone
           }
@@ -578,7 +708,7 @@ const ParentPage = () => {
           }
           description={
             "Bạn có chắc chắc muốn" +
-            (parent?.status === CommonStatusValue.active
+            (parent.account?.status === "ACTIVE" 
               ? " khoá "
               : " mở khoá ") +
             "phụ huynh này ? Hành động không thể hoàn tác !"
@@ -588,14 +718,22 @@ const ParentPage = () => {
             <Button
               color="danger"
               variant="solid"
-              onClick={() => {
-                openNotification({
-                  type: "success",
-                  message: "Thành công",
-                  description: "123 !",
-                  duration: 1.5,
-                });
-              }}
+            onClick={() => {
+              handleSubmitUpdate({
+                id: parent.id,
+                username: parent.account?.username,
+                status:
+                  parent.account?.status === "ACTIVE" ? "INACTIVE" : "ACTIVE", 
+              });
+
+              openNotification({
+                type: "success",
+                message: "Thành công",
+                description: "Đã cập nhật trạng thái phụ huynh thành công!",
+                duration: 1.5,
+              });
+            }}
+
             >
               Xác nhận
             </Button>
@@ -618,10 +756,23 @@ const ParentPage = () => {
             initialValues={{
               newPassword: undefined,
               newPassword2: undefined,
-            }}
+                        }}
             onFinish={() => {
-              console.log("Form values:", form.getFieldsValue());
+              const passwordData = validateAndGetPassword(form.getFieldsValue(), openNotification);
+
+              if (passwordData === null) return;
+              const formValues = form.getFieldsValue() as any;
+
+              // 🧩 3. Gọi API update
+              handleSubmitUpdate({
+                ...formValues,
+                ...passwordData,
+                id: parent.id,
+                account_id: parent.account?.id,
+                username: parent.account?.username,
+              });
             }}
+
           >
             <Row className="split-3">
               <Col></Col>
@@ -884,12 +1035,14 @@ const ParentPage = () => {
               </div>
               <CustomTableActions<ParentFormatType>
                 columns={columns}
-                data={demoData || []}
+                data={dataParents || []}
                 rowKey={(record) => String(record?.id)}
                 // loading={isLoading}
                 defaultPageSize={10}
                 className="admin-layout__main-table table-data parents"
               />
+              <pre>{JSON.stringify(dataParents, null, 2)}</pre>
+              <pre>ê</pre>
             </div>
           )}
           {currentCardContent === "detail" &&
@@ -905,6 +1058,9 @@ const ParentPage = () => {
       </div>
     </>
   );
+
+
+
 };
 
 export default ParentPage;
