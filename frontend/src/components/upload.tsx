@@ -46,17 +46,20 @@ const CustomUpload: React.FC<CustomUploadProps> = ({
 
   return (
     <>
-      <Image
-        src={
-          defaultSrc && !imageFile
-            ? "/src/assets/images/" + imageCategoryName + "/" + defaultSrc
-            : imageFile
-            ? URL.createObjectURL(imageFile)
-            : "/src/assets/images/others/no-image.png"
-        }
-        alt={alt}
-        className={imageClassName}
-      />
+    <Image
+      src={
+        imageFile
+          ? URL.createObjectURL(imageFile) // file upload mới
+          : defaultSrc && defaultSrc.startsWith("http")
+          ? defaultSrc // avatar cũ full URL
+          : defaultSrc
+          ? `/src/assets/images/${imageCategoryName}/${defaultSrc}` // tên file local
+          : "/src/assets/images/others/no-image.png" // placeholder
+      }
+      alt={alt}
+      className={imageClassName}
+    />
+
       <Upload
         accept="image/*"
         showUploadList={false}

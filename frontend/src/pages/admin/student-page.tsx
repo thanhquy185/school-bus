@@ -58,7 +58,7 @@ const StudentPage = () => {
       id: "1",
       parent: {
         id: 1,
-        fullname: "Phụ huynh 1",
+        full_name: "Phụ huynh 1",
       },
       pickup: {
         id: 1,
@@ -79,7 +79,7 @@ const StudentPage = () => {
       id: "2",
       parent: {
         id: 2,
-        fullname: "Phụ huynh 2",
+        full_name: "Phụ huynh 2",
       },
       pickup: {
         id: 2,
@@ -140,7 +140,7 @@ const StudentPage = () => {
       key: "parent",
       width: "14%",
       render: (record: StudentFormatType) =>
-        "#" + record.parent?.id + " - " + record.parent?.fullname,
+        "#" + record.parent?.id + " - " + record.parent?.full_name,
     },
     {
       title: "Trạm",
@@ -304,7 +304,7 @@ const StudentPage = () => {
                     options={[
                       {
                         label:
-                          student.parent?.id + " - " + student.parent?.fullname,
+                          student.parent?.id + " - " + student.parent?.full_name,
                         value: student.parent?.id,
                       },
                     ]}

@@ -18,6 +18,7 @@ export const UploadMiddleware = (folderName: string, fieldName: string) => {
     filename: (_req, file, cb) => {
       const ext = path.extname(file.originalname);
       const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+      _req.body[fieldName] = `${unique}`;
       cb(null, unique);
     },
   });
@@ -32,7 +33,7 @@ export const UploadMiddleware = (folderName: string, fieldName: string) => {
       cb(null, true);
     },
   }).single(fieldName);
-
+ 
   return async (req: Request, res: Response, next: NextFunction) => {
     upload(req, res, (err: any) => {
       if (err) {
@@ -45,6 +46,8 @@ export const UploadMiddleware = (folderName: string, fieldName: string) => {
         };
         return res.status(response.statusCode).json(response);
       }
+     
+      
       next();
     });
   };

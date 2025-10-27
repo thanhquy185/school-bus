@@ -55,6 +55,11 @@ const ParentPage = () => {
 
   const [dataParents, setParents] = useState<ParentFormatType[]>([]);
 
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+
+  
+
 useEffect(() => {
   fetch("http://localhost:5000/api/parents")
     .then((res) => res.json())
@@ -63,7 +68,7 @@ useEffect(() => {
       console.log("📋 Danh sách phụ huynh:", data.result); // In phần result
       setParents(data.data); // ✅ Đúng biến: data chứ không phải d
     })
-    .catch((err) => console.error("❌ Lỗi fetchd dữ liệu:", err));
+    .catch((err) => console.error(" Lỗi fetchd dữ liệu:", err));
 }, []);
 
 
@@ -86,7 +91,7 @@ useEffect(() => {
       ? `http://localhost:5000/uploads/parents/${avatar}`
       : "/src/assets/images/others/no-image.png";
 
-    console.log("➡️ Đường dẫn ảnh:", imageUrl); // ✅ In ra console của trình duyệt
+    // console.log("➡️ Đường dẫn ảnh:", imageUrl); // ✅ In ra console của trình duyệt
 
     return (
       <Image
@@ -232,7 +237,7 @@ useEffect(() => {
   };
 
  const validateAndGetPassword = (form: any, openNotification: any) => {
-  console.log(form)
+  // console.log(form)
 
   // Nếu không nhập mật khẩu mới thì bỏ qua
   if (!form.newPassword && !form.newPassword2) return null;
@@ -281,7 +286,7 @@ useEffect(() => {
       formData.append("avatar", imageFile);
     }
 
-    console.log("🧾 Dữ liệu gửi lên (FormData):");
+    console.log(" Dữ liệu gửi lên (FormData):");
     for (const [key, value] of formData.entries()) {
       console.log(key, ":", value);
     }
@@ -303,7 +308,7 @@ useEffect(() => {
       setParents(result.data);
       setCurrentAction("list");
 
-      console.log("✅ Phụ huynh đã được cập nhật:", res.data);
+      console.log(" Phụ huynh đã được cập nhật:", res.data);
       openNotification({
         type: "success",
         message: "Thành công",
@@ -318,7 +323,7 @@ useEffect(() => {
       });
     }
   } catch (error: any) {
-    console.error("❌ Lỗi khi cập nhật phụ huynh:", error);
+    console.error(" Lỗi khi cập nhật phụ huynh:", error);
     openNotification({
       type: "error",
       message: "Lỗi hệ thống",
@@ -333,6 +338,7 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
 
     if (imageFile) {
       formData.append("avatar", imageFile); 
+      
     }
 
     if (values.fullname) formData.append("full_name", values.fullname);
@@ -341,15 +347,14 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
     if (values.address) formData.append("address", values.address);
     if (values.username) formData.append("username", values.username);
     if (values.password) formData.append("password", values.password);
-
+    if(values.avatar) formData.append("avatar", imageFile?.name!);
     if (values.status) {
       if (values.status === "Hoạt động") formData.append("status", "ACTIVE");
-      else if (values.status === "Không hoạt động")
+      else if (values.status === "Tạm dừng")
         formData.append("status", "INACTIVE");
       else formData.append("status", values.status);
     }
-    console.log("🧾 Dữ liệu gửi lên (FormData):");
-    console.log(formData);
+
     const res = await axios.post("http://localhost:5000/api/parents", formData);
 
     if (res.status === 200 || res.status === 201) {
@@ -359,7 +364,7 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
       setParents(result.data);
       setCurrentAction("list");
 
-      console.log("✅ Phụ huynh đã được tạo:", res.data);
+      console.log(" Phụ huynh đã được tạo:", res.data);
 
       openNotification({
         type: "success",
@@ -375,7 +380,7 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
       });
     }
   } catch (error: any) {
-    console.error("❌ Lỗi khi tạo phụ huynh:", error);
+    console.error("Lỗi khi tạo phụ huynh:", error);
     openNotification({
       type: "error",
       message: "Lỗi hệ thống",
@@ -383,11 +388,27 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
     });
   }
 };
+const statusMap: Record<string, string> = {
+  "Hoạt động": "ACTIVE",
+  "Tạm dừng": "INACTIVE",
+};
+
+const filteredParentList = dataParents.filter((parent) => {
+  const matchesFull_name = parent.full_name
+    ?.toLowerCase()
+    .includes(searchText.toLowerCase());
+
+  const matchesStatus = statusFilter
+    ? parent.account?.status === statusMap[statusFilter]
+    : true;
+
+  return matchesFull_name && matchesStatus;
+});
 
 
 
   const ParentDetail: React.FC<{ parent: ParentFormatType }> = ({ parent }) => {
-    console.log("Parent props:", parent);
+    // console.log("Parent props:", parent);
     const [form] = Form.useForm<ParentNotFormatType>();
 
     return (
@@ -416,7 +437,11 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
                   valuePropName="fileList"
                 >
                   <CustomUpload
-                    defaultSrc={parent.avatar! as string}
+                  defaultSrc={
+                    parent.avatar
+                      ? `http://localhost:5000/uploads/parents/${parent.avatar}`
+                      : "/src/assets/images/others/no-image.png"
+                  }
                     alt="image-preview"
                     imageClassName="image-preview"
                     imageCategoryName="parents"
@@ -493,7 +518,7 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
               status: undefined,
             }}
             onFinish={() => {
-              console.log("Form values:", form.getFieldsValue());
+              // console.log("Form values:", form.getFieldsValue());
               handleSubmitCreate(form.getFieldsValue(),imageFile);
               
             }}
@@ -627,7 +652,7 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
               status: parent.account?.status || undefined,
             }}
             onFinish={() => {
-              console.log("Form values:", form.getFieldsValue());
+              // console.log("Form values:", form.getFieldsValue());
               handleSubmitUpdate(form.getFieldsValue(),imageFile);
             }}
           >
@@ -640,7 +665,11 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
                   valuePropName="fileList"
                 >
                   <CustomUpload
-                    defaultSrc={parent.avatar ? parent.avatar : ""}
+                    defaultSrc={
+                    parent.avatar
+                      ? `http://localhost:5000/uploads/parents/${parent.avatar}`
+                      : "/src/assets/images/others/no-image.png"
+                  }
                     imageFile={imageFile}
                     setImageFile={setImageFile}
                     alt="image-preview"
@@ -856,7 +885,8 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
       <ParentChangePassword parent={selectedParent} />
     ),
   };
-
+  
+  
   // Effect cập nhật Card Content
   useEffect(() => {
     if (currentAction === "list") {
@@ -1025,13 +1055,18 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
                   <Input
                     prefix={<SearchOutlined />}
                     placeholder="Tìm theo họ và tên phụ huynh"
-                    //   value={searchText}
-                    //   onChange={(e) => setSearchText(e.target.value)}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
                     className="filter-find"
                   />
                   <Select
+
+
+
                     allowClear
                     placeholder="Chọn Trạng thái"
+                    value={statusFilter}
+                    onChange={(value) =>setStatusFilter(value)}
                     options={[
                       {
                         label: CommonStatusValue.active,
@@ -1048,7 +1083,11 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
                     color="blue"
                     variant="filled"
                     icon={<ReloadOutlined />}
-                    //   onClick={() => setSearchText("")}
+                     onClick={() => {
+                    setSearchText("");
+                    setStatusFilter(undefined);
+                  }}
+                      
                     className="filter-reset"
                   >
                     Làm mới
@@ -1066,13 +1105,13 @@ const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile
               </div>
               <CustomTableActions<ParentFormatType>
                 columns={columns}
-                data={dataParents || []}
+                data={filteredParentList || []}
                 rowKey={(record) => String(record?.id)}
                 // loading={isLoading}
                 defaultPageSize={10}
                 className="admin-layout__main-table table-data parents"
               />
-              <pre>{JSON.stringify(dataParents, null, 2)}</pre>
+             
            
             </div>
           )}

@@ -31,6 +31,7 @@ const ParentController = {
     },
     
     async create(req: Request, res: Response) {
+        console.log("👨‍👩‍👧‍👦 ParentController.create - req.body:", req.body);
         const response = await ParentService.create(req.body);
 
         res.status(response.statusCode).json(response);

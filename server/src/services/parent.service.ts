@@ -1,4 +1,4 @@
-import { email } from "zod";
+
 import prisma from "../configs/prisma.config";
 import { ParentResponse } from "../responses/parent.response";
 import { createSchema, deleteSchema, getSchema, updateSchema } from "../schemas/parent.schema";
@@ -107,13 +107,18 @@ const ParentService ={
 
 
 async create(input: unknown) {
+  try {
+    // console.log("Input:", input);
 
-  const data = createSchema.parse(input);
-  let account = null;
-  if (data.username && data.password) {
+    const data = createSchema.parse(input);
+    // console.log("Parsed data:", data);
+
+    if (!data.username || !data.password) {
+      throw new Error("Username hoặc password không hợp lệ");
+    }
+
     const hashedPassword = await hashPassword(data.password);
-
-    account = await prisma.accounts.create({
+    const account = await prisma.accounts.create({
       data: {
         username: data.username,
         password: hashedPassword,
@@ -121,30 +126,36 @@ async create(input: unknown) {
         status: data.status ?? "ACTIVE",
       },
     });
-  }
-  
+
+    // console.log("Account created:", account);
 
     const parent = await prisma.parents.create({
-    data: {
+      data: {
         full_name: data.full_name,
         phone: data.phone,
         email: data.email,
         address: data.address ?? null,
         avatar: data.avatar ?? "", 
-        account: { connect: { id: account.id } }, 
-    },
+        account: { connect: { id: account.id } },
+      },
     });
 
+    // console.log("Parent created:", parent);
 
+    return isCreateRest({
+      id: parent.id,
+      full_name: parent.full_name,
+      avatar: parent.avatar,
+      phone: parent.phone,
+      email: parent.email,
+      address: parent.address,
+      account_id: parent.account_id,
+    } as ParentResponse);
 
-  return isCreateRest({
-    id: parent.id,
-    full_name: parent.full_name,
-    phone: parent.phone,
-    email: parent.email,
-    address: parent.address,
-    account_id: parent.account_id,
-  } as ParentResponse);
+  } catch (err) {
+    console.error("Create parent error:", err);
+    throw err;
+  }
 }
 
 }

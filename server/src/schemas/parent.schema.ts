@@ -17,11 +17,11 @@ export const createSchema = zod.object(
     .string()
     .min(4, "Tên đăng nhập phải có ít nhất 4 ký tự")
     .optional(),
-      avatar: zod
-    .string()
-    .url("Ảnh đại diện phải là đường dẫn hợp lệ")
-    .optional()
-    .describe("Ảnh đại diện của phụ huynh"),
+       avatar: zod
+        .string()
+        .regex(/^[\w\-.]+\.png$/i, "Ảnh đại diện phải là file PNG hợp lệ")
+        .optional()
+        .describe("Ảnh đại diện của phụ huynh"),
         status: zod
             .enum(["ACTIVE", "INACTIVE"])
             .optional()
@@ -46,11 +46,11 @@ export const createSchema = zod.object(
         address: zod.string().optional(),
 
         account_id: zod.number().optional(),
-    avatar: zod
-    .string()
-    .url("Ảnh đại diện phải là đường dẫn hợp lệ")
-    .optional()
-    .describe("Ảnh đại diện của phụ huynh"),
+            avatar: zod
+        .string()
+        .regex(/^[\w\-.]+\.png$/i, "Ảnh đại diện phải là file PNG hợp lệ")
+        .optional()
+        .describe("Ảnh đại diện của phụ huynh"),
         status: zod
             .enum(["ACTIVE", "INACTIVE"])
             .optional()

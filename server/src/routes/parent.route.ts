@@ -5,8 +5,7 @@ import { UploadMiddleware } from "../middlewares/upload.middleware";
 const router = Router();
 router.get("", ParentController.getAll);
 router.get("/:id", ParentController.get);
-router.post(
-  "",
+router.post("",
   UploadMiddleware("parents", "avatar"), 
   ParentController.create
 );
