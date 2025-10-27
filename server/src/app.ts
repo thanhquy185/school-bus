@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from "path";
 
 import AuthMiddleware from './middlewares/auth.middleware';
 
@@ -15,6 +16,8 @@ import usePrisma from './hooks/usePrisma.hook';
 import useError from './hooks/useError.hook';
 
 const app = express();
+
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use(cors({ origin: "http://localhost:3000" }));
 // Parse JSON request body

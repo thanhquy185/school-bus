@@ -76,22 +76,30 @@ useEffect(() => {
       width: "10%",
       sorter: (a, b) => a?.id! - b?.id!,
     },
-    {
-      title: "Hình ảnh",
-      dataIndex: "avatar",
-      key: "avatar",
-      width: "5%",
-      render: (avatar: string) => (
-        <Image
-          src={
-            avatar!
-              ? "/src/assets/images/parents/" + avatar
-              : "/src/assets/images/others/no-image.png"
-          }
-          alt=""
-        />
-      ),
-    },
+  {
+  title: "Hình ảnh",
+  dataIndex: "avatar",
+  key: "avatar",
+  width: "5%",
+  render: (avatar: string) => {
+    const imageUrl = avatar
+      ? `http://localhost:5000/uploads/parents/${avatar}`
+      : "/src/assets/images/others/no-image.png";
+
+    console.log("➡️ Đường dẫn ảnh:", imageUrl); // ✅ In ra console của trình duyệt
+
+    return (
+      <Image
+        src={imageUrl}
+        alt=""
+        width={60}
+        height={60}
+        style={{ objectFit: "cover", borderRadius: "8px" }}
+      />
+    );
+  },
+},
+
     {
       title: "Họ và tên",
       dataIndex: "full_name",
@@ -253,36 +261,49 @@ useEffect(() => {
   return { password: form.newPassword };
 };
 
- const handleSubmitUpdate = async (values: ParentNotFormatType) => {
+ const handleSubmitUpdate = async (values: ParentNotFormatType, imageFile?: RcFile) => {
   try {
+    const formData = new FormData();
 
-    const payload: any = {};
-    if (values.id) payload.id = values.id;
-    if (values.fullname) payload.full_name = values.fullname;
-    if (values.phone) payload.phone = values.phone;
-    if (values.email) payload.email = values.email;
-    if (values.address) payload.address = values.address;
-    if (values.status) payload.status = values.status;
-    if(values.account_id) payload.account_id = values.account_id;
+    // Gửi kèm các trường text
+    if (values.fullname) formData.append("full_name", values.fullname);
+    if (values.phone) formData.append("phone", values.phone);
+    if (values.email) formData.append("email", values.email);
+    if (values.address) formData.append("address", values.address);
+    if (values.username) formData.append("username", values.username);
+    if (values.password && values.password.trim() !== "")
+      formData.append("password", values.password);
+    if (values.status) formData.append("status", values.status);
+    if (values.account_id) formData.append("account_id", values.account_id!.toString());
 
-    if (values.password && values.password.trim() !== "") {
-      payload.password = values.password;
+    // Gửi kèm file ảnh (nếu có)
+    if (imageFile) {
+      formData.append("avatar", imageFile);
     }
 
-    console.log(" Dữ liệu gửi lên:", payload);
+    console.log("🧾 Dữ liệu gửi lên (FormData):");
+    for (const [key, value] of formData.entries()) {
+      console.log(key, ":", value);
+    }
+
+    // Gửi request PUT — nhớ set headers
     const res = await axios.put(
       `http://localhost:5000/api/parents/${values.id}`,
-      payload
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
     );
 
     if (res.status === 200 || res.status === 201) {
- 
+      // Cập nhật lại danh sách
       const response = await fetch("http://localhost:5000/api/parents");
       const result = await response.json();
 
       setParents(result.data);
       setCurrentAction("list");
-      console.log(" Phụ huynh đã được cập nhật:", res.data);
+
+      console.log("✅ Phụ huynh đã được cập nhật:", res.data);
       openNotification({
         type: "success",
         message: "Thành công",
@@ -297,62 +318,72 @@ useEffect(() => {
       });
     }
   } catch (error: any) {
-    console.error(" Lỗi khi cập nhật phụ huynh:", error);
-
+    console.error("❌ Lỗi khi cập nhật phụ huynh:", error);
+    openNotification({
+      type: "error",
+      message: "Lỗi hệ thống",
+      description: "Đã xảy ra lỗi khi gửi dữ liệu lên máy chủ.",
+    });
   }
 };
-  const handleSubmitCreate = async (values: ParentNotFormatType) => {
-    try {
-      const payload: any = {};
-      if (values.fullname) payload.full_name = values.fullname;
-      if (values.phone) payload.phone = values.phone;
-      if (values.email) payload.email = values.email;
-      if (values.address) payload.address = values.address;
-      if (values.username) payload.username = values.username;
-      if (values.password) payload.password = values.password;
-      if (values.status) {
-      if (values.status === "Hoạt động") payload.status = "ACTIVE";
-      else if (values.status === "Không hoạt động") payload.status = "INACTIVE";
-      else payload.status = values.status; // phòng trường hợp đã đúng enum
+
+const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile) => {
+  try {
+    const formData = new FormData();
+
+    if (imageFile) {
+      formData.append("avatar", imageFile); 
     }
 
-      if (values.avatar) payload.avatar = values.avatar;
+    if (values.fullname) formData.append("full_name", values.fullname);
+    if (values.phone) formData.append("phone", values.phone);
+    if (values.email) formData.append("email", values.email);
+    if (values.address) formData.append("address", values.address);
+    if (values.username) formData.append("username", values.username);
+    if (values.password) formData.append("password", values.password);
 
-      console.log(" Dữ liệu gửi lên:", payload);
-      const res = await axios.post("http://localhost:5000/api/parents", payload);
+    if (values.status) {
+      if (values.status === "Hoạt động") formData.append("status", "ACTIVE");
+      else if (values.status === "Không hoạt động")
+        formData.append("status", "INACTIVE");
+      else formData.append("status", values.status);
+    }
+    console.log("🧾 Dữ liệu gửi lên (FormData):");
+    console.log(formData);
+    const res = await axios.post("http://localhost:5000/api/parents", formData);
 
-      if (res.status === 200 || res.status === 201) {
-        // Cập nhật lại danh sách sau khi tạo mới
-        const response = await fetch("http://localhost:5000/api/parents");
-        const result = await response.json();
+    if (res.status === 200 || res.status === 201) {
+      const response = await fetch("http://localhost:5000/api/parents");
+      const result = await response.json();
 
-        setParents(result.data);
-        setCurrentAction("list");
+      setParents(result.data);
+      setCurrentAction("list");
 
-        console.log(" Phụ huynh đã được tạo:", res.data);
+      console.log("✅ Phụ huynh đã được tạo:", res.data);
 
-        openNotification({
-          type: "success",
-          message: "Thành công",
-          description: "Tạo phụ huynh mới thành công!",
-          duration: 1.5,
-        });
-      } else {
-        openNotification({
-          type: "error",
-          message: "Thất bại",
-          description: "Không thể tạo phụ huynh. Vui lòng thử lại!",
-        });
-      }
-    } catch (error: any) {
-      console.error(" Lỗi khi tạo phụ huynh:", error);
+      openNotification({
+        type: "success",
+        message: "Thành công",
+        description: "Tạo phụ huynh mới thành công!",
+        duration: 1.5,
+      });
+    } else {
       openNotification({
         type: "error",
-        message: "Lỗi hệ thống",
-        description: "Đã xảy ra lỗi khi gửi dữ liệu lên máy chủ.",
+        message: "Thất bại",
+        description: "Không thể tạo phụ huynh. Vui lòng thử lại!",
       });
     }
-  };
+  } catch (error: any) {
+    console.error("❌ Lỗi khi tạo phụ huynh:", error);
+    openNotification({
+      type: "error",
+      message: "Lỗi hệ thống",
+      description: "Đã xảy ra lỗi khi gửi dữ liệu lên máy chủ.",
+    });
+  }
+};
+
 
 
   const ParentDetail: React.FC<{ parent: ParentFormatType }> = ({ parent }) => {
@@ -463,7 +494,7 @@ useEffect(() => {
             }}
             onFinish={() => {
               console.log("Form values:", form.getFieldsValue());
-              handleSubmitCreate(form.getFieldsValue());
+              handleSubmitCreate(form.getFieldsValue(),imageFile);
               
             }}
           >
@@ -597,7 +628,7 @@ useEffect(() => {
             }}
             onFinish={() => {
               console.log("Form values:", form.getFieldsValue());
-              handleSubmitUpdate(form.getFieldsValue());
+              handleSubmitUpdate(form.getFieldsValue(),imageFile);
             }}
           >
             <Row className="split-3">
@@ -1042,7 +1073,7 @@ useEffect(() => {
                 className="admin-layout__main-table table-data parents"
               />
               <pre>{JSON.stringify(dataParents, null, 2)}</pre>
-              <pre>ê</pre>
+           
             </div>
           )}
           {currentCardContent === "detail" &&

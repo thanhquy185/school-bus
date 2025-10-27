@@ -29,6 +29,7 @@ const PickupController = {
             {
                 id: Number(req.params.id),
                 ...req.body
+            
             }
         );
 

@@ -25,7 +25,7 @@ const ParentController = {
                 ...req.body
             }
         );
-        console.log("Vào controller");
+
 
         res.status(response.statusCode).json(response);
     },

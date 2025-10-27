@@ -51,7 +51,8 @@ const ParentService ={
     
     async update(input: any) {
         const data = updateSchema.parse(input);
-
+        console.log("Update inut:", input);
+        console.log("Update Data Input:", data);
         const updateData: any = {};
 
         if (data.full_name) {
@@ -69,8 +70,10 @@ const ParentService ={
         if (data.phone) {
             updateData.phone = data.phone;
         }
-
-
+        if (data.avatar) {
+        updateData.avatar = data.avatar;
+            }
+        console.log("Update Data:", updateData);
         const parent = await prisma.parents.update(
             {
                 where: {
@@ -104,8 +107,7 @@ const ParentService ={
 
 
 async create(input: unknown) {
-  console.log("Vào service tạo phụ huynh");
-  console.log("Dữ liệu đầu vào:", input);
+
   const data = createSchema.parse(input);
   let account = null;
   if (data.username && data.password) {
@@ -120,7 +122,7 @@ async create(input: unknown) {
       },
     });
   }
-
+  
 
     const parent = await prisma.parents.create({
     data: {
@@ -128,8 +130,8 @@ async create(input: unknown) {
         phone: data.phone,
         email: data.email,
         address: data.address ?? null,
-        avatar: data.avatar ?? "", // 👈 Bắt buộc
-        account: { connect: { id: account.id } }, // 👈 Dùng relation chuẩn
+        avatar: data.avatar ?? "", 
+        account: { connect: { id: account.id } }, 
     },
     });
 

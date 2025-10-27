@@ -46,6 +46,11 @@ export const createSchema = zod.object(
         address: zod.string().optional(),
 
         account_id: zod.number().optional(),
+    avatar: zod
+    .string()
+    .url("Ảnh đại diện phải là đường dẫn hợp lệ")
+    .optional()
+    .describe("Ảnh đại diện của phụ huynh"),
         status: zod
             .enum(["ACTIVE", "INACTIVE"])
             .optional()
