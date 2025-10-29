@@ -150,3 +150,6 @@ Thumbs.db
 # Uploads
 uploads/
 public/uploads/
+
+# Package 
+package-lock.json
