@@ -536,18 +536,37 @@ const BusPage = () => {
     try {
       console.log("Giá trị form:", values);
       const formattedValues = {
-        licensePlate: values.licensePlate,
+        licensePlate: values.licensePlate.trim(),
         capacity: Number(values.capacity),
         status: values.status,
       };
 
       // Kiểm tra bằng zod
       createSchema.parse(formattedValues);
-      const res = await axios.post("http://localhost:5000/api/buses", {
-        licensePlate: formattedValues.licensePlate,
-        capacity: formattedValues.capacity,
-        status: formattedValues.status,
-      });
+
+      // Gọi API để lấy danh sách xe buýt hiện có
+      const existingRes = await axios.get("http://localhost:5000/api/buses");
+      const existingBuses = existingRes.data.data;
+
+      // Kiểm tra xem licensePlate đã tồn tại chưa
+      const isDuplicate = existingBuses.some(
+        (bus: any) =>
+          bus.licensePlate.trim().toLowerCase() ===
+          formattedValues.licensePlate.toLowerCase()
+      );
+
+      if (isDuplicate) {
+        openNotification({
+          type: "error",
+          message: "Lỗi",
+          description: "Biển số xe này đã tồn tại. Vui lòng nhập biển số khác.",
+          duration: 2,
+        });
+        return;
+      }
+
+      // Nếu không trùng thì gọi API tạo mới
+      const res = await axios.post("http://localhost:5000/api/buses", formattedValues);
 
       if (res.status === 201 || res.status === 200) {
         console.log("✅ Tạo xe buýt thành công:", res.data);
@@ -574,20 +593,50 @@ const BusPage = () => {
       // Kiểm tra bằng zod
       updateSchema.parse(formattedValues);
 
-      const res = await axios.put(`http://localhost:5000/api/buses/${formattedValues.id}`, {
-        licensePlate: formattedValues.licensePlate,
-        capacity: formattedValues.capacity,
-        status: formattedValues.status,
-      });
+      // Lấy danh sách xe buýt hiện có để kiểm tra trùng
+      const existingRes = await axios.get("http://localhost:5000/api/buses");
+      const existingBuses = existingRes.data.data;
 
-      if (res.status === 201 || res.status === 200) {
+      // Kiểm tra xem biển số này đã tồn tại ở xe khác chưa
+      const isDuplicate = existingBuses.some(
+        (bus: any) =>
+          bus.licensePlate.trim().toLowerCase() ===
+            formattedValues.licensePlate.toLowerCase() &&
+          bus.id !== formattedValues.id // loại bỏ xe đang cập nhật
+      );
+
+      if (isDuplicate) {
+        openNotification({
+          type: "error",
+          message: "Lỗi",
+          description: "Biển số xe này đã tồn tại ở xe khác. Vui lòng nhập biển số khác",
+          duration: 2,
+        });
+        return;
+      }
+
+      // Nếu không trùng, tiến hành cập nhật
+      const res = await axios.put(
+        `http://localhost:5000/api/buses/${formattedValues.id}`,
+        {
+          licensePlate: formattedValues.licensePlate,
+          capacity: formattedValues.capacity,
+          status: formattedValues.status,
+        }
+      );
+
+      if (res.status === 200 || res.status === 201) {
         console.log("✅ Cập nhật xe buýt thành công:", res.data);
         setCurrentAction("list");
       } else {
-        console.log("❌ Không thể thêm xe buýt. Vui lòng thử lại.");
+        console.log("❌ Không thể cập nhật xe buýt. Vui lòng thử lại.");
       }
     } catch (error: any) {
-      console.log("🚨 Lỗi khi tạo xe buýt:", error);
+      if (error.response?.status === 409) {
+        alert("❌ Biển số xe đã tồn tại trong hệ thống!");
+      } else {
+        console.log("🚨 Lỗi khi cập nhật xe buýt:", error);
+      }
     }
   };
 

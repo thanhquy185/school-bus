@@ -26,10 +26,13 @@ app.use(express.json());
 app.use("/auth", AuthRouter);
 app.use("/api/accounts", AuthMiddleware(["ADMIN"]).authenticate, AccountRouter);
 app.use("/api/pickups", AuthMiddleware(["ADMIN"]).authenticate, PickupRouter);
+<<<<<<< HEAD
 app.use("/api/parents",ParentRouter);
 
+=======
+>>>>>>> 4248298b1186f3ced629eb86cb1cbe163bc174b1
 app.use("/api/buses", AuthMiddleware(["ADMIN"]).authenticate, BusRouter);
-app.use("/api/parents",ParentRouter);
+app.use("/api/parents", AuthMiddleware(["ADMIN"]).authenticate, ParentRouter);
 
 // Demo upload file
 app.use("/api/students", StudentRouter);
