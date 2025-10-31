@@ -26,11 +26,8 @@ app.use(express.json());
 app.use("/auth", AuthRouter);
 app.use("/api/accounts", AuthMiddleware(["ADMIN"]).authenticate, AccountRouter);
 app.use("/api/pickups", AuthMiddleware(["ADMIN"]).authenticate, PickupRouter);
-app.use("/api/parents",ParentRouter);
-
-
 app.use("/api/buses", AuthMiddleware(["ADMIN"]).authenticate, BusRouter);
-app.use("/api/parents",ParentRouter);
+app.use("/api/parents", AuthMiddleware(["ADMIN"]).authenticate, ParentRouter);
 
 
 app.use(useZod.errorHandle);
