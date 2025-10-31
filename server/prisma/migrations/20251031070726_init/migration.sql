@@ -63,8 +63,9 @@ CREATE TABLE `students` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `avatar` VARCHAR(191) NOT NULL,
     `full_name` VARCHAR(191) NOT NULL,
-    `birth_date` DATETIME(3) NOT NULL,
+    `birth_date` VARCHAR(191) NOT NULL,
     `gender` ENUM('MALE', 'FEMALE', 'OTHER') NOT NULL DEFAULT 'OTHER',
+    `address` VARCHAR(191) NOT NULL,
     `status` ENUM('STUDYING', 'DROPPED_OUT', 'UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
     `parent_id` INTEGER NOT NULL,
     `class_id` INTEGER NOT NULL,
@@ -149,70 +150,3 @@ ALTER TABLE `pickupToRoute` ADD CONSTRAINT `pickupToRoute_route_id_fkey` FOREIGN
 
 -- AddForeignKey
 ALTER TABLE `pickupToRoute` ADD CONSTRAINT `pickupToRoute_pickup_id_fkey` FOREIGN KEY (`pickup_id`) REFERENCES `pickups`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- ------------------------------------------------------------
--- 🌱 SAMPLE DATA SEED
--- ------------------------------------------------------------
-
--- Accounts
-INSERT INTO `accounts` (`username`, `password`, `role`, `status`) VALUES
-('admin', '123456', 'ADMIN', 'ACTIVE'),
-('parent1', '123456', 'PARENT', 'ACTIVE'),
-('parent2', '123456', 'PARENT', 'ACTIVE'),
-('driver1', '123456', 'DRIVER', 'ACTIVE'),
-('driver2', '123456', 'DRIVER', 'ACTIVE');
-
--- Parents
-INSERT INTO `parents` (`avatar`, `full_name`, `phone`, `email`, `address`, `account_id`) VALUES
-('/images/parent1.jpg', 'Nguyen Van A', '0901234567', 'parent1@example.com', '123 Le Loi, HCM', 2),
-('/images/parent2.jpg', 'Tran Thi B', '0909876543', 'parent2@example.com', '456 Nguyen Trai, HCM', 3);
-
--- Classes
-INSERT INTO `classes` (`name`) VALUES
-('1A'),
-('2B'),
-('3C');
-
--- Students
-INSERT INTO `students` (`avatar`, `full_name`, `birth_date`, `gender`, `status`, `parent_id`, `class_id`) VALUES
-('/images/student1.jpg', 'Nguyen Thi C', '2015-06-10 00:00:00', 'FEMALE', 'STUDYING', 1, 1),
-('/images/student2.jpg', 'Tran Van D', '2014-09-21 00:00:00', 'MALE', 'STUDYING', 1, 2),
-('/images/student3.jpg', 'Le Thi E', '2013-11-01 00:00:00', 'FEMALE', 'UNKNOWN', 2, 3),
-('/images/student4.jpg', 'Phan Van F', '2012-02-18 00:00:00', 'MALE', 'DROPPED_OUT', 2, 1),
-('/images/student5.jpg', 'Do Thi G', '2015-08-05 00:00:00', 'FEMALE', 'STUDYING', 2, 2);
-
--- Drivers
-INSERT INTO `drivers` (`avatar`, `full_name`, `birth_date`, `phone`, `email`, `address`, `account_id`) VALUES
-('/images/driver1.jpg', 'Nguyen Van Tai', '1985-04-10 00:00:00', '0912345678', 'driver1@example.com', '789 Cach Mang Thang 8, HCM', 4),
-('/images/driver2.jpg', 'Tran Quoc Huy', '1978-12-22 00:00:00', '0923456789', 'driver2@example.com', '321 Hai Ba Trung, HCM', 5);
-
--- Buses
-INSERT INTO `buses` (`licensePlate`, `capacity`, `status`) VALUES
-('51A-12345', 40, 'ACTIVE'),
-('51B-67890', 35, 'ACTIVE'),
-('51C-88888', 50, 'INACTIVE');
-
--- Pickups
-INSERT INTO `pickups` (`name`, `category`, `lat`, `lng`, `status`) VALUES
-('Truong Tieu Hoc Hoa Sen', 'SCHOOL', 10.7760, 106.6950, 'ACTIVE'),
-('Truong Tieu Hoc Le Loi', 'SCHOOL', 10.7790, 106.7000, 'ACTIVE'),
-('Nha Nguyen Van A', 'PICKUP', 10.7720, 106.6930, 'ACTIVE'),
-('Nha Tran Thi B', 'PICKUP', 10.7740, 106.6970, 'ACTIVE'),
-('Cong vien Tao Dan', 'PICKUP', 10.7770, 106.6920, 'INACTIVE');
-
--- Routes
-INSERT INTO `routes` (`name`, `start_pickup`, `end_pickup`, `start_time`, `end_time`, `status`) VALUES
-('Tuyen 1 - Nha A -> Hoa Sen', 'Nha Nguyen Van A', 'Truong Tieu Hoc Hoa Sen', '07:00', '07:40', 'ACTIVE'),
-('Tuyen 2 - Nha B -> Le Loi', 'Nha Tran Thi B', 'Truong Tieu Hoc Le Loi', '07:15', '07:55', 'ACTIVE');
-
--- pickupToRoute (kết nối điểm đón với tuyến)
-INSERT INTO `pickupToRoute` (`route_id`, `pickup_id`, `order`) VALUES
-(1, 3, 1),
-(1, 1, 2),
-(2, 4, 1),
-(2, 2, 2);
-
--- Schedules
-INSERT INTO `schedules` (`work_schedule`, `driver_id`, `bus_id`, `route_id`) VALUES
-('Thứ 2 - Thứ 6, 6h30 - 17h00', 1, 1, 1),
-('Thứ 2 - Thứ 7, 7h00 - 16h00', 2, 2, 2);

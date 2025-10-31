@@ -109,8 +109,9 @@ model students {
   id         Int      @id @default(autoincrement())
   avatar     String
   full_name  String
-  birth_date DateTime
+  birth_date String
   gender     Gender   @default(OTHER)
+  address    String
   status    StudentStatus @default(UNKNOWN)
 
   parent_id Int

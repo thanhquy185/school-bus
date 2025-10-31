@@ -34,7 +34,7 @@ import type {
   BreadcrumbSeparatorType,
 } from "antd/es/breadcrumb/Breadcrumb";
 import { ruleRequired } from "../../common/rules";
-import { CommonGenderValue, CommonStatusValue } from "../../common/values";
+import { CommonGenderValue, CommonStatusValue, StudentStatusValue } from "../../common/values";
 import type {
   StudentFormatType,
   StudentNotFormatType,
@@ -43,60 +43,39 @@ import CustomUpload from "../../components/upload";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
 import dayjs from "dayjs";
+import useCallApi from "../../api/useCall";
+import { createStudent, getStudents } from "../../services/student-service";
+import { formatByString } from "../../utils/format-day";
+import { getGenderText, getStudentStatusText } from "../../utils/vi-trans";
 
 // Student Page
 const StudentPage = () => {
+  const { execute } = useCallApi();
   // Language
   const { t } = useTranslation();
 
   // Notification
   const { openNotification } = useNotification();
 
-  // Cấu hình bảng dữ liệu (sau cập nhật lọc giới tính, phụ huynh, trạm và lớp)
-  const demoData: StudentFormatType[] = [
-    {
-      id: "1",
-      parent: {
-        id: 1,
-        full_name: "Phụ huynh 1",
-      },
-      pickup: {
-        id: 1,
-        name: "Trạm 1",
-      },
-      class: {
-        id: 1,
-        name: "Lớp 10A1",
-      },
-      avatar: "test-1.png",
-      fullname: "Học sinh 1",
-      birthday: "01/01/2025",
-      gender: "Nam",
-      address: "Địa chỉ ở đâu không biết",
-      status: "Hoạt động",
-    },
-    {
-      id: "2",
-      parent: {
-        id: 2,
-        full_name: "Phụ huynh 2",
-      },
-      pickup: {
-        id: 2,
-        name: "Trạm 2",
-      },
-      class: {
-        id: 2,
-        name: "Lớp 10A2",
-      },
-      avatar: "test-2.png",
-      fullname: "Học sinh 2",
-      birthday: "02/02/2025",
-      gender: "Nam",
-      address: "Địa chỉ ở đâu không biết",
-      status: "Tạm dừng",
-    },
-  ];
+  const [students, setStudents] = useState<StudentFormatType[]>([]);
+  
+  const handleGetStudents = async () => {
+    const restResponse = await execute(getStudents());
+    if (restResponse?.result) {
+      if (Array.isArray(restResponse.data)) {
+        setStudents(restResponse.data.map(student => ({
+          ...student,
+          status: getStudentStatusText(student.status),
+          gender: getGenderText(student.gender)
+        })) as StudentFormatType[]);
+      }
+    }
+  }
+
+  useEffect(() => {
+    handleGetStudents();
+  }, []);
+
   const columns: ColumnsType<StudentFormatType> = [
     {
       title: "#",
@@ -114,7 +93,7 @@ const StudentPage = () => {
         <Image
           src={
             avatar!
-              ? "/src/assets/images/students/" + avatar
+              ? avatar
               : "/src/assets/images/others/no-image.png"
           }
           alt=""
@@ -123,7 +102,7 @@ const StudentPage = () => {
     },
     {
       title: "Họ và tên",
-      dataIndex: "fullname",
+      dataIndex: "full_name",
       key: "fullname",
       width: "20%",
       sorter: (a, b) => a?.fullname!.localeCompare(b?.fullname!),
@@ -376,8 +355,27 @@ const StudentPage = () => {
     );
   };
   const StudentCreate: React.FC = () => {
+    const { execute } = useCallApi();
+
     const [form] = Form.useForm<StudentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
+
+    const handleSubmit = async () => {
+      console.log("Image file on submit:", imageFile);
+      const submitData = new FormData();
+      submitData.append("avatar", imageFile as File);
+      submitData.append("fullName", form.getFieldValue("fullname"));
+      submitData.append("birthDate", formatByString(form.getFieldValue("birthday")));
+      submitData.append("gender", form.getFieldValue("gender"));
+      submitData.append("address", form.getFieldValue("address"));
+      submitData.append("status", form.getFieldValue("status"));
+      submitData.append("parentId", form.getFieldValue("parentId"));
+      submitData.append("classId", form.getFieldValue("classId"));
+
+      const restResponse = await execute(createStudent(submitData));
+
+      console.log("Create student response:", restResponse);
+    }
 
     useEffect(() => {
       form.setFieldValue("avatar", imageFile?.name);
@@ -401,9 +399,7 @@ const StudentPage = () => {
               address: undefined,
               status: undefined,
             }}
-            onFinish={() => {
-              console.log("Form values:", form.getFieldsValue());
-            }}
+            onFinish={handleSubmit}
           >
             <Row className="split-3">
               <Col>
@@ -430,9 +426,9 @@ const StudentPage = () => {
                   name="id"
                   htmlFor="create-id"
                   label={defaultLabels.id}
-                  rules={[ruleRequired("Mã học sinh không được để trống !")]}
+                // rules={[ruleRequired("Mã học sinh không được để trống !")]}
                 >
-                  <Input id="create-id" placeholder={defaultInputs.id} />
+                  <Input id="create-id" placeholder={defaultInputs.id} disabled value={"Mã học sinh sẽ được tự tạo"} />
                 </Form.Item>
                 <Form.Item
                   name="parent"
@@ -499,11 +495,11 @@ const StudentPage = () => {
                         options={[
                           {
                             label: CommonGenderValue.male,
-                            value: CommonGenderValue.male,
+                            value: "MALE",
                           },
                           {
                             label: CommonGenderValue.female,
-                            value: CommonGenderValue.female,
+                            value: "FEMALE",
                           },
                         ]}
                       />
@@ -536,12 +532,16 @@ const StudentPage = () => {
                     placeholder={defaultInputs.status}
                     options={[
                       {
-                        label: CommonStatusValue.active,
-                        value: CommonStatusValue.active,
+                        label: StudentStatusValue.studying,
+                        value: "STUDYING",
                       },
                       {
-                        label: CommonStatusValue.inactive,
-                        value: CommonStatusValue.inactive,
+                        label: StudentStatusValue.dropped_out,
+                        value: "DROPPED_OUT",
+                      },
+                      {
+                        label: StudentStatusValue.unknown,
+                        value: "UNKNOWN",
                       },
                     ]}
                   />
@@ -1073,7 +1073,7 @@ const StudentPage = () => {
               <div className="right">
                 <Button
                   type="primary"
-                  icon={<FontAwesomeIcon icon={faPlus}/>}
+                  icon={<FontAwesomeIcon icon={faPlus} />}
                   onClick={() => setCurrentAction("create")}
                 >
                   {t("student-create")}
@@ -1082,7 +1082,7 @@ const StudentPage = () => {
             </div>
             <CustomTableActions<StudentFormatType>
               columns={columns}
-              data={demoData || []}
+              data={students || []}
               rowKey={(record) => String(record?.id)}
               // loading={isLoading}
               defaultPageSize={10}

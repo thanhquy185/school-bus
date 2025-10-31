@@ -10,6 +10,19 @@ export const CommonStatusValue = {
   inactive: "Tạm dừng",
 };
 
+// Student Status
+/**
+  STUDYING
+  DROPPED_OUT
+  UNKNOWN
+ */
+
+export const StudentStatusValue = {
+  studying: "Đang học",
+  dropped_out: "Đã nghỉ học",
+  unknown: "Chưa rõ",
+}
+
 // Trạng thái vận hành xe buýt
 export const ActiveStatusValue = {
   pending: "Đang chờ vận hành",
