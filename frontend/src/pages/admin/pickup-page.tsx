@@ -39,6 +39,9 @@ import LeafletMap, {
 } from "../../components/leaflet-map";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
+import useCallApi from "../../api/useCall";
+import { createPickup, getPickups, updatePickup as updatePickupService } from "../../services/pickup-service";
+
 
 // Pickup Page
 const PickupPage = () => {
@@ -47,6 +50,8 @@ const PickupPage = () => {
 
   // Notification
   const { openNotification } = useNotification();
+
+  const { execute } = useCallApi();
 
   // Cấu hình bảng dữ liệu (sau cập nhật lọc giới tính, phụ huynh, trạm và lớp)
   const demoData: PickupType[] = [
@@ -67,6 +72,33 @@ const PickupPage = () => {
       status: "Tạm dừng",
     },
   ];
+
+  const [pickupData, setPickupData] = useState<PickupType[]>([]);
+
+  const getData = async () => {
+    try {
+          const response = await execute(getPickups());
+
+          if (response.result) {
+            if (Array.isArray(response.data)) {
+              setPickupData(response.data.map(pickup => (
+                {
+                  ...pickup,
+                  category: pickup.category == 'SCHOOL' ? 'Trường học' : 'Điểm đưa đón',
+                  status: pickup.status == 'ACTIVE' ? 'Hoạt động' : 'Tạm dừng'
+                }
+              )));
+            }
+          }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
+
   const columns: ColumnsType<PickupType> = [
     {
       title: "#",
@@ -273,6 +305,37 @@ const PickupPage = () => {
     const [lngValue, setLngValue] = useState<number | undefined>(undefined);
     const [categoryValue, setCategoryValue] = useState<string | undefined>(undefined);
 
+    const addPickup = async (form: PickupType) => {
+      try {
+        const formatData = {
+          ...form,
+          category: form.category == 'Trường học' ? 'SCHOOL' : 'PICKUP',
+          status: form.status == 'Hoạt động' ? 'ACTIVE' : 'INACTIVE'
+        };
+
+        const response = await execute(createPickup(formatData));
+        //console.log(response)
+        if (response.statusCode == 201) {
+          openNotification({
+            type: "success",
+            message: "Thành công",
+            description: "Thêm trạm xe buýt thành công!",
+            duration: 2,
+          });
+          setCurrentAction("list");
+          getData();
+        }
+      } catch (error) {
+        console.error(error);
+        openNotification({
+          type: "error",
+          message: "Lỗi",
+          description: "thêm trạm xe buýt thất bại!",
+          duration: 2,
+        });
+      }
+    };
+
     const handleSelectedPickup = ({
       lat,
       lng,
@@ -300,6 +363,7 @@ const PickupPage = () => {
               status: undefined,
             }}
             onFinish={() => {
+              addPickup(form.getFieldsValue());
               console.log("Form values:", form.getFieldsValue());
             }}
           >
@@ -452,6 +516,37 @@ const PickupPage = () => {
       form.setFieldValue("lng", lng);
     };
 
+    const updatePickup = async (form: PickupType) => {
+      try {
+        const formatData = {
+          ...form,
+          category: form.category == 'Trường học' ? 'SCHOOL' : 'PICKUP',
+          status: form.status == 'Hoạt động' ? 'ACTIVE' : 'INACTIVE'
+        };
+
+        const response = await execute(updatePickupService(formatData));
+        //console.log(response)
+        if (response.statusCode == 200) {
+          openNotification({
+            type: "success",
+            message: "Thành công",
+            description: "Cập nhật trạm xe buýt thành công!",
+            duration: 2,
+          });
+          setCurrentAction("list");
+          getData();
+        }
+      } catch (error) {
+        console.error(error);
+        openNotification({
+          type: "error",
+          message: "Lỗi",
+          description: "Cập nhật trạm xe buýt thất bại!",
+          duration: 2,
+        });
+      }
+    };
+
     return (
       <>
         <div className="pickup-content update">
@@ -467,6 +562,7 @@ const PickupPage = () => {
               status: pickup.status || undefined,
             }}
             onFinish={() => {
+              updatePickup(form.getFieldsValue());
               console.log("Form values:", form.getFieldsValue());
             }}
           >
@@ -581,6 +677,31 @@ const PickupPage = () => {
     );
   };
   const PickupLock: React.FC<{ pickup: PickupType }> = ({ pickup }) => {
+
+    const updateStatus = async (form: PickupType) => {
+      try {
+        const response = await execute(updatePickupService(form));
+        if (response.statusCode == 200) {
+          openNotification({
+            type: "success",
+            message: "Thành công",
+            description: form.status == 'INACTIVE' ? "Khóa trạm xe buýt thành công!" : "Mở khóa trạm xe buýt thành công!",
+            duration: 1.5
+          })
+          setCurrentAction("list");
+          getData();
+        }
+      } catch(error) {
+        console.error(error);
+        openNotification({
+          type: "error",
+          message: "Lỗi",
+          description: form.status == 'INACTIVE' ? "Khóa trạm xe buýt thất bại!" : "Mở khóa trạm xe buýt thất bại!",
+          duration: 1.5,
+        })
+      }
+    };
+
     return (
       <>
         <Alert
@@ -616,12 +737,13 @@ const PickupPage = () => {
               color="danger"
               variant="solid"
               onClick={() => {
-                openNotification({
-                  type: "success",
-                  message: "Thành công",
-                  description: "123 !",
-                  duration: 1.5,
-                });
+                const newPickup = {
+                  ...pickup,
+                  status: pickup.status == 'Hoạt động' ? 'INACTIVE' : 'ACTIVE',
+                  category: pickup.category == 'Trường học' ? 'SCHOOL' : 'PICKUP'
+                };
+
+                updateStatus(newPickup);
               }}
             >
               Xác nhận
@@ -831,7 +953,7 @@ const PickupPage = () => {
             </div>
             <CustomTableActions<PickupType>
               columns={columns}
-              data={demoData || []}
+              data={pickupData || []}
               rowKey={(record) => String(record?.id)}
               // loading={isLoading}
               defaultPageSize={10}
