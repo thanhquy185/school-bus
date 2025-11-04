@@ -204,41 +204,42 @@ const AdminLayout: React.FC = () => {
       ),
     },
   ];
-  const [selectedItem, setSelectedItem] = useState<CustomItemType>(
-    menuItems[0] as CustomItemType
-  );
+  const [selectedItem, setSelectedItem] = useState<CustomItemType>(menuItems[0] as CustomItemType);
+  console.log("Selected Item:", selectedItem);
   useEffect(() => {
     const pathname = location.pathname;
-    if (pathname === CustomItemValue.map.link) {
+    console.log("Pathname:", pathname);
+    if (pathname === "/admin/parents") {
       setSelectedItem(
         menuItems[Number(CustomItemValue.map.key) - 1] as CustomItemType
       );
-    } else if (pathname === CustomItemValue.inform.link) {
+    } else if (pathname === "/admin/informs") {
       setSelectedItem(
         menuItems[Number(CustomItemValue.inform.key) - 1] as CustomItemType
       );
-    } else if (pathname === CustomItemValue.route.link) {
+    } else if (pathname === "/admin/routes") {
       setSelectedItem(
         menuItems[Number(CustomItemValue.route.key) - 1] as CustomItemType
       );
-    } else if (pathname === CustomItemValue.bus.link) {
+    } else if (pathname === "/admin/buses") {
       setSelectedItem(
         menuItems[Number(CustomItemValue.bus.key) - 1] as CustomItemType
       );
-    } else if (pathname === CustomItemValue.driver.link) {
+    } else if (pathname === "/admin/drivers") {
       setSelectedItem(
         menuItems[Number(CustomItemValue.driver.key) - 1] as CustomItemType
       );
-    } else if (pathname === CustomItemValue.parent.link) {
+    } else if (pathname === "/admin/parents") {
       setSelectedItem(
         menuItems[Number(CustomItemValue.parent.key) - 1] as CustomItemType
       );
-    } else if (pathname === CustomItemValue.student.link) {
+    } else if (pathname === "/admin/students") {
       setSelectedItem(
         menuItems[Number(CustomItemValue.student.key) - 1] as CustomItemType
       );
     }
   }, [location.pathname]);
+
   useEffect(() => {
     setSelectedItem(menuItems[Number(selectedItem.key) - 1] as CustomItemType);
   }, [localStorage.getItem("lang")]);

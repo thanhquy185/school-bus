@@ -227,8 +227,7 @@ export interface ParentNotFormatType {
 // - Đã format
 export interface ParentFormatType {
   id?: number;
-  user?: UserType;
-  account?: UserType;
+  username?: string;
   avatar?: string;
   full_name?: string;
   phone?: string;
@@ -246,8 +245,8 @@ export interface StudentNotFormatType {
   pickupId?: number;
   classId?: number;
   avatar?: string;
-  fullname?: string;
-  birthday?: string;
+  full_name?: string;
+  birth_date?: string;
   gender?: string;
   address?: string;
   status?: string;
@@ -255,13 +254,13 @@ export interface StudentNotFormatType {
 }
 // - Đã format
 export interface StudentFormatType {
-  id?: string;
+  id?: number;
   parent?: ParentFormatType;
   pickup?: PickupType;
   class?: ClassType;
   avatar?: string;
-  fullname?: string;
-  birthday?: string;
+  full_name?: string;
+  birth_date?: string;
   gender?: string;
   address?: string;
   status?: string;

@@ -93,7 +93,7 @@ model routes {
 
 model parents {
   id        Int    @id @default(autoincrement())
-  avatar    String
+  avatar    String?
   full_name String
   phone     String @unique
   email     String @unique
@@ -107,7 +107,7 @@ model parents {
 
 model students {
   id         Int      @id @default(autoincrement())
-  avatar     String
+  avatar     String?
   full_name  String
   birth_date String
   gender     Gender   @default(OTHER)
@@ -119,6 +119,9 @@ model students {
 
   class_id Int
   class    classes   @relation(fields: [class_id], references: [id])
+
+  pickup_id Int
+  pickup  pickups @relation(fields: [pickup_id], references: [id])
 }
 
 model drivers {
@@ -159,6 +162,7 @@ model pickups {
   status    PickupStatus @default(ACTIVE)
 
   routes    pickupToRoute[]
+  students  students[]
 }
 
 model pickupToRoute {

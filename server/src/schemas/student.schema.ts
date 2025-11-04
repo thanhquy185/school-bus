@@ -8,6 +8,21 @@ export const createSchema = z.object({
 
     status: z.enum(["STUDYING", "DROPPED_OUT", "UNKNOWN"], "Trạng thái không hợp lệ"),
 
-    // parentId: z.number().min(1, "Yêu cầu mã phụ huynh"),
-    // classId: z.number().min(1, "Yêu cầu mã lớp học"),
+    parentId: z.number().min(1, "Yêu cầu mã phụ huynh"),
+    classId: z.number().min(1, "Yêu cầu mã lớp học"),
+    pickupId: z.number().min(1, "Yêu cầu mã điểm đón")
 });
+
+export const updateSchema = z.object({
+    id: z.number().min(1, "ID học sinh không hợp lệ"),
+    fullName: z.string().min(1, "Họ và tên không được để trống").optional(),
+    birthDate: z.string().min(1, "Ngày sinh không được để trống").optional(),
+    gender: z.enum(["MALE", "FEMALE"], "Giới tính không hợp lệ").optional(),
+    address: z.string().min(1, "Địa chỉ không được để trống").optional(),
+
+    status: z.enum(["STUDYING", "DROPPED_OUT", "UNKNOWN"], "Trạng thái không hợp lệ").optional(),
+
+    parentId: z.number().min(1, "Yêu cầu mã phụ huynh").optional(),
+    classId: z.number().min(1, "Yêu cầu mã lớp học").optional(),
+    pickupId: z.number().min(1, "Yêu cầu mã điểm đón").optional()
+})

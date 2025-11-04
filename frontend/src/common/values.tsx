@@ -23,6 +23,12 @@ export const StudentStatusValue = {
   unknown: "Chưa rõ",
 }
 
+export const BusStatusValue = {
+  active: "Hoạt động",
+  inactive: "Tạm dừng",
+  maintenance: "Bảo trì",
+}
+
 // Trạng thái vận hành xe buýt
 export const ActiveStatusValue = {
   pending: "Đang chờ vận hành",

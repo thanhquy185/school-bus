@@ -11,6 +11,7 @@ import PickupRouter from './routes/pickup.route';
 import BusRouter from './routes/bus.route';
 import ParentRouter from './routes/parent.route';
 import StudentRouter from './routes/student.route';
+import ClassRouter from './routes/class.route';
 
 import useZod from './hooks/useZod.hook';
 import usePrisma from './hooks/usePrisma.hook';
@@ -21,20 +22,17 @@ const app = express();
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(cors({ origin: "http://localhost:3000" }));
 app.use(express.json());
-// app.use(bodyParser.urlencoded({extended:false}));
 
 app.use("/auth", AuthRouter);
 app.use("/api/accounts", AuthMiddleware(["ADMIN"]).authenticate, AccountRouter);
-app.use("/api/pickups", AuthMiddleware(["ADMIN"]).authenticate, PickupRouter);
-<<<<<<< HEAD
-app.use("/api/parents",ParentRouter);
 
-=======
->>>>>>> 4248298b1186f3ced629eb86cb1cbe163bc174b1
-app.use("/api/buses", AuthMiddleware(["ADMIN"]).authenticate, BusRouter);
-app.use("/api/parents", AuthMiddleware(["ADMIN"]).authenticate, ParentRouter);
 
-// Demo upload file
+app.use("/api/buses", BusRouter);
+
+app.use("/api/pickups", PickupRouter);
+app.use("/api/parents", ParentRouter);
+app.use("/api/classes", ClassRouter);
+
 app.use("/api/students", StudentRouter);
 
 

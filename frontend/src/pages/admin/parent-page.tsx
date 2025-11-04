@@ -39,40 +39,35 @@ import type { ParentNotFormatType, ParentFormatType } from "../../common/types";
 import CustomUpload from "../../components/upload";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
-import axios from "axios";
-import { Spin } from "antd";
-import { data } from "react-router-dom";
-import Password from "antd/es/input/Password";
-
+import useCallApi from "../../api/useCall";
+import { createParent, getParents, updateParent, uploadParentAvatar } from "../../services/parent-service";
+import { getAccountStatusText } from "../../utils/vi-trans";
 
 // Parent Page
 const ParentPage = () => {
-  // Language
+  const { execute, notify } = useCallApi();
   const { t } = useTranslation();
-
-  // Notification
   const { openNotification } = useNotification();
 
-  const [dataParents, setParents] = useState<ParentFormatType[]>([]);
+  const [parents, setParents] = useState<ParentFormatType[]>([]);
 
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
 
-  
+  const handleGetData = async () => {
+    const restResponse = await execute(getParents());
+    if (restResponse?.result && Array.isArray(restResponse.data)) {
+      setParents(restResponse.data.map(parent => ({
+        ...parent,
+        status: getAccountStatusText(parent.status)
+      })));
+    }
+  }
 
-useEffect(() => {
-  fetch("http://localhost:5000/api/parents")
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("📦 API trả về:", data); // In toàn bộ dữ liệu API trả về
-      console.log("📋 Danh sách phụ huynh:", data.result); // In phần result
-      setParents(data.data); // ✅ Đúng biến: data chứ không phải d
-    })
-    .catch((err) => console.error(" Lỗi fetchd dữ liệu:", err));
-}, []);
+  useEffect(() => {
+    handleGetData();
+  }, []);
 
-
- 
   const columns: ColumnsType<ParentFormatType> = [
     {
       title: "#",
@@ -81,29 +76,27 @@ useEffect(() => {
       width: "10%",
       sorter: (a, b) => a?.id! - b?.id!,
     },
-  {
-  title: "Hình ảnh",
-  dataIndex: "avatar",
-  key: "avatar",
-  width: "5%",
-  render: (avatar: string) => {
-    const imageUrl = avatar
-      ? `http://localhost:5000/uploads/parents/${avatar}`
-      : "/src/assets/images/others/no-image.png";
+    {
+      title: "Hình ảnh",
+      dataIndex: "avatar",
+      key: "avatar",
+      width: "5%",
+      render: (avatar: string) => {
+        const imageUrl = avatar
+          ? avatar
+          : "/src/assets/images/others/no-image.png";
 
-    // console.log("➡️ Đường dẫn ảnh:", imageUrl); // ✅ In ra console của trình duyệt
-
-    return (
-      <Image
-        src={imageUrl}
-        alt=""
-        width={60}
-        height={60}
-        style={{ objectFit: "cover", borderRadius: "8px" }}
-      />
-    );
-  },
-},
+        return (
+          <Image
+            src={imageUrl}
+            alt=""
+            width={60}
+            height={60}
+            style={{ objectFit: "cover", borderRadius: "8px" }}
+          />
+        );
+      },
+    },
 
     {
       title: "Họ và tên",
@@ -112,12 +105,12 @@ useEffect(() => {
       width: "30%",
       sorter: (a, b) => a?.full_name!.localeCompare(b?.full_name!),
     },
-      {
+    {
       title: "Tên tài khoản",
-      key: "account",
+      key: "username",
       width: "20%",
-      render: (record: ParentFormatType) => record.account?.username,
-      sorter: (a, b) => a.account!.username!.localeCompare(b.account!.username!),
+      render: (record: ParentFormatType) => record.username,
+      sorter: (a, b) => a.username!.localeCompare(b.username!),
     },
 
     {
@@ -129,13 +122,13 @@ useEffect(() => {
     },
     {
       title: "Trạng thái",
-      key: "accountStatus",
+      key: "status",
       render: (_: any, record: ParentFormatType) => (
-        <Tag color={record.account?.status === "ACTIVE" ? "green" : "red"}>
-          {record.account?.status}
+        <Tag color={record.status === CommonStatusValue.active ? "green" : "red"}>
+          {record.status}
         </Tag>
       ),
-      sorter: (a, b) => (a.account?.status || "").localeCompare(b.account?.status || ""),
+      sorter: (a, b) => (a.status || "").localeCompare(b.status || ""),
       width: "10%",
     },
 
@@ -168,14 +161,14 @@ useEffect(() => {
             variant="filled"
             onClick={() => {
               setCurrentAction(
-                record.account?.status === "ACTIVE"  ? "lock" : "unlock"
+                record.status === CommonStatusValue.active ? "lock" : "unlock"
               );
               setCurrentSelectedItem(record);
             }}
           >
             <FontAwesomeIcon
               icon={
-                record.account?.status === "ACTIVE"  ? faLock : faLockOpen
+                record.status === CommonStatusValue.active ? faLock : faLockOpen
               }
             />
           </Button>
@@ -196,23 +189,12 @@ useEffect(() => {
     },
   ];
 
-
-
-  // State giữ đối tượng được chọn hiện tại
-  const [currentSelectedItem, setCurrentSelectedItem] =
-    useState<ParentFormatType>();
-  // State giữ hành động hiện tại
+  const [currentSelectedItem, setCurrentSelectedItem] = useState<ParentFormatType>();
   const [currentAction, setCurrentAction] = useState<string>("list");
-  // State giữ breadcrumb items hiện tại
-  const [currentBreadcrumbItems, setCurrentBreadcrumbItems] =
-    useState<Partial<BreadcrumbItemType & BreadcrumbSeparatorType>[]>();
-  // State giữ card info hiện tại
-  const [currentCardTitle, setCurrentCardTitle] = useState<string>(
-    t("parent-list")
-  );
+  const [currentBreadcrumbItems, setCurrentBreadcrumbItems] = useState<Partial<BreadcrumbItemType & BreadcrumbSeparatorType>[]>();
+  const [currentCardTitle, setCurrentCardTitle] = useState<string>(t("parent-list"));
   const [currentCardContent, setCurrentCardContent] = useState<string>("list");
 
-  // parent Actions
   const defaultLabels = {
     id: "Mã phụ huynh",
     username: "Tên tài khoản",
@@ -236,179 +218,49 @@ useEffect(() => {
     status: "Chọn Trạng thái",
   };
 
- const validateAndGetPassword = (form: any, openNotification: any) => {
-  // console.log(form)
-
-  // Nếu không nhập mật khẩu mới thì bỏ qua
-  if (!form.newPassword && !form.newPassword2) return null;
-
-  // Kiểm tra độ dài
-  if (form.newPassword.length < 6) {
-    openNotification({
-      type: "error",
-      message: "Mật khẩu quá ngắn",
-      description: "Mật khẩu phải có ít nhất 6 ký tự.",
-    });
-    return null;
-  }
-
-  // Kiểm tra khớp nhau
-  if (form.newPassword !== form.newPassword2) {
-    openNotification({
-      type: "error",
-      message: "Mật khẩu không khớp",
-      description: "Vui lòng nhập lại mật khẩu xác nhận cho đúng.",
-    });
-    return null;
-  }
-
-
-  return { password: form.newPassword };
-};
-
- const handleSubmitUpdate = async (values: ParentNotFormatType, imageFile?: RcFile) => {
-  try {
-    const formData = new FormData();
-
-    // Gửi kèm các trường text
-    if (values.fullname) formData.append("full_name", values.fullname);
-    if (values.phone) formData.append("phone", values.phone);
-    if (values.email) formData.append("email", values.email);
-    if (values.address) formData.append("address", values.address);
-    if (values.username) formData.append("username", values.username);
-    if (values.password && values.password.trim() !== "")
-      formData.append("password", values.password);
-    if (values.status) formData.append("status", values.status);
-    if (values.account_id) formData.append("account_id", values.account_id!.toString());
-
-    // Gửi kèm file ảnh (nếu có)
-    if (imageFile) {
-      formData.append("avatar", imageFile);
-    }
-
-    console.log(" Dữ liệu gửi lên (FormData):");
-    for (const [key, value] of formData.entries()) {
-      console.log(key, ":", value);
-    }
-
-    // Gửi request PUT — nhớ set headers
-    const res = await axios.put(
-      `http://localhost:5000/api/parents/${values.id}`,
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
-
-    if (res.status === 200 || res.status === 201) {
-      // Cập nhật lại danh sách
-      const response = await fetch("http://localhost:5000/api/parents");
-      const result = await response.json();
-
-      setParents(result.data);
-      setCurrentAction("list");
-
-      console.log(" Phụ huynh đã được cập nhật:", res.data);
-      openNotification({
-        type: "success",
-        message: "Thành công",
-        description: "Đã cập nhật phụ huynh thành công!",
-        duration: 1.5,
-      });
-    } else {
+  const validateAndGetPassword = (form: any, openNotification: any) => {
+    if (!form.newPassword && !form.newPassword2) return null;
+    if (form.newPassword.length < 6) {
       openNotification({
         type: "error",
-        message: "Thất bại",
-        description: "Không thể cập nhật phụ huynh. Vui lòng thử lại!",
+        message: "Mật khẩu quá ngắn",
+        description: "Mật khẩu phải có ít nhất 6 ký tự.",
       });
-    }
-  } catch (error: any) {
-    console.error(" Lỗi khi cập nhật phụ huynh:", error);
-    openNotification({
-      type: "error",
-      message: "Lỗi hệ thống",
-      description: "Đã xảy ra lỗi khi gửi dữ liệu lên máy chủ.",
-    });
-  }
-};
-
-const handleSubmitCreate = async (values: ParentNotFormatType,imageFile?: RcFile) => {
-  try {
-    const formData = new FormData();
-
-    if (imageFile) {
-      formData.append("avatar", imageFile); 
-      
+      return null;
     }
 
-    if (values.fullname) formData.append("full_name", values.fullname);
-    if (values.phone) formData.append("phone", values.phone);
-    if (values.email) formData.append("email", values.email);
-    if (values.address) formData.append("address", values.address);
-    if (values.username) formData.append("username", values.username);
-    if (values.password) formData.append("password", values.password);
-    if(values.avatar) formData.append("avatar", imageFile?.name!);
-    if (values.status) {
-      if (values.status === "Hoạt động") formData.append("status", "ACTIVE");
-      else if (values.status === "Tạm dừng")
-        formData.append("status", "INACTIVE");
-      else formData.append("status", values.status);
-    }
-
-    const res = await axios.post("http://localhost:5000/api/parents", formData);
-
-    if (res.status === 200 || res.status === 201) {
-      const response = await fetch("http://localhost:5000/api/parents");
-      const result = await response.json();
-
-      setParents(result.data);
-      setCurrentAction("list");
-
-      console.log(" Phụ huynh đã được tạo:", res.data);
-
-      openNotification({
-        type: "success",
-        message: "Thành công",
-        description: "Tạo phụ huynh mới thành công!",
-        duration: 1.5,
-      });
-    } else {
+    if (form.newPassword !== form.newPassword2) {
       openNotification({
         type: "error",
-        message: "Thất bại",
-        description: "Không thể tạo phụ huynh. Vui lòng thử lại!",
+        message: "Mật khẩu không khớp",
+        description: "Vui lòng nhập lại mật khẩu xác nhận cho đúng.",
       });
+      return null;
     }
-  } catch (error: any) {
-    console.error("Lỗi khi tạo phụ huynh:", error);
-    openNotification({
-      type: "error",
-      message: "Lỗi hệ thống",
-      description: "Đã xảy ra lỗi khi gửi dữ liệu lên máy chủ.",
-    });
-  }
-};
-const statusMap: Record<string, string> = {
-  "Hoạt động": "ACTIVE",
-  "Tạm dừng": "INACTIVE",
-};
 
-const filteredParentList = dataParents.filter((parent) => {
-  const matchesFull_name = parent.full_name
-    ?.toLowerCase()
-    .includes(searchText.toLowerCase());
+    return { password: form.newPassword };
+  };
 
-  const matchesStatus = statusFilter
-    ? parent.account?.status === statusMap[statusFilter]
-    : true;
+  const statusMap: Record<string, string> = {
+    "Hoạt động": "ACTIVE",
+    "Tạm dừng": "INACTIVE",
+  };
 
-  return matchesFull_name && matchesStatus;
-});
+  const filteredParentList = parents.filter((parent) => {
+    const matchesFull_name = parent.full_name
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase());
+
+    const matchesStatus = statusFilter
+      ? parent.status === statusMap[statusFilter]
+      : true;
+
+    return matchesFull_name && matchesStatus;
+  });
 
 
 
   const ParentDetail: React.FC<{ parent: ParentFormatType }> = ({ parent }) => {
-    // console.log("Parent props:", parent);
     const [form] = Form.useForm<ParentNotFormatType>();
 
     return (
@@ -419,14 +271,14 @@ const filteredParentList = dataParents.filter((parent) => {
             layout="vertical"
             initialValues={{
               id: parent.id || undefined,
-              username: parent.account?.username || undefined, 
+              username: parent.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
               avatar: parent.avatar || undefined,
-              fullname: parent.full_name || undefined, 
+              fullname: parent.full_name || undefined,
               phone: parent.phone || undefined,
               email: parent.email || undefined,
               address: parent.address || undefined,
-              status: parent.account?.status || undefined,
+              status: parent.status || undefined,
             }}
           >
             <Row className="split-3">
@@ -437,11 +289,11 @@ const filteredParentList = dataParents.filter((parent) => {
                   valuePropName="fileList"
                 >
                   <CustomUpload
-                  defaultSrc={
-                    parent.avatar
-                      ? `http://localhost:5000/uploads/parents/${parent.avatar}`
-                      : "/src/assets/images/others/no-image.png"
-                  }
+                    defaultSrc={
+                      parent.avatar
+                        ? parent.avatar
+                        : "/src/assets/images/others/no-image.png"
+                    }
                     alt="image-preview"
                     imageClassName="image-preview"
                     imageCategoryName="parents"
@@ -500,6 +352,32 @@ const filteredParentList = dataParents.filter((parent) => {
     const [form] = Form.useForm<ParentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
 
+    const handleSubmit = async () => {
+      const createResponse = await execute(createParent({
+        fullName: form.getFieldValue("fullname"),
+        phone: form.getFieldValue("phone"),
+        email: form.getFieldValue("email"),
+        address: form.getFieldValue("address"),
+        username: form.getFieldValue("username"),
+        password: form.getFieldValue("password"),
+        status: form.getFieldValue("status")
+      }));
+      notify(createResponse!, "Thêm phụ huynh thành công");
+      if (createResponse?.result) {
+        const parentId = createResponse.data.id;
+        if (imageFile && parentId) {
+          const formData = new FormData();
+          formData.append("avatar", imageFile);
+          const uploadResponse = await execute(uploadParentAvatar(parentId, formData));
+          notify(uploadResponse!, "Tải ảnh đại diện phụ huynh thành công");
+          if (uploadResponse?.result) {
+            setCurrentAction("list");
+            handleGetData();
+          }
+        }
+      }
+    };
+
     return (
       <>
         <div className="parent-content create">
@@ -517,11 +395,7 @@ const filteredParentList = dataParents.filter((parent) => {
               address: undefined,
               status: undefined,
             }}
-            onFinish={() => {
-              // console.log("Form values:", form.getFieldsValue());
-              handleSubmitCreate(form.getFieldsValue(),imageFile);
-              
-            }}
+            onFinish={handleSubmit}
           >
             <Row className="split-3">
               <Col>
@@ -591,11 +465,11 @@ const filteredParentList = dataParents.filter((parent) => {
                     options={[
                       {
                         label: CommonStatusValue.active,
-                        value: CommonStatusValue.active,
+                        value: "ACTIVE",
                       },
                       {
                         label: CommonStatusValue.inactive,
-                        value: CommonStatusValue.inactive,
+                        value: "INACTIVE",
                       },
                     ]}
                     placeholder={defaultInputs.status}
@@ -634,6 +508,26 @@ const filteredParentList = dataParents.filter((parent) => {
     const [form] = Form.useForm<ParentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
 
+    const handleSubmitUpdate = async () => {
+      const updateResponse = await execute(updateParent(parent.id!, {
+        fullName: form.getFieldValue("fullname"),
+        phone: form.getFieldValue("phone"),
+        email: form.getFieldValue("email"),
+        address: form.getFieldValue("address"),
+      }));
+      notify(updateResponse!, "Cập nhật phụ huynh thành công");
+      if (updateResponse?.result && parent.id) {
+        if (imageFile) {
+          const formData = new FormData();
+          formData.append("avatar", imageFile);
+          const uploadResponse = await execute(uploadParentAvatar(parent.id!, formData));
+          notify(uploadResponse!, "Tải ảnh đại diện phụ huynh thành công");
+        }
+        setCurrentAction("list");
+        handleGetData();
+      }
+    };
+
     return (
       <>
         <div className="parent-content update">
@@ -642,19 +536,16 @@ const filteredParentList = dataParents.filter((parent) => {
             layout="vertical"
             initialValues={{
               id: parent.id || undefined,
-              username: parent.account?.username || undefined, 
+              username: parent.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
               avatar: parent.avatar || undefined,
               fullname: parent.full_name || undefined,
               phone: parent.phone || undefined,
               email: parent.email || undefined,
               address: parent.address || undefined,
-              status: parent.account?.status || undefined,
+              status: parent.status || undefined,
             }}
-            onFinish={() => {
-              // console.log("Form values:", form.getFieldsValue());
-              handleSubmitUpdate(form.getFieldsValue(),imageFile);
-            }}
+            onFinish={handleSubmitUpdate}
           >
             <Row className="split-3">
               <Col>
@@ -666,10 +557,10 @@ const filteredParentList = dataParents.filter((parent) => {
                 >
                   <CustomUpload
                     defaultSrc={
-                    parent.avatar
-                      ? `http://localhost:5000/uploads/parents/${parent.avatar}`
-                      : "/src/assets/images/others/no-image.png"
-                  }
+                      parent.avatar
+                        ? parent.avatar
+                        : "/src/assets/images/others/no-image.png"
+                    }
                     imageFile={imageFile}
                     setImageFile={setImageFile}
                     alt="image-preview"
@@ -744,6 +635,18 @@ const filteredParentList = dataParents.filter((parent) => {
     );
   };
   const ParentLock: React.FC<{ parent: ParentFormatType }> = ({ parent }) => {
+
+    const handleChangeStatus = async () => {
+      const restResponse = await execute(updateParent(parent.id!, {
+        status: parent.status === CommonStatusValue.active ? "INACTIVE" : "ACTIVE",
+      }));
+      notify(restResponse!, `${parent.status === CommonStatusValue.active ? "Khoá" : "Mở khoá"} phụ huynh thành công`);
+      if (restResponse?.result) {
+        setCurrentAction("list");
+        handleGetData();
+      }
+    }
+
     return (
       <>
         <Alert
@@ -760,7 +663,7 @@ const filteredParentList = dataParents.filter((parent) => {
           icon={
             <FontAwesomeIcon
               icon={
-                parent?.status === CommonStatusValue.active
+                parent.status === CommonStatusValue.active
                   ? faLock
                   : faLockOpen
               }
@@ -768,7 +671,7 @@ const filteredParentList = dataParents.filter((parent) => {
           }
           description={
             "Bạn có chắc chắc muốn" +
-            (parent.account?.status === "ACTIVE" 
+            (parent.status === "ACTIVE"
               ? " khoá "
               : " mở khoá ") +
             "phụ huynh này ? Hành động không thể hoàn tác !"
@@ -778,21 +681,7 @@ const filteredParentList = dataParents.filter((parent) => {
             <Button
               color="danger"
               variant="solid"
-            onClick={() => {
-              handleSubmitUpdate({
-                id: parent.id,
-                username: parent.account?.username,
-                status:
-                  parent.account?.status === "ACTIVE" ? "INACTIVE" : "ACTIVE", 
-              });
-
-              openNotification({
-                type: "success",
-                message: "Thành công",
-                description: "Đã cập nhật trạng thái phụ huynh thành công!",
-                duration: 1.5,
-              });
-            }}
+              onClick={handleChangeStatus}
 
             >
               Xác nhận
@@ -807,330 +696,328 @@ const filteredParentList = dataParents.filter((parent) => {
   }) => {
     const [form] = Form.useForm<ParentNotFormatType>();
 
+    const handleSubmitUpdate = async () => {
+      const passwordData = validateAndGetPassword(form.getFieldsValue(), openNotification);
+      if (!passwordData) return;
+
+      const restResponse = await execute(updateParent(parent.id!, passwordData));
+      notify(restResponse!, "Cập nhật mật khẩu phụ huynh thành công");
+      if (restResponse?.result) {
+        setCurrentAction("list");
+        handleGetData();
+      }
+    }
+
+      return (
+        <>
+          <div className="parent-content change-password">
+            <Form
+              form={form}
+              layout="vertical"
+              initialValues={{
+                newPassword: undefined,
+                newPassword2: undefined,
+              }}
+              onFinish={handleSubmitUpdate}
+
+            >
+              <Row className="split-3">
+                <Col></Col>
+                <Col>
+                  <Form.Item
+                    name="newPassword"
+                    label="Mật khẩu mới"
+                    rules={[ruleRequired("Mật khẩu mới không được để trống !")]}
+                  >
+                    <Input placeholder="Nhập Mật khẩu mới" />
+                  </Form.Item>
+                  <Form.Item
+                    name="newPassword2"
+                    label="Mật khẩu mới lần 2"
+                    rules={[
+                      ruleRequired("Mật khẩu mới lần 2 không được để trống !"),
+                    ]}
+                  >
+                    <Input placeholder="Nhập Mật khẩu mới lần 2" />
+                  </Form.Item>
+                  <div className="buttons">
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      className="submit-button"
+                    >
+                      Xác nhận
+                    </Button>
+                  </div>
+                </Col>
+                <Col></Col>
+              </Row>
+            </Form>
+          </div>
+        </>
+      );
+    };
+    const ParentActions = {
+      detail: (selectedParent: ParentFormatType) => (
+        <ParentDetail parent={selectedParent} />
+      ),
+      create: () => <ParentCreate />,
+      update: (selectedParent: ParentFormatType) => (
+        <ParentUpdate parent={selectedParent} />
+      ),
+      lock: (selectedParent: ParentFormatType) => (
+        <ParentLock parent={selectedParent} />
+      ),
+      changePassword: (selectedParent: ParentFormatType) => (
+        <ParentChangePassword parent={selectedParent} />
+      ),
+    };
+
+
+    // Effect cập nhật Card Content
+    useEffect(() => {
+      if (currentAction === "list") {
+        setCurrentBreadcrumbItems([
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                <FontAwesomeIcon icon={faPeopleRoof} />
+                &nbsp;{t("parent-manager")}
+              </span>
+            ),
+          },
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                {t("parent-list")}
+              </span>
+            ),
+          },
+        ]);
+        setCurrentCardTitle(t("parent-list"));
+        setCurrentCardContent("list");
+      } else if (currentAction === "detail") {
+        setCurrentBreadcrumbItems([
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                <FontAwesomeIcon icon={faPeopleRoof} />
+                &nbsp;{t("parent-manager")}
+              </span>
+            ),
+          },
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                {t("parent-list")}
+              </span>
+            ),
+          },
+          { title: <span>{t("parent-detail")}</span> },
+        ]);
+        setCurrentCardTitle(t("parent-detail"));
+        setCurrentCardContent("detail");
+      } else if (currentAction === "create") {
+        setCurrentBreadcrumbItems([
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                <FontAwesomeIcon icon={faPeopleRoof} />
+                &nbsp;{t("parent-manager")}
+              </span>
+            ),
+          },
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                {t("parent-list")}
+              </span>
+            ),
+          },
+          { title: <span>{t("parent-create")}</span> },
+        ]);
+        setCurrentCardTitle(t("parent-create"));
+        setCurrentCardContent("create");
+      } else if (currentAction === "update") {
+        setCurrentBreadcrumbItems([
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                <FontAwesomeIcon icon={faPeopleRoof} />
+                &nbsp;{t("parent-manager")}
+              </span>
+            ),
+          },
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                {t("parent-list")}
+              </span>
+            ),
+          },
+          { title: <span>{t("parent-update")}</span> },
+        ]);
+        setCurrentCardTitle(t("parent-update"));
+        setCurrentCardContent("update");
+      } else if (currentAction === "lock") {
+        setCurrentBreadcrumbItems([
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                <FontAwesomeIcon icon={faPeopleRoof} />
+                &nbsp;{t("parent-manager")}
+              </span>
+            ),
+          },
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                {t("parent-list")}
+              </span>
+            ),
+          },
+          { title: <span>{t("parent-lock")}</span> },
+        ]);
+        setCurrentCardTitle(t("parent-lock"));
+        setCurrentCardContent("lock");
+      } else if (currentAction === "unlock") {
+        setCurrentBreadcrumbItems([
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                <FontAwesomeIcon icon={faPeopleRoof} />
+                &nbsp;{t("parent-manager")}
+              </span>
+            ),
+          },
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                {t("parent-list")}
+              </span>
+            ),
+          },
+          { title: <span>{t("parent-unlock")}</span> },
+        ]);
+        setCurrentCardTitle(t("parent-unlock"));
+        setCurrentCardContent("unlock");
+      } else if (currentAction === "change-password") {
+        setCurrentBreadcrumbItems([
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                <FontAwesomeIcon icon={faPeopleRoof} />
+                &nbsp;{t("parent-manager")}
+              </span>
+            ),
+          },
+          {
+            title: (
+              <span onClick={() => setCurrentAction("list")}>
+                {t("parent-list")}
+              </span>
+            ),
+          },
+          { title: <span>{t("parent-change-password")}</span> },
+        ]);
+        setCurrentCardTitle(t("parent-change-password"));
+        setCurrentCardContent("change-password");
+      }
+    }, [currentAction]);
+
     return (
       <>
-        <div className="parent-content change-password">
-          <Form
-            form={form}
-            layout="vertical"
-            initialValues={{
-              newPassword: undefined,
-              newPassword2: undefined,
-                        }}
-            onFinish={() => {
-              const passwordData = validateAndGetPassword(form.getFieldsValue(), openNotification);
+        <div className="admin-layout__main-content">
+          {/* Breadcrumb */}
+          <Breadcrumb
+            items={currentBreadcrumbItems}
+            className="admin-layout__main-breadcrumb"
+          />
+          {/* Card */}
+          <Card title={currentCardTitle} className="admin-layout__main-card">
+            {currentCardContent === "list" && (
+              <div className="parent-data">
+                <div className="admin-layout__main-filter">
+                  <div className="left">
+                    <Input
+                      prefix={<SearchOutlined />}
+                      placeholder="Tìm theo họ và tên phụ huynh"
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
+                      className="filter-find"
+                    />
+                    <Select
 
-              if (passwordData === null) return;
-              const formValues = form.getFieldsValue() as any;
 
-              // 🧩 3. Gọi API update
-              handleSubmitUpdate({
-                ...formValues,
-                ...passwordData,
-                id: parent.id,
-                account_id: parent.account?.id,
-                username: parent.account?.username,
-              });
-            }}
 
-          >
-            <Row className="split-3">
-              <Col></Col>
-              <Col>
-                <Form.Item
-                  name="newPassword"
-                  label="Mật khẩu mới"
-                  rules={[ruleRequired("Mật khẩu mới không được để trống !")]}
-                >
-                  <Input placeholder="Nhập Mật khẩu mới" />
-                </Form.Item>
-                <Form.Item
-                  name="newPassword2"
-                  label="Mật khẩu mới lần 2"
-                  rules={[
-                    ruleRequired("Mật khẩu mới lần 2 không được để trống !"),
-                  ]}
-                >
-                  <Input placeholder="Nhập Mật khẩu mới lần 2" />
-                </Form.Item>
-                <div className="buttons">
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    className="submit-button"
-                  >
-                    Xác nhận
-                  </Button>
+                      allowClear
+                      placeholder="Chọn Trạng thái"
+                      value={statusFilter}
+                      onChange={(value) => setStatusFilter(value)}
+                      options={[
+                        {
+                          label: CommonStatusValue.active,
+                          value: CommonStatusValue.active,
+                        },
+                        {
+                          label: CommonStatusValue.inactive,
+                          value: CommonStatusValue.inactive,
+                        },
+                      ]}
+                      className="filter-select"
+                    />
+                    <Button
+                      color="blue"
+                      variant="filled"
+                      icon={<ReloadOutlined />}
+                      onClick={() => {
+                        setSearchText("");
+                        setStatusFilter(undefined);
+                      }}
+
+                      className="filter-reset"
+                    >
+                      Làm mới
+                    </Button>
+                  </div>
+                  <div className="right">
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={() => setCurrentAction("create")}
+                    >
+                      {t("parent-create")}
+                    </Button>
+                  </div>
                 </div>
-              </Col>
-              <Col></Col>
-            </Row>
-          </Form>
+                <CustomTableActions<ParentFormatType>
+                  columns={columns}
+                  data={filteredParentList || []}
+                  rowKey={(record) => String(record?.id)}
+                  // loading={isLoading}
+                  defaultPageSize={10}
+                  className="admin-layout__main-table table-data parents"
+                />
+
+
+              </div>
+            )}
+            {currentCardContent === "detail" &&
+              ParentActions.detail(currentSelectedItem!)}
+            {currentCardContent === "create" && ParentActions.create()}
+            {currentCardContent === "update" &&
+              ParentActions.update(currentSelectedItem!)}
+            {(currentCardContent === "lock" || currentCardContent === "unlock") &&
+              ParentActions.lock(currentSelectedItem!)}
+            {currentCardContent === "change-password" &&
+              ParentActions.changePassword(currentSelectedItem!)}
+          </Card>
         </div>
       </>
     );
+
+
+
   };
-  const ParentActions = {
-    detail: (selectedParent: ParentFormatType) => (
-      <ParentDetail parent={selectedParent} />
-    ),
-    create: () => <ParentCreate />,
-    update: (selectedParent: ParentFormatType) => (
-      <ParentUpdate parent={selectedParent} />
-    ),
-    lock: (selectedParent: ParentFormatType) => (
-      <ParentLock parent={selectedParent} />
-    ),
-    changePassword: (selectedParent: ParentFormatType) => (
-      <ParentChangePassword parent={selectedParent} />
-    ),
-  };
-  
-  
-  // Effect cập nhật Card Content
-  useEffect(() => {
-    if (currentAction === "list") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faPeopleRoof} />
-              &nbsp;{t("parent-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("parent-list")}
-            </span>
-          ),
-        },
-      ]);
-      setCurrentCardTitle(t("parent-list"));
-      setCurrentCardContent("list");
-    } else if (currentAction === "detail") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faPeopleRoof} />
-              &nbsp;{t("parent-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("parent-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("parent-detail")}</span> },
-      ]);
-      setCurrentCardTitle(t("parent-detail"));
-      setCurrentCardContent("detail");
-    } else if (currentAction === "create") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faPeopleRoof} />
-              &nbsp;{t("parent-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("parent-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("parent-create")}</span> },
-      ]);
-      setCurrentCardTitle(t("parent-create"));
-      setCurrentCardContent("create");
-    } else if (currentAction === "update") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faPeopleRoof} />
-              &nbsp;{t("parent-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("parent-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("parent-update")}</span> },
-      ]);
-      setCurrentCardTitle(t("parent-update"));
-      setCurrentCardContent("update");
-    } else if (currentAction === "lock") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faPeopleRoof} />
-              &nbsp;{t("parent-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("parent-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("parent-lock")}</span> },
-      ]);
-      setCurrentCardTitle(t("parent-lock"));
-      setCurrentCardContent("lock");
-    } else if (currentAction === "unlock") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faPeopleRoof} />
-              &nbsp;{t("parent-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("parent-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("parent-unlock")}</span> },
-      ]);
-      setCurrentCardTitle(t("parent-unlock"));
-      setCurrentCardContent("unlock");
-    } else if (currentAction === "change-password") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faPeopleRoof} />
-              &nbsp;{t("parent-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("parent-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("parent-change-password")}</span> },
-      ]);
-      setCurrentCardTitle(t("parent-change-password"));
-      setCurrentCardContent("change-password");
-    }
-  }, [currentAction]);
 
-  return (
-    <>
-      <div className="admin-layout__main-content">
-        {/* Breadcrumb */}
-        <Breadcrumb
-          items={currentBreadcrumbItems}
-          className="admin-layout__main-breadcrumb"
-        />
-        {/* Card */}
-        <Card title={currentCardTitle} className="admin-layout__main-card">
-          {currentCardContent === "list" && (
-            <div className="parent-data">
-              <div className="admin-layout__main-filter">
-                <div className="left">
-                  <Input
-                    prefix={<SearchOutlined />}
-                    placeholder="Tìm theo họ và tên phụ huynh"
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    className="filter-find"
-                  />
-                  <Select
-
-
-
-                    allowClear
-                    placeholder="Chọn Trạng thái"
-                    value={statusFilter}
-                    onChange={(value) =>setStatusFilter(value)}
-                    options={[
-                      {
-                        label: CommonStatusValue.active,
-                        value: CommonStatusValue.active,
-                      },
-                      {
-                        label: CommonStatusValue.inactive,
-                        value: CommonStatusValue.inactive,
-                      },
-                    ]}
-                    className="filter-select"
-                  />
-                  <Button
-                    color="blue"
-                    variant="filled"
-                    icon={<ReloadOutlined />}
-                     onClick={() => {
-                    setSearchText("");
-                    setStatusFilter(undefined);
-                  }}
-                      
-                    className="filter-reset"
-                  >
-                    Làm mới
-                  </Button>
-                </div>
-                <div className="right">
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => setCurrentAction("create")}
-                  >
-                    {t("parent-create")}
-                  </Button>
-                </div>
-              </div>
-              <CustomTableActions<ParentFormatType>
-                columns={columns}
-                data={filteredParentList || []}
-                rowKey={(record) => String(record?.id)}
-                // loading={isLoading}
-                defaultPageSize={10}
-                className="admin-layout__main-table table-data parents"
-              />
-             
-           
-            </div>
-          )}
-          {currentCardContent === "detail" &&
-            ParentActions.detail(currentSelectedItem!)}
-          {currentCardContent === "create" && ParentActions.create()}
-          {currentCardContent === "update" &&
-            ParentActions.update(currentSelectedItem!)}
-          {(currentCardContent === "lock" || currentCardContent === "unlock") &&
-            ParentActions.lock(currentSelectedItem!)}
-          {currentCardContent === "change-password" &&
-            ParentActions.changePassword(currentSelectedItem!)}
-        </Card>
-      </div>
-    </>
-  );
-
-
-
-};
-
-export default ParentPage;
+  export default ParentPage;

@@ -5,6 +5,7 @@ import { createSchema, deleteSchema, getSchema, updateSchema } from "../schemas/
 import { isCreateRest, isDeleteRest, isGetRest, isPutRest } from "../utils/rest.util";
 import AccountService from './account.service';
 import { hashPassword } from "../utils/bcypt.util";
+import FirebaseService from "./firebase.service";
 
 const ParentService = {
   async get(input: any) {
@@ -30,33 +31,31 @@ const ParentService = {
 
   },
 
-  async getAll() {
+  async getList() {
     const parent = await prisma.parents.findMany({
       include: {
-        account: {
-          select: {
-            id: true,
-            username: true,
-            status: true,
-
-          },
-        },
+        account: true
       },
-
-    }
-    );
-
-    return isGetRest(parent);
+    });
+    return isGetRest(parent.map((parent) => ({
+      id: parent.id,
+      avatar: parent.avatar,
+      full_name: parent.full_name,
+      phone: parent.phone,
+      email: parent.email,
+      address: parent.address,
+      account_id: parent.account_id,
+      username: parent.account?.username,
+      status: parent.account?.status as "ACTIVE" | "INACTIVE"
+    })));
   },
 
   async update(input: any) {
     const data = updateSchema.parse(input);
-    console.log("Update inut:", input);
-    console.log("Update Data Input:", data);
     const updateData: any = {};
 
-    if (data.full_name) {
-      updateData.full_name = data.full_name;
+    if (data.fullName) {
+      updateData.full_name = data.fullName;
     }
 
     if (data.email) {
@@ -73,7 +72,6 @@ const ParentService = {
     if (data.avatar) {
       updateData.avatar = data.avatar;
     }
-    console.log("Update Data:", updateData);
     const parent = await prisma.parents.update(
       {
         where: {
@@ -90,74 +88,60 @@ const ParentService = {
       });
     }
 
-    return isPutRest(
+    return isPutRest({
+      id: parent.id,
+      full_name: parent.full_name,
+      email: parent.email,
+      address: parent.address,
+      phone: parent.phone
+    });
+  },
+
+  async create(input: any, file?: Express.Multer.File) {
+    const data = createSchema.parse(input);
+    const account = await prisma.accounts.create({
+      data: {
+        username: data.username,
+        password: await hashPassword(data.password),
+        role: "PARENT",
+        status: data.status
+      }
+    });
+
+    const parent = await prisma.parents.create({
+      data: {
+        full_name: data.fullName,
+        phone: data.phone,
+        email: data.email,
+        address: data.address,
+        avatar: file ? file.filename : null,
+        account: {
+          connect: { id: account.id }
+        }
+      }
+    });
+
+    return isCreateRest(
       {
         id: parent.id,
         full_name: parent.full_name,
+        phone: parent.phone,
         email: parent.email,
         address: parent.address,
-        phone: parent.phone
-
+        account_id: parent.account_id
       } as ParentResponse
     );
   },
 
+  async uploadAvatar(id: number, file: Express.Multer.File) {
+    const avatarUrl = await FirebaseService.uploadParentImage(file as unknown as File);
+    await prisma.parents.update({
+      where: { id },
+      data: { avatar: avatarUrl }
+    });
 
-
-
-
-  async create(input: unknown) {
-    try {
-      // console.log("Input:", input);
-
-      const data = createSchema.parse(input);
-      // console.log("Parsed data:", data);
-
-      if (!data.username || !data.password) {
-        throw new Error("Username hoặc password không hợp lệ");
-      }
-
-      const hashedPassword = await hashPassword(data.password);
-      const account = await prisma.accounts.create({
-        data: {
-          username: data.username,
-          password: hashedPassword,
-          role: "PARENT",
-          status: data.status ?? "ACTIVE",
-        },
-      });
-
-      // console.log("Account created:", account);
-
-      const parent = await prisma.parents.create({
-        data: {
-          full_name: data.full_name,
-          phone: data.phone,
-          email: data.email,
-          address: data.address ?? null,
-          avatar: data.avatar ?? "",
-          account: { connect: { id: account.id } },
-        },
-      });
-
-      // console.log("Parent created:", parent);
-
-      return isCreateRest({
-        id: parent.id,
-        full_name: parent.full_name,
-        avatar: parent.avatar,
-        phone: parent.phone,
-        email: parent.email,
-        address: parent.address,
-        account_id: parent.account_id,
-      } as ParentResponse);
-
-    } catch (err) {
-      console.error("Create parent error:", err);
-      throw err;
-    }
+    return isPutRest({ id, avatar: avatarUrl });
   }
-
 }
 
 

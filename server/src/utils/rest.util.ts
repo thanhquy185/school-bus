@@ -39,6 +39,7 @@ export const isCreateRest = (data: any): RestResponse => {
 export const isPutRest = (data: any): RestResponse => {
     return {
         statusCode: data ? SUCCESS_CODE : 400,
+        result: data ? true : false,
         message: data ? SUCCESS_MESSAGE : BAD_MESSAGE,
         data: data ? data : null,
         errorMessage: data ? null : "Cập nhật dữ liệu không thành công"
@@ -53,6 +54,7 @@ export const isPutRest = (data: any): RestResponse => {
 export const isDeleteRest = (data: any): RestResponse => {
     return {
         statusCode: data ? SUCCESS_CODE : 400,
+        result: data ? true : false,
         message: data ? SUCCESS_MESSAGE : BAD_MESSAGE,
         data: data ? data : null,
         errorMessage: data ? null : "Xóa dữ liệu không thành công"

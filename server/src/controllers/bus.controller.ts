@@ -3,8 +3,8 @@ import BusService from '../services/bus.service';
 
 const BusController = {
 
-    async getAll(_req: Request, res: Response) {
-        const response = await BusService.getAll();
+    async getList(_req: Request, res: Response) {
+        const response = await BusService.getList();
         res.status(response.statusCode).json(response);
     },
 

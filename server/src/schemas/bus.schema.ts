@@ -1,6 +1,5 @@
 import zod from "zod";
 
-// Thêm xe buýt
 export const createSchema = zod.object({
     licensePlate: zod
         .string()
@@ -17,7 +16,6 @@ export const createSchema = zod.object({
     status: zod.enum(["ACTIVE", "INACTIVE", "MAINTENANCE"], "Trạng thái xe không hợp lệ")
 });
 
-// Cập nhật xe buýt
 export const updateSchema = zod.object({
     id: zod.number().min(1, "Yêu cầu mã xe buýt hợp lệ"),
     licensePlate: zod

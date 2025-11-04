@@ -5,6 +5,6 @@ const router = Router();
 
 router.post("/", BusController.create);
 router.put("/:id", BusController.update);
-router.get("/", BusController.getAll);
+router.get("/", BusController.getList);
 
 export default router;

@@ -8,7 +8,20 @@ const StudentController = {
     },
 
     async create(_req: Request, res: Response) {
-        const response = await StudentService.create(_req.body, _req.file);
+        const response = await StudentService.create(_req.body);
+        res.status(response.statusCode).json(response);
+    },
+
+    async uploadAvatar(_req: Request, res: Response) {
+        const response = await StudentService.uploadAvatar(
+            Number(_req.params.id),
+            _req.file!
+        );
+        res.status(response.statusCode).json(response);
+    },
+
+    async update(_req: Request, res: Response) {
+        const response = await StudentService.update({ id: Number(_req.params.id), ..._req.body });
         res.status(response.statusCode).json(response);
     }
 }

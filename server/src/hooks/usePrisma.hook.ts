@@ -6,6 +6,7 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 const usePrisma = {
     errorHandle(err: any, _req: Request, res: Response, next: NextFunction) {
         if (err instanceof PrismaClientKnownRequestError) {
+            console.log("Prisma Error Code:", err.code);
             if (err.code === 'P2002') {
                 const response = {
                     statusCode: INTERNAL_CODE,

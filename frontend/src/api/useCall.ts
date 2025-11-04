@@ -1,7 +1,9 @@
 import { useState } from "react";
-import type { RestResponse } from "../api/api";
+import { useNotification } from "../utils/showNotification";
+import type { RestResponse } from "./api";
 
 const useCallApi = () => {
+    const { openNotification } = useNotification();
     const [loading, setLoading] = useState<boolean>(false);
 
     const execute = async (apiCall: Promise<RestResponse>) => {
@@ -10,15 +12,27 @@ const useCallApi = () => {
             const restResponse = await apiCall;
             const statusCode = restResponse?.statusCode || 500;
             if (statusCode === 401) {
-                // showToast("Cảnh báo", "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại", "error");
+                openNotification({
+                    type: "error",
+                    message: "Lỗi xác thực",
+                    description: "Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.",
+                });
             }
             if (statusCode === 403) {
-                // showToast("Cảnh báo", "Bạn không có quyền truy cập tài nguyên này", "error");
+                openNotification({
+                    type: "error",
+                    message: "Lỗi phân quyền",
+                    description: "Bạn không có quyền thực hiện hành động này.",
+                });
             }
             return restResponse;
         } catch (error: any) {
             console.error("API call error:", error.message);
-            // showToast("Cảnh báo", "Máy chủ không phản hồi", "error");
+            openNotification({
+                type: "error",
+                message: "Lỗi hệ thống",
+                description: "Máy chủ không phản hồi.",
+            });
             return { result: false, statusCode: 500, data: null, message: "", errorMessage: ["Máy chủ không phản hồi"] } as RestResponse;
         } finally {
             setLoading(false);
@@ -30,17 +44,29 @@ const useCallApi = () => {
         const isSuccess = restResponse.result && (restResponse.statusCode == 200 || restResponse.statusCode == 201);
         if (isSuccess) {
             if (successMessage) {
-                // showToast("Thành công", successMessage, "success");
+                openNotification({
+                    type: "success",
+                    message: "Thành công",
+                    description: successMessage,
+                });
             }
         } else {
             const apiErrorMessage = restResponse.errorMessage;
             if (apiErrorMessage) {
                 if (Array.isArray(apiErrorMessage)) {
                     apiErrorMessage.forEach((error: string) => {
-                        // showToast("Lưu ý", error, "warning");
+                        openNotification({
+                            type: "warning",
+                            message: "Lưu ý",
+                            description: error,
+                        });
                     });
                 } else {
-                    // showToast("Lưu ý", apiErrorMessage, "warning");
+                    openNotification({
+                        type: "warning",
+                        message: "Lưu ý",
+                        description: apiErrorMessage,
+                    });
                 }
             }
         }

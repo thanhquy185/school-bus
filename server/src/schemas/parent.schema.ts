@@ -1,70 +1,46 @@
-import zod from 'zod'
+import z from "zod";
 
-export const getSchema = zod.object({
-  id: zod.number().min(1, "Yêu cầu mã phụ huynh hợp lệ")
+export const getSchema = z.object({
+    id: z.number().min(1, "Yêu cầu mã phụ huynh hợp lệ")
 });
 
+export const createSchema = z.object({
+    fullName: z.string().min(1, "Họ và tên không được để trống"),
+    phone: z.string().min(1, "Số điện thoại không được để trống"),
+    email: z.string().email("Email không hợp lệ"),
+    address: z.string().min(1, "Địa chỉ không được để trống"),
+    username: z.string().min(4, "Tên đăng nhập phải có ít nhất 4 ký tự"),
+    password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+    status: z.enum(["ACTIVE", "INACTIVE"], "Trạng thái không hợp lệ")
+});
 
-export const createSchema = zod.object(
-    {
-        full_name: zod.string().optional(),
-        phone: zod.string().optional(),
-        email: zod.string().optional(),
-        address: zod.string().optional(),
+export const updateSchema = z.object({
+    id: z.number().min(1, "ID phụ huynh không hợp lệ"),
+    fullName: z.string().optional(),
+    phone: z.string().optional(),
+    email: z.string().optional(),
+    address: z.string().optional(),
 
-        account_id: zod.number().optional(),
-        username: zod
-    .string()
-    .min(4, "Tên đăng nhập phải có ít nhất 4 ký tự")
-    .optional(),
-       avatar: zod
+    account_id: z.number().optional(),
+    avatar: z
         .string()
         .regex(/^[\w\-.]+\.png$/i, "Ảnh đại diện phải là file PNG hợp lệ")
         .optional()
         .describe("Ảnh đại diện của phụ huynh"),
-        status: zod
-            .enum(["ACTIVE", "INACTIVE"])
-            .optional()
-            .describe("Trạng thái tài khoản của phụ huynh"),
-
-        password: zod
-            .string()
-            .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
-            .optional()
-            .describe("Mật khẩu mới"),
-        role: zod.enum(["PARENT"]).default("PARENT"),
-    }
-);
-
-        export const updateSchema = zod.object({
-        id: zod.number().min(1, "ID phụ huynh không hợp lệ"),
-
-
-        full_name: zod.string().optional(),
-        phone: zod.string().optional(),
-        email: zod.string().optional(),
-        address: zod.string().optional(),
-
-        account_id: zod.number().optional(),
-            avatar: zod
-        .string()
-        .regex(/^[\w\-.]+\.png$/i, "Ảnh đại diện phải là file PNG hợp lệ")
+    status: z
+        .enum(["ACTIVE", "INACTIVE"])
         .optional()
-        .describe("Ảnh đại diện của phụ huynh"),
-        status: zod
-            .enum(["ACTIVE", "INACTIVE"])
-            .optional()
-            .describe("Trạng thái tài khoản của phụ huynh"),
+        .describe("Trạng thái tài khoản của phụ huynh"),
 
-        password: zod
-            .string()
-            .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
-            .optional()
-            .describe("Mật khẩu mới"),
-        });
+    password: z
+        .string()
+        .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+        .optional()
+        .describe("Mật khẩu mới"),
+});
 
-export const deleteSchema = zod.object(
+export const deleteSchema = z.object(
     {
-        id: zod.number().min(1, "ID phụ huynh không hợp lệ")
+        id: z.number().min(1, "ID phụ huynh không hợp lệ")
     }
 );

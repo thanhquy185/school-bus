@@ -11,6 +11,17 @@ export const getStudentStatusText = (statusKey: string): string => {
     }
 }
 
+export const getAccountStatusText = (statusKey: string): string => {
+    switch (statusKey) {
+        case "ACTIVE":
+            return "Hoạt động";
+        case "INACTIVE":
+            return "Tạm dừng";
+        default:
+            return "Không xác định";
+    }
+}
+
 export const getGenderText = (genderKey: string): string => {
     switch (genderKey) {
         case "MALE":

@@ -44,36 +44,50 @@ import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
 import dayjs from "dayjs";
 import useCallApi from "../../api/useCall";
-import { createStudent, getStudents } from "../../services/student-service";
+import { createStudent, getStudents, updateStudent, uploadStudentAvatar } from "../../services/student-service";
 import { formatByString } from "../../utils/format-day";
 import { getGenderText, getStudentStatusText } from "../../utils/vi-trans";
+import { getParents } from "../../services/parent-service";
+import { getPickups } from "../../services/pickup-service";
+import { getClasses } from "../../services/class-service";
 
-// Student Page
 const StudentPage = () => {
-  const { execute } = useCallApi();
-  // Language
+  const { execute, notify } = useCallApi();
   const { t } = useTranslation();
-
-  // Notification
   const { openNotification } = useNotification();
 
   const [students, setStudents] = useState<StudentFormatType[]>([]);
-  
-  const handleGetStudents = async () => {
-    const restResponse = await execute(getStudents());
-    if (restResponse?.result) {
-      if (Array.isArray(restResponse.data)) {
-        setStudents(restResponse.data.map(student => ({
-          ...student,
-          status: getStudentStatusText(student.status),
-          gender: getGenderText(student.gender)
-        })) as StudentFormatType[]);
-      }
+  const [parents, setParents] = useState<any[]>([]);
+  const [pickups, setPickups] = useState<any[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
+
+  const handleGetData = async () => {
+    const [studentRes, parentRes, pickupRes, classRes] = await Promise.all([
+      execute(getStudents()),
+      execute(getParents()),
+      execute(getPickups()),
+      execute(getClasses()),
+    ]);
+
+    if (studentRes?.result && Array.isArray(studentRes.data)) {
+      setStudents(studentRes.data as StudentFormatType[]);
+    }
+
+    if (parentRes?.result && Array.isArray(parentRes.data)) {
+      setParents(parentRes.data);
+    }
+
+    if (pickupRes?.result && Array.isArray(pickupRes.data)) {
+      setPickups(pickupRes.data);
+    }
+
+    if (classRes?.result && Array.isArray(classRes.data)) {
+      setClasses(classRes.data);
     }
   }
 
   useEffect(() => {
-    handleGetStudents();
+    handleGetData();
   }, []);
 
   const columns: ColumnsType<StudentFormatType> = [
@@ -82,7 +96,7 @@ const StudentPage = () => {
       dataIndex: "id",
       key: "id",
       width: "8%",
-      sorter: (a, b) => a?.id!.localeCompare(b?.id!),
+      sorter: (a, b) => (a?.id?.toString() ?? "").localeCompare(b?.id?.toString() ?? ""),
     },
     {
       title: "Hình ảnh",
@@ -103,15 +117,16 @@ const StudentPage = () => {
     {
       title: "Họ và tên",
       dataIndex: "full_name",
-      key: "fullname",
+      key: "full_name",
       width: "20%",
-      sorter: (a, b) => a?.fullname!.localeCompare(b?.fullname!),
+      sorter: (a, b) => a?.full_name!.localeCompare(b?.full_name!),
     },
     {
       title: "Giới tính",
       dataIndex: "gender",
       key: "gender",
       width: "8%",
+      render: (gender: string) => getGenderText(gender),
       sorter: (a, b) => a?.gender!.localeCompare(b?.gender!),
     },
     {
@@ -140,8 +155,8 @@ const StudentPage = () => {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={status === CommonStatusValue.active ? "green" : "red"}>
-          {status}
+        <Tag color={status === "STUDYING" ? "green" : status === "DROPPED_OUT" ? "red" : "orange"}>
+          {getStudentStatusText(status)}
         </Tag>
       ),
       width: "10%",
@@ -193,29 +208,24 @@ const StudentPage = () => {
     },
   ];
 
-  // State giữ đối tượng được chọn hiện tại
   const [currentSelectedItem, setCurrentSelectedItem] =
     useState<StudentFormatType>();
-  // State giữ hành động hiện tại
   const [currentAction, setCurrentAction] = useState<string>("list");
-  // State giữ breadcrumb items hiện tại
   const [currentBreadcrumbItems, setCurrentBreadcrumbItems] =
     useState<Partial<BreadcrumbItemType & BreadcrumbSeparatorType>[]>();
-  // State giữ card info hiện tại
   const [currentCardTitle, setCurrentCardTitle] = useState<string>(
     t("student-list")
   );
   const [currentCardContent, setCurrentCardContent] = useState<string>("list");
 
-  // Student Actions
   const defaultLabels = {
     id: "Mã học sinh",
     avatar: "Ảnh đại diện",
     parent: "Phụ huynh",
     pickup: "Trạm xe buýt",
     class: "Lớp",
-    fullname: "Họ và tên",
-    birthday: "Ngày sinh",
+    full_name: "Họ và tên",
+    birth_date: "Ngày sinh",
     gender: "Giới tính",
     address: "Địa chỉ",
     status: "Trạng thái",
@@ -226,7 +236,7 @@ const StudentPage = () => {
     pickup: "Chọn Trạm xe buýt",
     class: "Chọn Lớp",
     avatar: "Tải ảnh lên",
-    fullname: "Nhập Họ và tên",
+    full_name: "Nhập Họ và tên",
     birthday: "Chọn Ngày sinh",
     gender: "Chọn Giới tính",
     address: "Nhập Địa chỉ",
@@ -245,12 +255,12 @@ const StudentPage = () => {
             layout="vertical"
             initialValues={{
               id: student.id || undefined,
-              parent: student.parent?.id || undefined,
+              parentId: student.parent?.id || undefined,
               pickup: student.pickup?.id || undefined,
               class: student.class?.id || undefined,
               avatar: student.avatar || undefined,
-              fullname: student.fullname || undefined,
-              birthday: student.birthday ? dayjs(student.birthday) : undefined,
+              full_name: student.full_name || undefined,
+              birth_date: student.birth_date ? dayjs(student.birth_date) : undefined,
               gender: student.gender || undefined,
               address: student.address || undefined,
               status: student.status || undefined,
@@ -278,7 +288,7 @@ const StudentPage = () => {
                 <Form.Item name="id" label={defaultLabels.id}>
                   <Input disabled />
                 </Form.Item>
-                <Form.Item name="parent" label={defaultLabels.parent}>
+                <Form.Item name="parentId" label={defaultLabels.parent}>
                   <Select
                     options={[
                       {
@@ -291,15 +301,15 @@ const StudentPage = () => {
                   />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
-                  label={defaultLabels.fullname}
+                  name="full_name"
+                  label={defaultLabels.full_name}
                   className="multiple-2"
                 >
                   <Input disabled />
                 </Form.Item>
                 <Row className="split-2">
                   <Col>
-                    <Form.Item name="birthday" label={defaultLabels.birthday}>
+                    <Form.Item name="birth_date" label={defaultLabels.birth_date}>
                       <DatePicker disabled />
                     </Form.Item>
                   </Col>
@@ -354,27 +364,36 @@ const StudentPage = () => {
       </>
     );
   };
-  const StudentCreate: React.FC = () => {
-    const { execute } = useCallApi();
 
+  const StudentCreate: React.FC = () => {
     const [form] = Form.useForm<StudentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
 
     const handleSubmit = async () => {
-      console.log("Image file on submit:", imageFile);
-      const submitData = new FormData();
-      submitData.append("avatar", imageFile as File);
-      submitData.append("fullName", form.getFieldValue("fullname"));
-      submitData.append("birthDate", formatByString(form.getFieldValue("birthday")));
-      submitData.append("gender", form.getFieldValue("gender"));
-      submitData.append("address", form.getFieldValue("address"));
-      submitData.append("status", form.getFieldValue("status"));
-      submitData.append("parentId", form.getFieldValue("parentId"));
-      submitData.append("classId", form.getFieldValue("classId"));
-
-      const restResponse = await execute(createStudent(submitData));
-
-      console.log("Create student response:", restResponse);
+      const createResponse = await execute(createStudent({
+        fullName: form.getFieldValue("full_name"),
+        birthDate: formatByString(form.getFieldValue("birth_date")),
+        gender: form.getFieldValue("gender"),
+        address: form.getFieldValue("address"),
+        status: form.getFieldValue("status"),
+        parentId: form.getFieldValue("parentId"),
+        classId: form.getFieldValue("classId"),
+        pickupId: form.getFieldValue("pickupId"),
+      }));
+      notify(createResponse!, "Thêm học sinh thành công !");
+      if (createResponse?.result) {
+        const studentId = createResponse.data.id;
+        if (imageFile && studentId) {
+          const formData = new FormData();
+          formData.append("avatar", imageFile);
+          const uploadResponse = await execute(uploadStudentAvatar(studentId, formData));
+          notify(uploadResponse!, "Tải ảnh đại diện thành công !");
+          if (uploadResponse?.result) {
+            setCurrentAction("list");
+            handleGetData();
+          }
+        }
+      }
     }
 
     useEffect(() => {
@@ -389,9 +408,9 @@ const StudentPage = () => {
             layout="vertical"
             initialValues={{
               id: undefined,
-              parent: undefined,
-              pickup: undefined,
-              class: undefined,
+              parentId: undefined,
+              pickupId: undefined,
+              classId: undefined,
               avatar: undefined,
               fullname: undefined,
               birthday: undefined,
@@ -426,12 +445,11 @@ const StudentPage = () => {
                   name="id"
                   htmlFor="create-id"
                   label={defaultLabels.id}
-                // rules={[ruleRequired("Mã học sinh không được để trống !")]}
                 >
                   <Input id="create-id" placeholder={defaultInputs.id} disabled value={"Mã học sinh sẽ được tự tạo"} />
                 </Form.Item>
                 <Form.Item
-                  name="parent"
+                  name="parentId"
                   htmlFor="create-parent"
                   label={defaultLabels.parent}
                   rules={[ruleRequired("Phụ huynh không được để trống !")]}
@@ -441,36 +459,30 @@ const StudentPage = () => {
                     allowClear
                     id="create-parent"
                     placeholder={defaultInputs.parent}
-                    options={[
-                      {
-                        label: "#1 - Họ tên phụ huynh 1 - SĐT 1",
-                        value: 1,
-                      },
-                      {
-                        label: "#2 - Họ tên phụ huynh 2 - SĐT 2",
-                        value: 2,
-                      },
-                    ]}
+                    options={parents.map(parent => ({
+                      label: `# ${parent.id} - ${parent.full_name}`,
+                      value: parent.id,
+                    }))}
                   />
                 </Form.Item>
                 <Form.Item
                   name="fullname"
                   htmlFor="create-fullname"
-                  label={defaultLabels.fullname}
+                  label={defaultLabels.full_name}
                   className="multiple-2"
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                 >
                   <Input
                     id="create-fullname"
-                    placeholder={defaultInputs.fullname}
+                    placeholder={defaultInputs.full_name}
                   />
                 </Form.Item>
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="birthday"
-                      htmlFor="create-birthday"
-                      label={defaultLabels.birthday}
+                      name="birth_date"
+                      htmlFor="create-birth_date"
+                      label={defaultLabels.birth_date}
                       rules={[ruleRequired("Cần chọn Ngày sinh !")]}
                     >
                       <DatePicker
@@ -547,7 +559,7 @@ const StudentPage = () => {
                   />
                 </Form.Item>
                 <Form.Item
-                  name="pickup"
+                  name="pickupId"
                   htmlFor="create-pickup"
                   label={defaultLabels.pickup}
                   rules={[ruleRequired("Trạm xe buýt không được để trống !")]}
@@ -557,23 +569,17 @@ const StudentPage = () => {
                     allowClear
                     id="create-pickup"
                     placeholder={defaultInputs.pickup}
-                    options={[
-                      {
-                        label: "#1 - Trạm 1123",
-                        value: 1,
-                      },
-                      {
-                        label: "#2 - Trạm 12418",
-                        value: 2,
-                      },
-                    ]}
+                    options={pickups.map(pickup => ({
+                      label: `# ${pickup.id} - ${pickup.name}`,
+                      value: pickup.id,
+                    }))}
                   />
                 </Form.Item>
                 <Form.Item label="." className="hidden">
                   <Input />
                 </Form.Item>
                 <Form.Item
-                  name="class"
+                  name="classId"
                   htmlFor="create-class"
                   label={defaultLabels.class}
                   rules={[ruleRequired("Lớp không được để trống !")]}
@@ -583,16 +589,10 @@ const StudentPage = () => {
                     allowClear
                     id="create-class"
                     placeholder={defaultInputs.class}
-                    options={[
-                      {
-                        label: "Lớp 10C1",
-                        value: 1,
-                      },
-                      {
-                        label: "Lớp 12A1",
-                        value: 2,
-                      },
-                    ]}
+                    options={classes.map(classItem => ({
+                      label: `# ${classItem.id} - ${classItem.name}`,
+                      value: classItem.id,
+                    }))}
                   />
                 </Form.Item>
               </Col>
@@ -617,6 +617,30 @@ const StudentPage = () => {
     const [form] = Form.useForm<StudentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
 
+    const handleSubmitUpdate = async () => {
+      const updateResponse = await execute(updateStudent(student.id!, {
+        fullName: form.getFieldValue("full_name"),
+        birthDate: formatByString(form.getFieldValue("birth_date")),
+        gender: form.getFieldValue("gender"),
+        address: form.getFieldValue("address"),
+
+        pickupId: form.getFieldValue("pickupId"),
+        classId: form.getFieldValue("classId"),
+        parentId: form.getFieldValue("parentId"),
+      }));
+      notify(updateResponse!, "Cập nhật học sinh thành công !");
+      if (updateResponse?.result) {
+        if (imageFile && student.id) {
+          const formData = new FormData();
+          formData.append("avatar", imageFile);
+           const uploadResponse = await execute(uploadStudentAvatar(student.id, formData));
+          notify(uploadResponse!, "Tải ảnh đại diện thành công !");
+        }
+        setCurrentAction("list");
+        handleGetData();
+      }
+    }
+
     useEffect(() => {
       form.setFieldValue("avatar", imageFile?.name);
     }, [imageFile]);
@@ -629,19 +653,17 @@ const StudentPage = () => {
             layout="vertical"
             initialValues={{
               id: student.id || undefined,
-              parent: student.parent?.id || undefined,
+              parentId: student.parent?.id || undefined,
               pickup: student.pickup?.id || undefined,
               class: student.class?.id || undefined,
               avatar: student.avatar || undefined,
-              fullname: student.fullname || undefined,
-              birthday: student.birthday ? dayjs(student.birthday) : undefined,
+              full_name: student.full_name || undefined,
+              birth_date: student.birth_date ? dayjs(student.birth_date) : undefined,
               gender: student.gender || undefined,
               address: student.address || undefined,
               status: student.status || undefined,
             }}
-            onFinish={() => {
-              console.log("Form values:", form.getFieldsValue());
-            }}
+            onFinish={handleSubmitUpdate}
           >
             <Row className="split-3">
               <Col>
@@ -650,7 +672,6 @@ const StudentPage = () => {
                   htmlFor="update-avatar"
                   label={defaultLabels.avatar}
                   valuePropName="fileList"
-                  rules={[ruleRequired("Ảnh đại diện không được để trống !")]}
                 >
                   <CustomUpload
                     defaultSrc={
@@ -672,7 +693,7 @@ const StudentPage = () => {
                   <Input disabled />
                 </Form.Item>
                 <Form.Item
-                  name="parent"
+                  name="parentId"
                   htmlFor="update-parent"
                   label={defaultLabels.parent}
                   rules={[ruleRequired("Phụ huynh không được để trống !")]}
@@ -682,36 +703,30 @@ const StudentPage = () => {
                     allowClear
                     id="update-parent"
                     placeholder={defaultInputs.parent}
-                    options={[
-                      {
-                        label: "#1 - Họ tên phụ huynh 1 - SĐT 1",
-                        value: 1,
-                      },
-                      {
-                        label: "#2 - Họ tên phụ huynh 2 - SĐT 2",
-                        value: 2,
-                      },
-                    ]}
+                    options={parents.map(parent => ({
+                      label: `# ${parent.id} - ${parent.full_name}`,
+                      value: parent.id,
+                    }))}
                   />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
+                  name="full_name"
                   htmlFor="update-fullname"
-                  label={defaultLabels.fullname}
+                  label={defaultLabels.full_name}
                   className="multiple-2"
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                 >
                   <Input
                     id="update-fullname"
-                    placeholder={defaultInputs.fullname}
+                    placeholder={defaultInputs.full_name}
                   />
                 </Form.Item>
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="birthday"
+                      name="birth_date"
                       htmlFor="update-birthday"
-                      label={defaultLabels.birthday}
+                      label={defaultLabels.birth_date}
                       rules={[ruleRequired("Cần chọn Ngày sinh !")]}
                     >
                       <DatePicker
@@ -736,11 +751,11 @@ const StudentPage = () => {
                         options={[
                           {
                             label: CommonGenderValue.male,
-                            value: CommonGenderValue.male,
+                            value: "MALE",
                           },
                           {
                             label: CommonGenderValue.female,
-                            value: CommonGenderValue.female,
+                            value: "FEMALE",
                           },
                         ]}
                       />
@@ -775,16 +790,10 @@ const StudentPage = () => {
                     allowClear
                     id="update-pickup"
                     placeholder={defaultInputs.pickup}
-                    options={[
-                      {
-                        label: "#1 - Trạm 1",
-                        value: 1,
-                      },
-                      {
-                        label: "#2 - Trạm 2",
-                        value: 2,
-                      },
-                    ]}
+                    options={pickups.map(pickup => ({
+                      label: `# ${pickup.id} - ${pickup.name}`,
+                      value: pickup.id,
+                    }))}
                   />
                 </Form.Item>
                 <Form.Item label="." className="hidden">
@@ -801,16 +810,10 @@ const StudentPage = () => {
                     allowClear
                     id="update-class"
                     placeholder={defaultInputs.class}
-                    options={[
-                      {
-                        label: "#1 - Lớp 1",
-                        value: 1,
-                      },
-                      {
-                        label: "#2 - Lớp 2",
-                        value: 2,
-                      },
-                    ]}
+                    options={classes.map(classItem => ({
+                      label: `# ${classItem.id} - ${classItem.name}`,
+                      value: classItem.id,
+                    }))}
                   />
                 </Form.Item>
               </Col>
@@ -840,7 +843,7 @@ const StudentPage = () => {
             "#" +
             student?.id +
             " - " +
-            student?.fullname +
+            student?.full_name +
             " - " +
             student?.class?.name
           }

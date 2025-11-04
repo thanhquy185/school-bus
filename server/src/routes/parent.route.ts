@@ -1,15 +1,15 @@
 import { Router } from "express";
 import ParentController from "../controllers/parent.controller";
-import { UploadMiddleware } from "../middlewares/upload.middleware";
+import UploadMiddleware from "../middlewares/upfile.middware";
 
 const router = Router();
-router.get("", ParentController.getAll);
-router.get("/:id", ParentController.get);
-router.post("",
-  UploadMiddleware("parents", "avatar"), 
-  ParentController.create
+router.get("", ParentController.getList);
+router.post("", ParentController.create);
+router.post("/:id/avatar", 
+  UploadMiddleware.single("avatar"), 
+  ParentController.uploadAvatar
 );
-router.put("/:id", UploadMiddleware("parents", "avatar"),ParentController.update);
-// router.delete("/:id", ParentController.delete);
+
+router.put("/:id", ParentController.update);
 
 export default router;

@@ -7,7 +7,7 @@ const useZod = {
     errorHandle(err: any, _req: Request, res: Response, _next: NextFunction) {
         if (err instanceof ZodError) {
             const errors = JSON.parse(err.message);
-            console.log(errors);
+            console.log("Zod Errors:", errors);
             if (Array.isArray(errors)) {
                 const errorMessage = errors.map(error => error.message);
                 const response = {

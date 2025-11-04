@@ -5,10 +5,8 @@ import { isCreateRest, isGetRest, isPutRest } from "../utils/rest.util";
 
 
 const BusService = {
-
-    async getAll() {
+    async getList() {
         const buses = await prisma.buses.findMany();
-
         return isGetRest(buses);
     },
 
@@ -36,6 +34,13 @@ const BusService = {
 
     async update(input: any) {
         const data = updateSchema.parse(input);
+        const bus = await prisma.buses.findUnique({
+            where: {
+                id: data.id
+            }
+        });
+
+        if (bus.status === "MAINTENANCE") throw new Error("Xe buýt đang trong trạng thái bảo trì, không thể cập nhật");
 
         const updateData: any = {};
 
