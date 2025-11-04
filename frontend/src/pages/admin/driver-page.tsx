@@ -34,13 +34,23 @@ import {
   faPenToSquare,
   faChalkboardUser,
 } from "@fortawesome/free-solid-svg-icons";
-import { ruleRequired } from "../../common/rules";
+import { ruleRequired, rulePassword } from "../../common/rules";
 import { CommonGenderValue, CommonStatusValue } from "../../common/values";
 import type { DriverNotFormatType, DriverFormatType } from "../../common/types";
 import CustomUpload from "../../components/upload";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
 import dayjs from "dayjs";
+import useCallApi from "../../api/useCall";
+// import axios from "axios";
+import {
+  getDrivers,
+  createDriver,
+  updateDriver,
+  uploadDriverAvatar,
+} from "../../services/driver-service";
+
+import noImg from "../../assets/images/others/no-image.png";
 
 // Driver Page
 const DriverPage = () => {
@@ -50,41 +60,79 @@ const DriverPage = () => {
   // Notification
   const { openNotification } = useNotification();
 
+  const { execute, notify } = useCallApi();
+
+  const [driverData, setDriverData] = useState<DriverFormatType[]>([]);
+
+  const getDataDriver = async () => {
+    try {
+      console.log("Gọi API getDrivers");
+      const response = await execute(getDrivers());
+      console.log("Kết quả từ execute:", response);
+
+      if (response.result) {
+        console.log("Data: ", response.data);
+
+        if (response.result) {
+          if (Array.isArray(response.data)) {
+            setDriverData(
+              response.data.map((driver) => ({
+                ...driver,
+                status: driver.status === "ACTIVE" ? "Hoạt động" : "Tạm dừng",
+                gender: driver.gender === "MALE" ? "Nam" : "Nữ",
+                birth_date: driver.birth_date
+                  ? new Date(driver.birth_date).toLocaleDateString("vi-VN")
+                  : "",
+              }))
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
+  };
+
+  useEffect(() => {
+    getDataDriver();
+  }, []);
+
   // Cấu hình bảng dữ liệu
-  const demoData: DriverFormatType[] = [
-    {
-      id: 1,
-      user: {
-        id: 1,
-        role: "driver",
-        username: "taixe1",
-        password: "taixe1",
-      },
-      fullname: "Họ tên tài xế 1",
-      birthday: "2025-01-01",
-      gender: "Nữ",
-      phone: "1234567890",
-      email: "taixe1@gmail.com",
-      address: "Địa chỉ ở đâu không biết",
-      status: "Hoạt động",
-    },
-    {
-      id: 2,
-      user: {
-        id: 2,
-        role: "Driver",
-        username: "taixe2",
-        password: "taixe2",
-      },
-      fullname: "Họ tên tài xế 2",
-      birthday: "2025-02-02",
-      gender: "Nam",
-      phone: "2234567890",
-      email: "taixe2@gmail.com",
-      address: "Địa chỉ ở đâu không biết",
-      status: "Tạm dừng",
-    },
-  ];
+  // const demoData: DriverFormatType[] = [
+  //   {
+  //     id: 1,
+  //     user: {
+  //       id: 1,
+  //       role: "driver",
+  //       username: "taixe1",
+  //       password: "taixe1",
+  //     },
+  //     fullname: "Họ tên tài xế 1",
+  //     birthday: "2025-01-01",
+  //     gender: "Nữ",
+  //     phone: "1234567890",
+  //     email: "taixe1@gmail.com",
+  //     address: "Địa chỉ ở đâu không biết",
+  //     status: "Hoạt động",
+  //   },
+  //   {
+  //     id: 2,
+  //     user: {
+  //       id: 2,
+  //       role: "Driver",
+  //       username: "taixe2",
+  //       password: "taixe2",
+  //     },
+  //     fullname: "Họ tên tài xế 2",
+  //     birthday: "2025-02-02",
+  //     gender: "Nam",
+  //     phone: "2234567890",
+  //     email: "taixe2@gmail.com",
+  //     address: "Địa chỉ ở đâu không biết",
+  //     status: "Tạm dừng",
+  //   },
+  // ];
+
   const columns: ColumnsType<DriverFormatType> = [
     {
       title: "#",
@@ -111,15 +159,15 @@ const DriverPage = () => {
     },
     {
       title: "Họ và tên",
-      dataIndex: "fullname",
-      key: "fullname",
+      dataIndex: "full_name",
+      key: "full_name",
       width: "30%",
       sorter: (a, b) => a?.fullname!.localeCompare(b?.fullname!),
     },
     {
       title: "Ngày sinh",
-      dataIndex: "birthday",
-      key: "birthday",
+      dataIndex: "birth_date",
+      key: "birth_date",
       width: "10%",
       sorter: (a, b) => a?.birthday!.localeCompare(b?.birthday!),
     },
@@ -139,13 +187,15 @@ const DriverPage = () => {
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
       key: "status",
-      render: (status: string) => (
-        <Tag color={status === CommonStatusValue.active ? "green" : "red"}>
-          {status}
+      render: (_: any, record: DriverFormatType) => (
+        <Tag
+          color={record.status === CommonStatusValue.active ? "green" : "red"}
+        >
+          {record.status}
         </Tag>
       ),
+      sorter: (a, b) => (a.status || "").localeCompare(b.status || ""),
       width: "10%",
     },
     {
@@ -219,6 +269,29 @@ const DriverPage = () => {
   );
   const [currentCardContent, setCurrentCardContent] = useState<string>("list");
 
+  const validateAndGetPassword = (form: any, openNotification: any) => {
+    if (!form.newPassword && !form.newPassword2) return null;
+    if (form.newPassword.length < 6) {
+      openNotification({
+        type: "error",
+        message: "Mật khẩu quá ngắn",
+        description: "Mật khẩu phải có ít nhất 6 ký tự.",
+      });
+      return null;
+    }
+
+    if (form.newPassword !== form.newPassword2) {
+      openNotification({
+        type: "error",
+        message: "Mật khẩu không khớp",
+        description: "Vui lòng nhập lại mật khẩu xác nhận cho đúng.",
+      });
+      return null;
+    }
+
+    return { password: form.newPassword };
+  };
+
   // Driver Actions
   const defaultLabels = {
     id: "Mã tài xế",
@@ -260,8 +333,10 @@ const DriverPage = () => {
               username: driver.user?.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
               avatar: driver.avatar || undefined,
-              fullname: driver.fullname || undefined,
-              birthday: driver.birthday ? dayjs(driver.birthday) : undefined,
+              fullname: driver.full_name || undefined,
+              birthday: driver.birth_date
+                ? dayjs(driver.birth_date)
+                : undefined,
               gender: driver.gender || undefined,
               phone: driver.phone || undefined,
               email: driver.email || undefined,
@@ -341,9 +416,56 @@ const DriverPage = () => {
     const [form] = Form.useForm<DriverNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
 
-    useEffect(() => {
-      form.setFieldValue("avatar", imageFile?.name);
-    }, [imageFile]);
+    const handleSubmit = async () => {
+      const genderValue =
+        form.getFieldValue("gender") === "Nam" ? "MALE" : "FEMALE";
+
+      const statusValue =
+        form.getFieldValue("status") === "Hoạt động"
+          ? "ACTIVE"
+          : form.getFieldValue("status") === "Tạm dừng"
+          ? "INACTIVE"
+          : "ACTIVE";
+
+      const birthDateValue = form.getFieldValue("birth_date")
+        ? new Date(form.getFieldValue("birth_date")).toISOString()
+        : new Date("2000-01-01").toISOString();
+
+      const avatarUrl = imageFile?.name ?? noImg;
+
+      const createResponse = await execute(
+        createDriver({
+          avatar: avatarUrl,
+          full_name: form.getFieldValue("full_name"),
+          birth_date: birthDateValue,
+          gender: genderValue,
+          phone: form.getFieldValue("phone"),
+          email: form.getFieldValue("email"),
+          address: form.getFieldValue("address"),
+          username: form.getFieldValue("username"),
+          password: form.getFieldValue("password"),
+          status: statusValue,
+        })
+      );
+
+      notify(createResponse!, "Thêm driver thành công");
+
+      if (createResponse?.result) {
+        const driverID = createResponse.data.id;
+        if (imageFile && driverID) {
+          const formData = new FormData();
+          formData.append("avatar", imageFile);
+          const uploadResponse = await execute(
+            uploadDriverAvatar(driverID, formData)
+          );
+          notify(uploadResponse!, "Tải ảnh đại diện driver thành công");
+          if (uploadResponse?.result) {
+            setCurrentAction("list");
+            getDataDriver();
+          }
+        }
+      }
+    };
 
     return (
       <>
@@ -365,6 +487,7 @@ const DriverPage = () => {
               status: undefined,
             }}
             onFinish={() => {
+              handleSubmit();
               console.log("Form values:", form.getFieldsValue());
             }}
           >
@@ -375,7 +498,7 @@ const DriverPage = () => {
                   htmlFor="create-avatar"
                   label={defaultLabels.avatar}
                   valuePropName="fileList"
-                  rules={[ruleRequired("Ảnh đại diện không được để trống !")]}
+                  // rules={[ruleRequired("Ảnh đại diện không được để trống !")]}
                 >
                   <CustomUpload
                     imageFile={imageFile}
@@ -404,7 +527,7 @@ const DriverPage = () => {
                   <Input placeholder={defaultInputs.username} />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
+                  name="full_name"
                   label={defaultLabels.fullname}
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                 >
@@ -449,14 +572,14 @@ const DriverPage = () => {
                 <Form.Item
                   name="password"
                   label={defaultLabels.password}
-                  rules={[ruleRequired("Mật khẩu không được để trống !")]}
+                  rules={[rulePassword("Mật khẩu quá ngắn !")]}
                 >
                   <Input placeholder={defaultInputs.password} />
                 </Form.Item>
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="birthday"
+                      name="birth_date"
                       htmlFor="create-birthday"
                       label={defaultLabels.birthday}
                       rules={[ruleRequired("Cần chọn Ngày sinh !")]}
@@ -517,9 +640,46 @@ const DriverPage = () => {
     const [form] = Form.useForm<DriverNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
 
-    useEffect(() => {
-      form.setFieldValue("avatar", imageFile?.name);
-    }, [imageFile]);
+    // useEffect(() => {
+    //   form.setFieldValue("avatar", imageFile?.name);
+    // }, [imageFile]);
+    const genderValue =
+      form.getFieldValue("gender") === "Nam" ? "MALE" : "FEMALE";
+
+    const birthDateValue = form.getFieldValue("birth_date")
+      ? new Date(form.getFieldValue("birth_date")).toISOString()
+      : new Date("2000-01-01").toISOString();
+
+    const avatarUrl = imageFile?.name ?? noImg;
+
+    const handleSubmitUpdate = async () => {
+      // console.log("hello4");
+      const updateResponse = await execute(
+        updateDriver(driver.id!, {
+          avatar: avatarUrl,
+          full_name: form.getFieldValue("full_name"),
+          gender: genderValue,
+          birth_date: birthDateValue,
+          phone: form.getFieldValue("phone"),
+          email: form.getFieldValue("email"),
+          address: form.getFieldValue("address"),
+        })
+      );
+      // console.log("hello5");
+      notify(updateResponse!, "Cập nhật phụ huynh thành công");
+      if (updateResponse?.result && driver.id) {
+        if (imageFile) {
+          const formData = new FormData();
+          formData.append("avatar", imageFile);
+          const uploadResponse = await execute(
+            uploadDriverAvatar(driver.id!, formData)
+          );
+          notify(uploadResponse!, "Tải ảnh đại diện phụ huynh thành công");
+        }
+        setCurrentAction("list");
+        getDataDriver();
+      }
+    };
 
     return (
       <>
@@ -532,17 +692,20 @@ const DriverPage = () => {
               username: driver.user?.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
               avatar: driver.avatar || undefined,
-              fullname: driver.fullname || undefined,
-              birthday: driver.birthday ? dayjs(driver.birthday) : undefined,
+              full_name: driver.full_name || undefined,
+              birthday: driver.birth_date
+                ? dayjs(driver.birth_date)
+                : undefined,
               gender: driver.gender || undefined,
               phone: driver.phone || undefined,
               email: driver.email || undefined,
               address: driver.address || undefined,
               status: driver.status || undefined,
             }}
-            onFinish={() => {
-              console.log("Form values:", form.getFieldsValue());
-            }}
+            // onFinish={() => {
+            //   console.log("Form values:", form.getFieldsValue());
+            // }}
+            onFinish={handleSubmitUpdate}
           >
             <Row className="split-3">
               <Col>
@@ -577,7 +740,7 @@ const DriverPage = () => {
                   <Input disabled />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
+                  name="full_name"
                   label={defaultLabels.fullname}
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                 >
@@ -666,6 +829,30 @@ const DriverPage = () => {
     );
   };
   const DriverLock: React.FC<{ driver: DriverFormatType }> = ({ driver }) => {
+    const handleChangeStatus = async () => {
+      const restResponse = await execute(
+        updateDriver(driver.id!, {
+          gender:
+            driver.gender === "Nam"
+              ? "MALE"
+              : driver.gender === "Nữ"
+              ? "FEMALE"
+              : driver.gender,
+          status:
+            driver.status === CommonStatusValue.active ? "INACTIVE" : "ACTIVE",
+        })
+      );
+      notify(
+        restResponse!,
+        `${
+          driver.status === CommonStatusValue.active ? "Khoá" : "Mở khoá"
+        } phụ huynh thành công`
+      );
+      if (restResponse?.result) {
+        setCurrentAction("list");
+        getDataDriver();
+      }
+    };
     return (
       <>
         <Alert
@@ -674,7 +861,7 @@ const DriverPage = () => {
             "#" +
             driver?.id +
             " - " +
-            driver?.fullname +
+            driver?.full_name +
             " - " +
             driver?.phone
           }
@@ -701,6 +888,7 @@ const DriverPage = () => {
               color="danger"
               variant="solid"
               onClick={() => {
+                handleChangeStatus();
                 openNotification({
                   type: "success",
                   message: "Thành công",
@@ -721,6 +909,23 @@ const DriverPage = () => {
   }) => {
     const [form] = Form.useForm<DriverNotFormatType>();
 
+    const handleSubmitUpdate = async () => {
+      const passwordData = validateAndGetPassword(
+        form.getFieldsValue(),
+        openNotification
+      );
+      if (!passwordData) return;
+
+      const restResponse = await execute(
+        updateDriver(driver.id!, passwordData)
+      );
+      notify(restResponse!, "Cập nhật mật khẩu phụ huynh thành công");
+      if (restResponse?.result) {
+        setCurrentAction("list");
+        getDataDriver();
+      }
+    };
+
     return (
       <>
         <div className="driver-content change-password">
@@ -732,6 +937,7 @@ const DriverPage = () => {
               newPassword2: undefined,
             }}
             onFinish={() => {
+              handleSubmitUpdate();
               console.log("Form values:", form.getFieldsValue());
             }}
           >
@@ -996,7 +1202,7 @@ const DriverPage = () => {
               </div>
               <CustomTableActions<DriverFormatType>
                 columns={columns}
-                data={demoData || []}
+                data={driverData || []}
                 rowKey={(record) => String(record?.id)}
                 // loading={isLoading}
                 defaultPageSize={10}

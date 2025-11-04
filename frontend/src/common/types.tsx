@@ -36,7 +36,7 @@ export interface ActiveNotFormatType {
   busSpeed?: number;
   status?: string;
   activePickups?: ActivePickupNotFormatType[];
-  activeStudents?: ActiveStudentNotFormatType[]; 
+  activeStudents?: ActiveStudentNotFormatType[];
 }
 // - Đã format
 export interface ActiveFormatType {
@@ -50,7 +50,7 @@ export interface ActiveFormatType {
   busSpeed?: number;
   status?: string;
   activePickups?: ActivePickupFormatType[];
-  activeStudents?: ActiveStudentFormatType[]; 
+  activeStudents?: ActiveStudentFormatType[];
 }
 // Kiểu dữ liệu vận hành xe - trạm xe buýt
 // - Chưa format
@@ -185,8 +185,8 @@ export interface DriverNotFormatType {
   username?: string;
   password?: string;
   avatar?: string;
-  fullname?: string;
-  birthday?: string;
+  full_name?: string;
+  birth_date?: string;
   gender?: string;
   phone?: string;
   email?: string;
@@ -199,8 +199,8 @@ export interface DriverFormatType {
   id?: number;
   user?: UserType;
   avatar?: string;
-  fullname?: string;
-  birthday?: string;
+  full_name?: string;
+  birth_date?: string;
   gender?: string;
   phone?: string;
   email?: string;

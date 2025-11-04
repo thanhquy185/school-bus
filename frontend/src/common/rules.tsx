@@ -21,3 +21,12 @@ export const rulePhone = (message?: string) => {
     message: message! ? message : "Số điện thoại phải có 10 hoặc 11 chữ số !",
   };
 };
+
+// Điều kiện kiểm tra nhập mật khẩu đủ kí tự
+export const rulePassword = (message?: string) => {
+  return {
+    required: true,
+    min: 6,
+    message: message ? message : "Nhập mật khẩu ít nhất 6 kí tự",
+  };
+};

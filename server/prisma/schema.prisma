@@ -111,7 +111,7 @@ model students {
   full_name  String
   birth_date String
   gender     Gender   @default(OTHER)
-  address    String
+  address    String?
   status    StudentStatus @default(UNKNOWN)
 
   parent_id Int
@@ -123,13 +123,14 @@ model students {
 
 model drivers {
   id         Int      @id @default(autoincrement())
-  avatar     String
+  avatar     String?
   full_name  String
   birth_date DateTime
+  gender     Gender   @default(OTHER) // not null
   phone      String   @unique
   email      String   @unique
   address    String
-
+  status      String   @default("active")
   schedule schedules?
 
   account_id Int      @unique

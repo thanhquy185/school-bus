@@ -1,33 +1,37 @@
-
 import prisma from "../configs/prisma.config";
 import { ParentResponse } from "../responses/parent.response";
-import { createSchema, deleteSchema, getSchema, updateSchema } from "../schemas/parent.schema";
-import { isCreateRest, isDeleteRest, isGetRest, isPutRest } from "../utils/rest.util";
-import AccountService from './account.service';
+import {
+  createSchema,
+  deleteSchema,
+  getSchema,
+  updateSchema,
+} from "../schemas/parent.schema";
+import {
+  isCreateRest,
+  isDeleteRest,
+  isGetRest,
+  isPutRest,
+} from "../utils/rest.util";
+import AccountService from "./account.service";
 import { hashPassword } from "../utils/bcypt.util";
 
 const ParentService = {
   async get(input: any) {
     const data = getSchema.parse(input);
-    const parent = await prisma.parents.findUnique(
-      {
-        where: {
-          id: data.id
-        }
-      }
-    );
+    const parent = await prisma.parents.findUnique({
+      where: {
+        id: data.id,
+      },
+    });
 
-    return isGetRest(
-      {
-        id: parent.id,
-        full_name: parent.full_name,
-        phone: parent.phone,
-        email: parent.email,
-        address: parent.address,
-        account_id: parent.account_id
-      } as ParentResponse
-    );
-
+    return isGetRest({
+      id: parent.id,
+      full_name: parent.full_name,
+      phone: parent.phone,
+      email: parent.email,
+      address: parent.address,
+      account_id: parent.account_id,
+    } as ParentResponse);
   },
 
   async getAll() {
@@ -38,13 +42,10 @@ const ParentService = {
             id: true,
             username: true,
             status: true,
-
           },
         },
       },
-
-    }
-    );
+    });
 
     return isGetRest(parent);
   },
@@ -74,14 +75,12 @@ const ParentService = {
       updateData.avatar = data.avatar;
     }
     console.log("Update Data:", updateData);
-    const parent = await prisma.parents.update(
-      {
-        where: {
-          id: data.id
-        },
-        data: updateData
-      }
-    );
+    const parent = await prisma.parents.update({
+      where: {
+        id: data.id,
+      },
+      data: updateData,
+    });
     if (parent.account_id && (data.password || data.status)) {
       await AccountService.update({
         id: parent.account_id,
@@ -90,21 +89,14 @@ const ParentService = {
       });
     }
 
-    return isPutRest(
-      {
-        id: parent.id,
-        full_name: parent.full_name,
-        email: parent.email,
-        address: parent.address,
-        phone: parent.phone
-
-      } as ParentResponse
-    );
+    return isPutRest({
+      id: parent.id,
+      full_name: parent.full_name,
+      email: parent.email,
+      address: parent.address,
+      phone: parent.phone,
+    } as ParentResponse);
   },
-
-
-
-
 
   async create(input: unknown) {
     try {
@@ -151,14 +143,11 @@ const ParentService = {
         address: parent.address,
         account_id: parent.account_id,
       } as ParentResponse);
-
     } catch (err) {
       console.error("Create parent error:", err);
       throw err;
     }
-  }
-
-}
-
+  },
+};
 
 export default ParentService;

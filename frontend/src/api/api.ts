@@ -1,17 +1,18 @@
 import axios from "axios";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+console.log(SERVER_URL);
 
 type RestResponse = {
-  statusCode: number,
-  result: boolean,
-  data: any,
-  message: string,
-  errorMessage: string | string[] | object | object[] | any
-}
+  statusCode: number;
+  result: boolean;
+  data: any;
+  message: string;
+  errorMessage: string | string[] | object | object[] | any;
+};
 
 const api = axios.create({
-  baseURL: SERVER_URL
+  baseURL: SERVER_URL,
 });
 
 api.interceptors.response.use(
