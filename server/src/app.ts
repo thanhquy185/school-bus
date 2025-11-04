@@ -25,13 +25,6 @@ app.use(express.json());
 
 app.use("/auth", AuthRouter);
 app.use("/api/accounts", AuthMiddleware(["ADMIN"]).authenticate, AccountRouter);
-<<<<<<< HEAD
-
-=======
-app.use("/api/pickups", AuthMiddleware(["ADMIN"]).authenticate, PickupRouter);
-app.use("/api/buses", AuthMiddleware(["ADMIN"]).authenticate, BusRouter);
-app.use("/api/parents", AuthMiddleware(["ADMIN"]).authenticate, ParentRouter);
->>>>>>> 7d1171e390109384948327668e287a7ca5af9370
 
 app.use("/api/buses", BusRouter);
 
