@@ -205,10 +205,8 @@ const AdminLayout: React.FC = () => {
     },
   ];
   const [selectedItem, setSelectedItem] = useState<CustomItemType>(menuItems[0] as CustomItemType);
-  console.log("Selected Item:", selectedItem);
   useEffect(() => {
     const pathname = location.pathname;
-    console.log("Pathname:", pathname);
     if (pathname === "/admin/parents") {
       setSelectedItem(
         menuItems[Number(CustomItemValue.map.key) - 1] as CustomItemType

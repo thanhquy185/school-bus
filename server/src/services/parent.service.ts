@@ -69,9 +69,7 @@ const ParentService = {
     if (data.phone) {
       updateData.phone = data.phone;
     }
-    if (data.avatar) {
-      updateData.avatar = data.avatar;
-    }
+    
     const parent = await prisma.parents.update(
       {
         where: {

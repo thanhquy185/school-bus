@@ -70,6 +70,7 @@ const StudentPage = () => {
     ]);
 
     if (studentRes?.result && Array.isArray(studentRes.data)) {
+      console.log(studentRes.data);
       setStudents(studentRes.data as StudentFormatType[]);
     }
 
@@ -329,7 +330,22 @@ const StudentPage = () => {
               </Col>
               <Col>
                 <Form.Item name="status" label={defaultLabels.status}>
-                  <Select disabled />
+                  <Select disabled
+                   options={[
+                     {
+                       label: StudentStatusValue.studying,
+                       value: "STUDYING",
+                     },
+                     {
+                       label: StudentStatusValue.dropped_out,
+                       value: "DROPPED_OUT",
+                     },
+                     {
+                       label: StudentStatusValue.unknown,
+                       value: "UNKNOWN",
+                     },
+                   ]}
+                  />
                 </Form.Item>
                 <Form.Item name="pickup" label={defaultLabels.pickup}>
                   <Select
@@ -777,7 +793,22 @@ const StudentPage = () => {
               </Col>
               <Col>
                 <Form.Item name="status" label={defaultLabels.status}>
-                  <Select disabled />
+                  <Select disabled
+                    options={[
+                      {
+                        label: StudentStatusValue.studying,
+                        value: "STUDYING",
+                      },
+                      {
+                        label: StudentStatusValue.dropped_out,
+                        value: "DROPPED_OUT",
+                      },
+                      {
+                        label: StudentStatusValue.unknown,
+                        value: "UNKNOWN",
+                      }
+                    ]}
+                  />
                 </Form.Item>
                 <Form.Item
                   name="pickup"

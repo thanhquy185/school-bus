@@ -1,4 +1,5 @@
 import prisma from "../configs/prisma.config";
+import { StudentResponse } from "../responses/student.response";
 import { createSchema, updateSchema } from "../schemas/student.schema";
 import { isCreateRest, isGetRest, isPutRest } from "../utils/rest.util";
 import FirebaseService from "./firebase.service";
@@ -14,25 +15,25 @@ const StudentService = {
         });
         return isGetRest(students.map(student => ({
             id: student.id,
-            parent: {
-                id: student.parent.id,
-                full_name: student.parent.full_name,
-            }, 
-            class: {
-                id: student.class.id,
-                name: student.class.name,
-            },
-            pickup: {
-                id: student.pickup_id,
-                name: student.pickup.name
-            },
-            full_name: student.full_name,
             avatar: student.avatar,
+            full_name: student.full_name,
             birth_date: student.birth_date,
             gender: student.gender,
             address: student.address,
-            status: student.status
-        })));
+            status: student.status,
+            parent: {
+                id: student.parent.id,
+                full_name: student.parent.full_name
+            },
+            class: {
+                id: student.class.id,
+                name: student.class.name
+            },
+            pickup: {
+                id: student.pickup.id,
+                name: student.pickup.name
+            }
+        } as StudentResponse)));
     },
 
     async create(input: any) {
@@ -54,17 +55,35 @@ const StudentService = {
                 pickup: {
                     connect: { id: data.pickupId }
                 }
+            },
+            include: {
+                parent: true,
+                class: true,
+                pickup: true
             }
         });
+
         return isCreateRest({
             id: student.id,
+            avatar: student.avatar,
             full_name: student.full_name,
             birth_date: student.birth_date,
             gender: student.gender,
+            address: student.address,
             status: student.status,
-            parent_id: student.parent_id,
-            class_id: student.class_id
-        });
+            parent: {
+                id: student.parent.id,
+                full_name: student.parent.full_name
+            },
+            class: {
+                id: student.class.id,
+                name: student.class.name
+            },
+            pickup: {
+                id: student.pickup.id,
+                name: student.pickup.name
+            }
+        } as StudentResponse);
     },
 
     async uploadAvatar(id: number, file: Express.Multer.File) {
@@ -92,21 +111,36 @@ const StudentService = {
         const student =  await prisma.students.update(
             {
                 where: { id: data.id },
-                data: updateData
+                data: updateData,
+                include: {
+                    parent: true,
+                    class: true,
+                    pickup: true
+                }
             }
         );
         
         return isPutRest({
             id: student.id,
+            avatar: student.avatar,
             full_name: student.full_name,
             birth_date: student.birth_date,
             gender: student.gender,
             address: student.address,
             status: student.status,
-            parent_id: student.parent_id,
-            class_id: student.class_id,
-            pickup_id: student.pickup_id
-        });
+            parent: {
+                id: student.parent.id,
+                full_name: student.parent.full_name
+            },
+            class: {
+                id: student.class.id,
+                name: student.class.name
+            },
+            pickup: {
+                id: student.pickup.id,
+                name: student.pickup.name
+            }
+        } as StudentResponse);
     }
 }
 

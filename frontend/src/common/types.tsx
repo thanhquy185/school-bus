@@ -192,21 +192,20 @@ export interface DriverNotFormatType {
   email?: string;
   address?: string;
   status?: string;
-  timeUpdate?: string;
 }
 // - Đã format
 export interface DriverFormatType {
   id?: number;
-  user?: UserType;
   avatar?: string;
-  fullname?: string;
-  birthday?: string;
+  account_id?: number;
+  username?: string;
+  full_name?: string;
+  birth_date?: string;
   gender?: string;
   phone?: string;
   email?: string;
   address?: string;
   status?: string;
-  timeUpdate?: string;
 }
 
 // Kiểu dữ liệu phụ huynh
@@ -222,11 +221,11 @@ export interface ParentNotFormatType {
   email?: string;
   address?: string;
   status?: string;
-  timeUpdate?: string;
 }
 // - Đã format
 export interface ParentFormatType {
   id?: number;
+  account_id?: number;
   username?: string;
   avatar?: string;
   full_name?: string;
@@ -234,7 +233,6 @@ export interface ParentFormatType {
   email?: string;
   address?: string;
   status?: string;
-  timeUpdate?: string;
 }
 
 // Kiểu dữ liệu học sinh
@@ -250,19 +248,18 @@ export interface StudentNotFormatType {
   gender?: string;
   address?: string;
   status?: string;
-  timeUpdate?: string;
 }
 // - Đã format
 export interface StudentFormatType {
   id?: number;
-  parent?: ParentFormatType;
-  pickup?: PickupType;
-  class?: ClassType;
   avatar?: string;
   full_name?: string;
   birth_date?: string;
   gender?: string;
   address?: string;
   status?: string;
-  timeUpdate?: string;
+  
+  parent?: ParentFormatType;
+  pickup?: PickupType;
+  class?: ClassType;
 }

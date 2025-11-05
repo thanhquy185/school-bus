@@ -370,11 +370,9 @@ const ParentPage = () => {
           formData.append("avatar", imageFile);
           const uploadResponse = await execute(uploadParentAvatar(parentId, formData));
           notify(uploadResponse!, "Tải ảnh đại diện phụ huynh thành công");
-          if (uploadResponse?.result) {
-            setCurrentAction("list");
-            handleGetData();
-          }
         }
+        setCurrentAction("list");
+        handleGetData();
       }
     };
 
@@ -708,316 +706,316 @@ const ParentPage = () => {
       }
     }
 
-      return (
-        <>
-          <div className="parent-content change-password">
-            <Form
-              form={form}
-              layout="vertical"
-              initialValues={{
-                newPassword: undefined,
-                newPassword2: undefined,
-              }}
-              onFinish={handleSubmitUpdate}
-
-            >
-              <Row className="split-3">
-                <Col></Col>
-                <Col>
-                  <Form.Item
-                    name="newPassword"
-                    label="Mật khẩu mới"
-                    rules={[ruleRequired("Mật khẩu mới không được để trống !")]}
-                  >
-                    <Input placeholder="Nhập Mật khẩu mới" />
-                  </Form.Item>
-                  <Form.Item
-                    name="newPassword2"
-                    label="Mật khẩu mới lần 2"
-                    rules={[
-                      ruleRequired("Mật khẩu mới lần 2 không được để trống !"),
-                    ]}
-                  >
-                    <Input placeholder="Nhập Mật khẩu mới lần 2" />
-                  </Form.Item>
-                  <div className="buttons">
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      className="submit-button"
-                    >
-                      Xác nhận
-                    </Button>
-                  </div>
-                </Col>
-                <Col></Col>
-              </Row>
-            </Form>
-          </div>
-        </>
-      );
-    };
-    const ParentActions = {
-      detail: (selectedParent: ParentFormatType) => (
-        <ParentDetail parent={selectedParent} />
-      ),
-      create: () => <ParentCreate />,
-      update: (selectedParent: ParentFormatType) => (
-        <ParentUpdate parent={selectedParent} />
-      ),
-      lock: (selectedParent: ParentFormatType) => (
-        <ParentLock parent={selectedParent} />
-      ),
-      changePassword: (selectedParent: ParentFormatType) => (
-        <ParentChangePassword parent={selectedParent} />
-      ),
-    };
-
-
-    // Effect cập nhật Card Content
-    useEffect(() => {
-      if (currentAction === "list") {
-        setCurrentBreadcrumbItems([
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                <FontAwesomeIcon icon={faPeopleRoof} />
-                &nbsp;{t("parent-manager")}
-              </span>
-            ),
-          },
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                {t("parent-list")}
-              </span>
-            ),
-          },
-        ]);
-        setCurrentCardTitle(t("parent-list"));
-        setCurrentCardContent("list");
-      } else if (currentAction === "detail") {
-        setCurrentBreadcrumbItems([
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                <FontAwesomeIcon icon={faPeopleRoof} />
-                &nbsp;{t("parent-manager")}
-              </span>
-            ),
-          },
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                {t("parent-list")}
-              </span>
-            ),
-          },
-          { title: <span>{t("parent-detail")}</span> },
-        ]);
-        setCurrentCardTitle(t("parent-detail"));
-        setCurrentCardContent("detail");
-      } else if (currentAction === "create") {
-        setCurrentBreadcrumbItems([
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                <FontAwesomeIcon icon={faPeopleRoof} />
-                &nbsp;{t("parent-manager")}
-              </span>
-            ),
-          },
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                {t("parent-list")}
-              </span>
-            ),
-          },
-          { title: <span>{t("parent-create")}</span> },
-        ]);
-        setCurrentCardTitle(t("parent-create"));
-        setCurrentCardContent("create");
-      } else if (currentAction === "update") {
-        setCurrentBreadcrumbItems([
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                <FontAwesomeIcon icon={faPeopleRoof} />
-                &nbsp;{t("parent-manager")}
-              </span>
-            ),
-          },
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                {t("parent-list")}
-              </span>
-            ),
-          },
-          { title: <span>{t("parent-update")}</span> },
-        ]);
-        setCurrentCardTitle(t("parent-update"));
-        setCurrentCardContent("update");
-      } else if (currentAction === "lock") {
-        setCurrentBreadcrumbItems([
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                <FontAwesomeIcon icon={faPeopleRoof} />
-                &nbsp;{t("parent-manager")}
-              </span>
-            ),
-          },
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                {t("parent-list")}
-              </span>
-            ),
-          },
-          { title: <span>{t("parent-lock")}</span> },
-        ]);
-        setCurrentCardTitle(t("parent-lock"));
-        setCurrentCardContent("lock");
-      } else if (currentAction === "unlock") {
-        setCurrentBreadcrumbItems([
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                <FontAwesomeIcon icon={faPeopleRoof} />
-                &nbsp;{t("parent-manager")}
-              </span>
-            ),
-          },
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                {t("parent-list")}
-              </span>
-            ),
-          },
-          { title: <span>{t("parent-unlock")}</span> },
-        ]);
-        setCurrentCardTitle(t("parent-unlock"));
-        setCurrentCardContent("unlock");
-      } else if (currentAction === "change-password") {
-        setCurrentBreadcrumbItems([
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                <FontAwesomeIcon icon={faPeopleRoof} />
-                &nbsp;{t("parent-manager")}
-              </span>
-            ),
-          },
-          {
-            title: (
-              <span onClick={() => setCurrentAction("list")}>
-                {t("parent-list")}
-              </span>
-            ),
-          },
-          { title: <span>{t("parent-change-password")}</span> },
-        ]);
-        setCurrentCardTitle(t("parent-change-password"));
-        setCurrentCardContent("change-password");
-      }
-    }, [currentAction]);
-
     return (
       <>
-        <div className="admin-layout__main-content">
-          {/* Breadcrumb */}
-          <Breadcrumb
-            items={currentBreadcrumbItems}
-            className="admin-layout__main-breadcrumb"
-          />
-          {/* Card */}
-          <Card title={currentCardTitle} className="admin-layout__main-card">
-            {currentCardContent === "list" && (
-              <div className="parent-data">
-                <div className="admin-layout__main-filter">
-                  <div className="left">
-                    <Input
-                      prefix={<SearchOutlined />}
-                      placeholder="Tìm theo họ và tên phụ huynh"
-                      value={searchText}
-                      onChange={(e) => setSearchText(e.target.value)}
-                      className="filter-find"
-                    />
-                    <Select
+        <div className="parent-content change-password">
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{
+              newPassword: undefined,
+              newPassword2: undefined,
+            }}
+            onFinish={handleSubmitUpdate}
 
-
-
-                      allowClear
-                      placeholder="Chọn Trạng thái"
-                      value={statusFilter}
-                      onChange={(value) => setStatusFilter(value)}
-                      options={[
-                        {
-                          label: CommonStatusValue.active,
-                          value: CommonStatusValue.active,
-                        },
-                        {
-                          label: CommonStatusValue.inactive,
-                          value: CommonStatusValue.inactive,
-                        },
-                      ]}
-                      className="filter-select"
-                    />
-                    <Button
-                      color="blue"
-                      variant="filled"
-                      icon={<ReloadOutlined />}
-                      onClick={() => {
-                        setSearchText("");
-                        setStatusFilter(undefined);
-                      }}
-
-                      className="filter-reset"
-                    >
-                      Làm mới
-                    </Button>
-                  </div>
-                  <div className="right">
-                    <Button
-                      type="primary"
-                      icon={<PlusOutlined />}
-                      onClick={() => setCurrentAction("create")}
-                    >
-                      {t("parent-create")}
-                    </Button>
-                  </div>
+          >
+            <Row className="split-3">
+              <Col></Col>
+              <Col>
+                <Form.Item
+                  name="newPassword"
+                  label="Mật khẩu mới"
+                  rules={[ruleRequired("Mật khẩu mới không được để trống !")]}
+                >
+                  <Input placeholder="Nhập Mật khẩu mới" />
+                </Form.Item>
+                <Form.Item
+                  name="newPassword2"
+                  label="Mật khẩu mới lần 2"
+                  rules={[
+                    ruleRequired("Mật khẩu mới lần 2 không được để trống !"),
+                  ]}
+                >
+                  <Input placeholder="Nhập Mật khẩu mới lần 2" />
+                </Form.Item>
+                <div className="buttons">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    className="submit-button"
+                  >
+                    Xác nhận
+                  </Button>
                 </div>
-                <CustomTableActions<ParentFormatType>
-                  columns={columns}
-                  data={filteredParentList || []}
-                  rowKey={(record) => String(record?.id)}
-                  // loading={isLoading}
-                  defaultPageSize={10}
-                  className="admin-layout__main-table table-data parents"
-                />
-
-
-              </div>
-            )}
-            {currentCardContent === "detail" &&
-              ParentActions.detail(currentSelectedItem!)}
-            {currentCardContent === "create" && ParentActions.create()}
-            {currentCardContent === "update" &&
-              ParentActions.update(currentSelectedItem!)}
-            {(currentCardContent === "lock" || currentCardContent === "unlock") &&
-              ParentActions.lock(currentSelectedItem!)}
-            {currentCardContent === "change-password" &&
-              ParentActions.changePassword(currentSelectedItem!)}
-          </Card>
+              </Col>
+              <Col></Col>
+            </Row>
+          </Form>
         </div>
       </>
     );
-
-
-
+  };
+  const ParentActions = {
+    detail: (selectedParent: ParentFormatType) => (
+      <ParentDetail parent={selectedParent} />
+    ),
+    create: () => <ParentCreate />,
+    update: (selectedParent: ParentFormatType) => (
+      <ParentUpdate parent={selectedParent} />
+    ),
+    lock: (selectedParent: ParentFormatType) => (
+      <ParentLock parent={selectedParent} />
+    ),
+    changePassword: (selectedParent: ParentFormatType) => (
+      <ParentChangePassword parent={selectedParent} />
+    ),
   };
 
-  export default ParentPage;
+
+  // Effect cập nhật Card Content
+  useEffect(() => {
+    if (currentAction === "list") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("parent-list")}
+            </span>
+          ),
+        },
+      ]);
+      setCurrentCardTitle(t("parent-list"));
+      setCurrentCardContent("list");
+    } else if (currentAction === "detail") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("parent-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("parent-detail")}</span> },
+      ]);
+      setCurrentCardTitle(t("parent-detail"));
+      setCurrentCardContent("detail");
+    } else if (currentAction === "create") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("parent-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("parent-create")}</span> },
+      ]);
+      setCurrentCardTitle(t("parent-create"));
+      setCurrentCardContent("create");
+    } else if (currentAction === "update") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("parent-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("parent-update")}</span> },
+      ]);
+      setCurrentCardTitle(t("parent-update"));
+      setCurrentCardContent("update");
+    } else if (currentAction === "lock") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("parent-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("parent-lock")}</span> },
+      ]);
+      setCurrentCardTitle(t("parent-lock"));
+      setCurrentCardContent("lock");
+    } else if (currentAction === "unlock") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("parent-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("parent-unlock")}</span> },
+      ]);
+      setCurrentCardTitle(t("parent-unlock"));
+      setCurrentCardContent("unlock");
+    } else if (currentAction === "change-password") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faPeopleRoof} />
+              &nbsp;{t("parent-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("parent-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("parent-change-password")}</span> },
+      ]);
+      setCurrentCardTitle(t("parent-change-password"));
+      setCurrentCardContent("change-password");
+    }
+  }, [currentAction]);
+
+  return (
+    <>
+      <div className="admin-layout__main-content">
+        {/* Breadcrumb */}
+        <Breadcrumb
+          items={currentBreadcrumbItems}
+          className="admin-layout__main-breadcrumb"
+        />
+        {/* Card */}
+        <Card title={currentCardTitle} className="admin-layout__main-card">
+          {currentCardContent === "list" && (
+            <div className="parent-data">
+              <div className="admin-layout__main-filter">
+                <div className="left">
+                  <Input
+                    prefix={<SearchOutlined />}
+                    placeholder="Tìm theo họ và tên phụ huynh"
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="filter-find"
+                  />
+                  <Select
+
+
+
+                    allowClear
+                    placeholder="Chọn Trạng thái"
+                    value={statusFilter}
+                    onChange={(value) => setStatusFilter(value)}
+                    options={[
+                      {
+                        label: CommonStatusValue.active,
+                        value: CommonStatusValue.active,
+                      },
+                      {
+                        label: CommonStatusValue.inactive,
+                        value: CommonStatusValue.inactive,
+                      },
+                    ]}
+                    className="filter-select"
+                  />
+                  <Button
+                    color="blue"
+                    variant="filled"
+                    icon={<ReloadOutlined />}
+                    onClick={() => {
+                      setSearchText("");
+                      setStatusFilter(undefined);
+                    }}
+
+                    className="filter-reset"
+                  >
+                    Làm mới
+                  </Button>
+                </div>
+                <div className="right">
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => setCurrentAction("create")}
+                  >
+                    {t("parent-create")}
+                  </Button>
+                </div>
+              </div>
+              <CustomTableActions<ParentFormatType>
+                columns={columns}
+                data={filteredParentList || []}
+                rowKey={(record) => String(record?.id)}
+                // loading={isLoading}
+                defaultPageSize={10}
+                className="admin-layout__main-table table-data parents"
+              />
+
+
+            </div>
+          )}
+          {currentCardContent === "detail" &&
+            ParentActions.detail(currentSelectedItem!)}
+          {currentCardContent === "create" && ParentActions.create()}
+          {currentCardContent === "update" &&
+            ParentActions.update(currentSelectedItem!)}
+          {(currentCardContent === "lock" || currentCardContent === "unlock") &&
+            ParentActions.lock(currentSelectedItem!)}
+          {currentCardContent === "change-password" &&
+            ParentActions.changePassword(currentSelectedItem!)}
+        </Card>
+      </div>
+    </>
+  );
+
+
+
+};
+
+export default ParentPage;

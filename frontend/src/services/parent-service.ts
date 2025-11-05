@@ -40,7 +40,6 @@ type UpdateParams = {
     email?: string,
     address?: string,
 
-    avatar?: string,
     password?: string,
     status?: string
 }

@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import path from "path";
-import bodyParser from "body-parser";
 
 import AuthMiddleware from './middlewares/auth.middleware';
 
@@ -12,11 +11,11 @@ import BusRouter from './routes/bus.route';
 import ParentRouter from './routes/parent.route';
 import StudentRouter from './routes/student.route';
 import ClassRouter from './routes/class.route';
+import DriverRouter from './routes/driver.route';
 
 import useZod from './hooks/useZod.hook';
 import usePrisma from './hooks/usePrisma.hook';
 import useError from './hooks/useError.hook';
-import UploadMiddleware from './middlewares/upfile.middware';
 
 const app = express();
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
@@ -31,8 +30,9 @@ app.use("/api/buses", BusRouter);
 app.use("/api/pickups", PickupRouter);
 app.use("/api/parents", ParentRouter);
 app.use("/api/classes", ClassRouter);
-
 app.use("/api/students", StudentRouter);
+
+app.use("/api/drivers", DriverRouter);
 
 
 app.use(useZod.errorHandle);
