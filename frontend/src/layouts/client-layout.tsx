@@ -79,28 +79,28 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ role }) => {
         ? [
             {
               key: "1",
-              label: "Hành trình",
+              label: "Hành trình đưa đón",
               link: "/parent/journey",
               icon: <FontAwesomeIcon icon={faMapLocationDot} />,
             },
             {
               key: "2",
-              label: "Thông tin",
-              link: "/parent/info",
-              icon: <FontAwesomeIcon icon={faUser} />,
-            },
-            {
-              key: "3",
               label: "Học sinh",
               link: "/parent/student",
               icon: <FontAwesomeIcon icon={faGraduationCap} />,
+            },
+            {
+              key: "3",
+              label: "Thông tin",
+              link: "/parent/info",
+              icon: <FontAwesomeIcon icon={faUser} />,
             },
           ]
         : [
             {
               key: "1",
-              label: "Bản đồ",
-              link: "/driver/map",
+              label: "Hành trình đưa đón",
+              link: "/driver/journey",
               icon: <FontAwesomeIcon icon={faMapLocationDot} />,
             },
             {

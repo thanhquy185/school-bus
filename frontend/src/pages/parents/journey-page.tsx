@@ -57,10 +57,10 @@ const ParentJourneyPage = () => {
         <h2 className="client-layout__title">
           <span>
             <FontAwesomeIcon icon={faMapLocationDot} />
-            <strong>Bản đồ</strong>
+            <strong>Hành trình đưa đón</strong>
           </span>
         </h2>
-        <Card className="client-layout__journey parent" title="Hành trình">
+        <Card className="client-layout__journey parent" title="Thông tin hành trình đưa đón">
           <Row className="row">
             <Col className="tabs-wrapper">
               <Tabs type="card" defaultActiveKey="1">
