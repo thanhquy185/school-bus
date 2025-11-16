@@ -501,12 +501,8 @@ const RoutePage = () => {
     const [showRemovePickup, setShowRemovePickup] = useState<boolean>(false);
     const [pickupSelectedAdd, setPickupSelectedAdd] =
       useState<PickupType | null>(null);
-    const [pickupSelectedRemove, setPickupSelectedRemove] = useState<
-      number | null
-    >(null);
-    const [routeDetailsValue, setRouteDetailsValue] = useState<
-      RouteDetailsFormatType[]
-    >([]);
+    const [pickupSelectedRemove, setPickupSelectedRemove] = useState< number | null>(null);
+    const [routeDetailsValue, setRouteDetailsValue] = useState<RouteDetailsFormatType[]>([]);
 
     useEffect(() => {
       if (routeDetailsValue.length >= 2) {

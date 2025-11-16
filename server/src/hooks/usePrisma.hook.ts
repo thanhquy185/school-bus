@@ -7,13 +7,20 @@ const usePrisma = {
     errorHandle(err: any, _req: Request, res: Response, next: NextFunction) {
         if (err instanceof PrismaClientKnownRequestError) {
             console.log("Prisma Error Code:", err.code);
+            console.log(err)
+
             if (err.code === 'P2002') {
+                const errorMessage = 
+                err.meta.modelName === "accounts" ? "Tài khoản đã tồn tại" :
+                
+                "Dữ liệu đã tồn tại";
+
                 const response = {
                     statusCode: INTERNAL_CODE,
                     result: false,
                     message: INTERNAL_MESSAGE,
                     data: null,
-                    errorMessage: "Dữ liệu đã tồn tại"
+                    errorMessage: errorMessage
                 } as RestResponse;
                 return res.status(INTERNAL_CODE).json(response);
             }
