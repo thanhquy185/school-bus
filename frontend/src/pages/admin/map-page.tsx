@@ -790,7 +790,7 @@ const MapPage = () => {
               prefix={<QuestionCircleOutlined />}
               color="#676767"
             />
-          </div>
+          </div>  
           <div
             className={
               "admin-layout__main-map" +

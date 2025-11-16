@@ -6,6 +6,14 @@ export const ruleRequired = (message?: string) => {
   };
 };
 
+// Điều kiện kiểm tra biển số xe
+export const ruleLicensePlate = (message?: string) => {
+  return {
+    pattern: /^\d{2}[A-Z][-\s]?(?:\d{3}\.?\d{2}|\d{5})$/i,
+    message: message! ? message : "Biển số xe không hợp lệ !",
+  };
+};
+
 // Điều kiện kiểm tra email
 export const ruleEmail = (message?: string) => {
   return {

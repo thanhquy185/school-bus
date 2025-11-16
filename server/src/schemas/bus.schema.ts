@@ -13,7 +13,7 @@ export const createSchema = zod.object({
         .max(50, "Số chỗ ngồi không hợp lệ (tối đa 50)")
         .nullable()
         .refine((val) => val !== null, "Số chỗ ngồi không được để trống"),
-    status: zod.enum(["ACTIVE", "INACTIVE", "MAINTENANCE"], "Trạng thái xe không hợp lệ")
+    status: zod.enum(["ACTIVE", "INACTIVE"], "Trạng thái xe không hợp lệ")
 });
 
 export const updateSchema = zod.object({

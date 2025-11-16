@@ -40,7 +40,7 @@ const BusService = {
             }
         });
 
-        if (bus.status === "MAINTENANCE") throw new Error("Xe buýt đang trong trạng thái bảo trì, không thể cập nhật");
+        // if (bus.status === "MAINTENANCE") throw new Error("Xe buýt đang trong trạng thái bảo trì, không thể cập nhật");
 
         const updateData: any = {};
 

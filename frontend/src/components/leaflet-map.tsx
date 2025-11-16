@@ -62,6 +62,7 @@ interface LeafletMapProps {
   enableZoom?: boolean;
   enableSearch?: boolean;
   enableBaseLayers?: boolean;
+  hidden?: boolean,
   lat?: number;
   lng?: number;
   pointType?: string;
@@ -147,6 +148,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   enableZoom = true,
   enableSearch = true,
   enableBaseLayers = true,
+  hidden = false,
   lat,
   lng,
   pointType,
@@ -381,8 +383,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         infoBlockRef.current = infoBlock;
 
         handleGetRouteInfo?.({
-          distance: totalDistance,
-          duration: totalDuration,
+          distance: totalDistance.toFixed(0),
+          duration: totalDuration.toFixed(0),
         });
       })
       .catch((err) => console.error(err));
@@ -702,6 +704,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         width: "100%",
         borderRadius: "8px",
       }}
+      hidden={hidden}
     ></div>
   );
 };

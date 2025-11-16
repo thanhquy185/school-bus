@@ -12,15 +12,10 @@ import {
   Row,
   Alert,
   InputNumber,
-  DatePicker,
-  TimePicker,
   List,
   Avatar,
 } from "antd";
-import {
-  SearchOutlined,
-  ReloadOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faInfoCircle,
@@ -46,11 +41,19 @@ import type {
   RouteDetailsFormatType,
   PickupType,
 } from "../../common/types";
-import LeafletMap from "../../components/leaflet-map";
+import LeafletMap, {
+  type HandleGetRouteInfoProps,
+} from "../../components/leaflet-map";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
-import dayjs from "dayjs";
 import { getItemById } from "../../utils/getItemEvents";
+import { getPickups } from "../../services/pickup-service";
+import useCallApi from "../../api/useCall";
+import {
+  createRoute,
+  getRoutes,
+  updateRoute,
+} from "../../services/route-service";
 
 // Route Page
 const RoutePage = () => {
@@ -60,155 +63,12 @@ const RoutePage = () => {
   // Notification
   const { openNotification } = useNotification();
 
+  // Execute
+  const { execute, notify, loading } = useCallApi();
+
   // Cấu hình bảng dữ liệu (sau cập nhật lọc giới tính, phụ huynh, trạm và lớp)
-  const pickupData: PickupType[] = [
-    {
-      id: 1,
-      name: "Trường Đại học Sài Gòn",
-      category: "Trường học",
-      lat: 10.75960314081626,
-      lng: 106.68201506137848,
-      status: "Hoạt động",
-    },
-    {
-      id: 2,
-      name: "Trạm Công viên Lê Thị Riêng",
-      category: "Điểm đưa đón",
-      lat: 10.786197005344277,
-      lng: 106.66577696800232,
-      status: "Tạm dừng",
-    },
-    {
-      id: 3,
-      name: "Trạm Ngã 3 Tô Hiến Thành",
-      category: "Điểm đưa đón",
-      lat: 10.782542301538852,
-      lng: 106.67269945487907,
-      status: "Hoạt động",
-    },
-    {
-      id: 4,
-      name: "Trạm Vòng xoay Dân Chủ",
-      category: "Điểm đưa đón",
-      lat: 10.778231651587179,
-      lng: 106.68071896686253,
-      status: "Hoạt động",
-    },
-    {
-      id: 5,
-      name: "Trạm Nhà hát Hoà Bình",
-      category: "Điểm đưa đón",
-      lat: 10.771691782379415,
-      lng: 106.67420637069971,
-      status: "Hoạt động",
-    },
-    {
-      id: 6,
-      name: "Trạm Vòng xoay Lý Thái Tổ",
-      category: "Điểm đưa đón",
-      lat: 10.767212337954136,
-      lng: 106.67562797183044,
-      status: "Hoạt động",
-    },
-    {
-      id: 7,
-      name: "Trạm Vòng xoay Cộng Hoà",
-      category: "Điểm đưa đón",
-      lat: 10.764561529473132,
-      lng: 106.6818913125902,
-      status: "Hoạt động",
-    },
-  ];
-  const demoData: RouteFormatType[] = [
-    {
-      id: 1,
-      name: "Tuyến CV Lê Thị Riêng-Trường Đại học Sài Gòn",
-      startPickup: "Công Viên Lê Thị Riêng",
-      endPickup: "Trường Đại học Sài Gòn",
-      startTime: "07:00:00",
-      endTime: "08:00:00",
-      status: "Hoạt động",
-      routeDetails: [
-        {
-          pickup: {
-            id: 2,
-            name: "Trạm Công viên Lê Thị Riêng",
-            category: "Điểm đưa đón",
-            lat: 10.786197005344277,
-            lng: 106.66577696800232,
-            status: "Tạm dừng",
-          },
-          order: 1,
-        },
-        {
-          pickup: {
-            id: 3,
-            name: "Trạm Ngã 3 Tô Hiến Thành",
-            category: "Điểm đưa đón",
-            lat: 10.782542301538852,
-            lng: 106.67269945487907,
-            status: "Hoạt động",
-          },
-          order: 2,
-        },
-        {
-          pickup: {
-            id: 4,
-            name: "Trạm Vòng xoay Dân Chủ",
-            category: "Điểm đưa đón",
-            lat: 10.778231651587179,
-            lng: 106.68071896686253,
-            status: "Hoạt động",
-          },
-          order: 3,
-        },
-        {
-          pickup: {
-            id: 5,
-            name: "Trạm Nhà hát Hoà Bình",
-            category: "Điểm đưa đón",
-            lat: 10.771691782379415,
-            lng: 106.67420637069971,
-            status: "Hoạt động",
-          },
-          order: 4,
-        },
-        {
-          pickup: {
-            id: 6,
-            name: "Trạm Vòng xoay Lý Thái Tổ",
-            category: "Điểm đưa đón",
-            lat: 10.767212337954136,
-            lng: 106.67562797183044,
-            status: "Hoạt động",
-          },
-          order: 5,
-        },
-        {
-          pickup: {
-            id: 7,
-            name: "Trạm Vòng xoay Cộng Hoà",
-            category: "Điểm đưa đón",
-            lat: 10.764561529473132,
-            lng: 106.6818913125902,
-            status: "Hoạt động",
-          },
-          order: 6,
-        },
-        {
-          pickup: {
-            id: 1,
-            name: "Trường Đại học Sài Gòn",
-            category: "Trường học",
-            lat: 10.75960314081626,
-            lng: 106.68201506137848,
-            status: "Hoạt động",
-          },
-          order: 7,
-        },
-      ],
-    },
-  ];
+  const [pickups, setPickups] = useState<PickupType[]>([]);
+  const [routes, setRoutes] = useState<RouteFormatType[]>([]);
   const columns: ColumnsType<RouteFormatType> = [
     {
       title: "#",
@@ -228,29 +88,29 @@ const RoutePage = () => {
       title: "Trạm BĐ",
       dataIndex: "startPickup",
       key: "startPickup",
-      width: "12%",
+      width: "16%",
       sorter: (a, b) => a?.startPickup!.localeCompare(b?.startPickup!),
     },
     {
       title: "Trạm KT",
       dataIndex: "endPickup",
       key: "endPickup",
-      width: "12%",
+      width: "16%",
       sorter: (a, b) => a?.endPickup!.localeCompare(b?.endPickup!),
     },
     {
-      title: "Thời gian BĐ",
-      dataIndex: "startTime",
-      key: "startTime",
-      width: "12%",
-      sorter: (a, b) => a?.startTime!.localeCompare(b?.startTime!),
+      title: "Tổng m",
+      dataIndex: "totalDistance",
+      key: "totalDistance",
+      width: "8%",
+      sorter: (a, b) => a?.totalDistance! - b?.totalDistance!,
     },
     {
-      title: "Thời gian BĐ",
-      dataIndex: "endTime",
-      key: "endTime",
-      width: "12%",
-      sorter: (a, b) => a?.endTime!.localeCompare(b?.endTime!),
+      title: "Tổng s",
+      dataIndex: "totalTime",
+      key: "totalTime",
+      width: "8%",
+      sorter: (a, b) => a?.totalTime! - b?.totalTime!,
     },
     {
       title: "Trạng thái",
@@ -310,6 +170,81 @@ const RoutePage = () => {
     },
   ];
 
+  // Truy vấn dữ liệu
+  const getPickupData = async () => {
+    try {
+      const response = await execute(getPickups(), false);
+
+      if (response && response.result) {
+        if (Array.isArray(response.data)) {
+          setPickups(
+            response.data.map((pickup) => ({
+              ...pickup,
+              category:
+                pickup.category == "SCHOOL" ? "Trường học" : "Điểm đưa đón",
+              status: pickup.status == "ACTIVE" ? "Hoạt động" : "Tạm dừng",
+            }))
+          );
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const getRouteData = async () => {
+    try {
+      const response = await execute(getRoutes(), false);
+
+      if (response && response.result) {
+        if (Array.isArray(response.data)) {
+          setRoutes(
+            response.data.map((route) => ({
+              ...route,
+              status: route.status == "ACTIVE" ? "Hoạt động" : "Tạm dừng",
+              routeDetails: route?.pickups?.map(
+                (pickupNotFormat: { pickup: PickupType; order: number }) => ({
+                  pickup: {
+                    ...pickupNotFormat.pickup,
+                    category:
+                      pickupNotFormat.pickup.category == "SCHOOL"
+                        ? "Trường học"
+                        : "Điểm đưa đón",
+                    status:
+                      pickupNotFormat.pickup.status == "ACTIVE"
+                        ? "Hoạt động"
+                        : "Tạm dừng",
+                  },
+                  order: pickupNotFormat.order,
+                })
+              ),
+            }))
+          );
+
+          console.log(routes);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    getPickupData();
+    getRouteData();
+  }, []);
+
+  // Lọc dữ liệu
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    undefined
+  );
+  const filteredRouteList = routes.filter((route) => {
+    const matchesName = route.name
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase());
+    const matchesStatus = statusFilter ? route.status === statusFilter : true;
+    return matchesName && matchesStatus;
+  });
+
   // State giữ đối tượng được chọn hiện tại
   const [currentSelectedItem, setCurrentSelectedItem] =
     useState<RouteFormatType>();
@@ -330,8 +265,8 @@ const RoutePage = () => {
     name: "Tên tuyến đường",
     startPickup: "Trạm bắt đầu",
     endPickup: "Trạm kết thúc",
-    startTime: "Thời gian bắt đầu",
-    endTime: "Thời gian kết thúc",
+    totalDistance: "Tổng quãng đường (m)",
+    totalTime: "Tổng thời gian (s)",
     status: "Trạng thái",
     map: "Bản đồ",
     list: "Danh sách",
@@ -341,8 +276,8 @@ const RoutePage = () => {
     name: "Nhập Tên tuyến đường",
     startPickup: "Nhập Trạm bắt đầu",
     endPickup: "Nhập Trạm kết thúc",
-    startTime: "Chọn Thời gian bắt đầu",
-    endTime: "Chọn Thời gian kết thúc",
+    totalDistance: "Nhập Tổng quãng đường (m)",
+    totalTime: "Nhập Tổng thời gian (s)",
     status: "Chọn Trạng thái",
     map: "",
     list: "",
@@ -362,12 +297,8 @@ const RoutePage = () => {
               name: route.name || undefined,
               startPickup: route.startPickup || undefined,
               endPickup: route.endPickup || undefined,
-              startTime: route.startTime
-                ? dayjs(route.startTime, "HH:MM:SS")
-                : undefined,
-              endTime: route.endTime
-                ? dayjs(route.endTime, "HH:MM:SS")
-                : undefined,
+              totalDistance: route.totalDistance || undefined,
+              totalTime: route.totalTime || undefined,
               status: route.status || undefined,
             }}
           >
@@ -401,20 +332,20 @@ const RoutePage = () => {
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="startTime"
-                      label={defaultLabels.startTime}
+                      name="totalDistance"
+                      label={defaultLabels.totalDistance}
                       className="margin-bottom-0"
                     >
-                      <TimePicker disabled />
+                      <InputNumber disabled />
                     </Form.Item>
                   </Col>
                   <Col>
                     <Form.Item
-                      name="endTime"
-                      label={defaultLabels.endTime}
+                      name="totalTime"
+                      label={defaultLabels.totalTime}
                       className="margin-bottom-0"
                     >
-                      <TimePicker disabled />
+                      <InputNumber disabled />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -434,12 +365,12 @@ const RoutePage = () => {
                       <span>Xem {!showMap ? "bản đồ" : "danh sách"}</span>
                     </Button>
                   </div>
-                  {showMap ? (
-                    <LeafletMap
-                      type="detail"
-                      routeDetails={route.routeDetails}
-                    />
-                  ) : (
+                  <LeafletMap
+                    type="detail"
+                    routeDetails={route.routeDetails}
+                    hidden={!showMap}
+                  />
+                  {!showMap && (
                     <>
                       <List
                         itemLayout="horizontal"
@@ -496,6 +427,10 @@ const RoutePage = () => {
   };
   const RouteCreate: React.FC = () => {
     const [form] = Form.useForm<RouteFormatType>();
+    const [routeDetailsValue, setRouteDetailsValue] = useState<
+      RouteDetailsFormatType[]
+    >([]);
+
     const [showMap, setShowMap] = useState<boolean>(true);
     const [showAddPickup, setShowAddPickup] = useState<boolean>(false);
     const [showRemovePickup, setShowRemovePickup] = useState<boolean>(false);
@@ -504,17 +439,57 @@ const RoutePage = () => {
     const [pickupSelectedRemove, setPickupSelectedRemove] = useState<
       number | null
     >(null);
-    const [routeDetailsValue, setRouteDetailsValue] = useState<
-      RouteDetailsFormatType[]
-    >([]);
 
+    const handleGetBusInfo = ({
+      distance,
+      duration,
+    }: HandleGetRouteInfoProps) => {
+      form.setFieldValue("totalDistance", distance),
+        form.setFieldValue("totalTime", duration);
+    };
     useEffect(() => {
       if (routeDetailsValue.length >= 2) {
+        form.setFieldValue(
+          "name",
+          `Tuyến ${routeDetailsValue[0].pickup?.name} → ${
+            routeDetailsValue[routeDetailsValue.length - 1].pickup?.name
+          }`
+        );
+        form.setFieldValue("startPickup", routeDetailsValue[0].pickup?.name);
+        form.setFieldValue(
+          "endPickup",
+          routeDetailsValue[routeDetailsValue.length - 1].pickup?.name
+        );
         form.setFieldValue("routeDetails", routeDetailsValue);
       } else {
         form.setFieldValue("routeDetails", undefined);
       }
     }, [routeDetailsValue]);
+
+    const handleCreateRoute = async () => {
+      const restResponse = await execute(
+        createRoute({
+          name: form.getFieldValue("name") || undefined,
+          startPickup: form.getFieldValue("startPickup") || undefined,
+          endPickup: form.getFieldValue("endPickup") || undefined,
+          totalDistance: Number(
+            form.getFieldValue("totalDistance") || undefined
+          ),
+          totalTime: Number(form.getFieldValue("totalTime") || undefined),
+          status: form.getFieldValue("status") || undefined,
+          pickups: routeDetailsValue?.map((routeDetail) => ({
+            pickupId: routeDetail?.pickup?.id!,
+            order: routeDetail?.order!,
+          })),
+        }),
+        true
+      );
+      notify(restResponse!, "Thêm tuyến đường thành công");
+      if (restResponse?.result) {
+        getRouteData();
+        setCurrentAction("list");
+      }
+    };
 
     return (
       <>
@@ -527,10 +502,12 @@ const RoutePage = () => {
               name: undefined,
               startPickup: undefined,
               endPickup: undefined,
-              startTime: undefined,
-              endTime: undefined,
+              totalDistance: undefined,
+              totalTime: undefined,
               status: undefined,
             }}
+            autoComplete="off"
+            onFinish={handleCreateRoute}
           >
             <Row className="split-3">
               <Col>
@@ -558,11 +535,11 @@ const RoutePage = () => {
                         options={[
                           {
                             label: CommonStatusValue.active,
-                            value: CommonStatusValue.active,
+                            value: "ACTIVE",
                           },
                           {
                             label: CommonStatusValue.inactive,
-                            value: CommonStatusValue.inactive,
+                            value: "INACTIVE",
                           },
                         ]}
                       />
@@ -604,27 +581,29 @@ const RoutePage = () => {
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="startTime"
-                      htmlFor="create-startTime"
-                      label={defaultLabels.startTime}
-                      rules={[ruleRequired("Cần chọn Thời gian bắt đầu !")]}
+                      name="totalDistance"
+                      htmlFor="create-totalDistance"
+                      label={defaultLabels.totalDistance}
+                      rules={[ruleRequired("Cần nhập Quãng đường (m) !")]}
                     >
-                      <TimePicker
-                        id="create-startTime"
-                        placeholder={defaultInputs.startTime}
+                      <InputNumber
+                        min={0}
+                        id="create-totalDistance"
+                        placeholder={defaultInputs.totalDistance}
                       />
                     </Form.Item>
                   </Col>
                   <Col>
                     <Form.Item
-                      name="endTime"
-                      htmlFor="create-endTime"
-                      label={defaultLabels.endTime}
-                      rules={[ruleRequired("Cần chọn Thời gian kết thúc !")]}
+                      name="totalTime"
+                      htmlFor="create-totalTime"
+                      label={defaultLabels.totalTime}
+                      rules={[ruleRequired("Cần nhập Thời gian (s) !")]}
                     >
-                      <TimePicker
-                        id="create-endTime"
-                        placeholder={defaultInputs.endTime}
+                      <InputNumber
+                        min={0}
+                        id="create-totalTime"
+                        placeholder={defaultInputs.totalTime}
                       />
                     </Form.Item>
                   </Col>
@@ -645,7 +624,7 @@ const RoutePage = () => {
                       variant="solid"
                       color="green"
                       onClick={() => {
-                        setShowAddPickup(!showAddPickup);
+                        setShowAddPickup(true);
                         setShowRemovePickup(false);
                         setPickupSelectedAdd(null);
                         setPickupSelectedRemove(null);
@@ -659,7 +638,7 @@ const RoutePage = () => {
                       color="red"
                       onClick={() => {
                         setShowAddPickup(false);
-                        setShowRemovePickup(!showRemovePickup);
+                        setShowRemovePickup(true);
                         setPickupSelectedAdd(null);
                         setPickupSelectedRemove(null);
                       }}
@@ -676,125 +655,133 @@ const RoutePage = () => {
                       <span>Xem {!showMap ? "bản đồ" : "danh sách"}</span>
                     </Button>
                   </div>
-                  {showAddPickup && (
-                    <Row className="select-pickup">
-                      <Select
-                        allowClear
-                        showSearch
-                        placeholder="Chọn Trạm xe buýt để thêm"
-                        options={pickupData?.map((pickup) => ({
-                          label:
-                            "#" +
-                            pickup?.id +
-                            " - " +
-                            pickup?.name +
-                            " - " +
-                            pickup?.category,
-                          value: pickup?.id,
-                        }))}
-                        onChange={(val: number) =>
-                          setPickupSelectedAdd(getItemById(pickupData, val))
-                        }
-                      />
-                      <Button
-                        htmlType="button"
-                        type="primary"
-                        onClick={(e) => {
-                          e.preventDefault();
-
-                          if (
-                            routeDetailsValue?.some(
-                              (routeDetail) =>
-                                routeDetail.pickup?.id === pickupSelectedAdd?.id
-                            )
-                          ) {
-                            openNotification({
-                              type: "warning",
-                              message: "Cảnh báo",
-                              description:
-                                "Trạm được chọn hiện tại đã có trên tuyến đường !",
-                              duration: 1.5,
-                            });
-
-                            return;
-                          }
-
-                          let newRouteDetailsValue = routeDetailsValue?.map(
-                            (routeDetail) => routeDetail
-                          );
-                          newRouteDetailsValue.push({
-                            pickup: pickupSelectedAdd!,
-                            order: routeDetailsValue.length + 1,
-                          });
-                          setRouteDetailsValue(newRouteDetailsValue);
-                          setPickupSelectedAdd(null);
-                          setShowAddPickup(false);
-                        }}
-                      >
-                        Xác nhận
-                      </Button>
-                    </Row>
-                  )}
-                  {showRemovePickup && (
-                    <Row className="select-pickup">
-                      <Select
-                        allowClear
-                        showSearch
-                        placeholder="Chọn Trạm xe buýt để xoá"
-                        options={routeDetailsValue?.map((routeDetail) => ({
-                          label:
-                            "#" +
-                            routeDetail.pickup?.id +
-                            " - " +
-                            routeDetail.pickup?.name +
-                            " - " +
-                            routeDetail.pickup?.category,
-                          value: routeDetail.pickup?.id,
-                        }))}
-                        onChange={(val: number) => setPickupSelectedRemove(val)}
-                      />
-                      <Button
-                        htmlType="button"
-                        type="primary"
-                        onClick={(e) => {
-                          e.preventDefault();
-
-                          if (routeDetailsValue.length == 2) {
-                            openNotification({
-                              type: "warning",
-                              message: "Cảnh báo",
-                              description:
-                                "Tuyến đường cần ít nhất 2 trạm đưa đón !",
-                              duration: 1.5,
-                            });
-
-                            return;
-                          }
-
-                          let newRouteDetailsValue = routeDetailsValue
-                            ?.filter(
-                              (routeDetail) =>
-                                routeDetail.pickup?.id !== pickupSelectedRemove
-                            )
-                            ?.map((newRouteDetail, index) => ({
-                              pickup: newRouteDetail.pickup,
-                              order: index + 1,
-                            }));
-                          setRouteDetailsValue(newRouteDetailsValue);
-                          setPickupSelectedRemove(null);
-                          setShowRemovePickup(false);
-                        }}
-                      >
-                        Xác nhận
-                      </Button>
-                    </Row>
-                  )}
-                  {showMap ? (
-                    <LeafletMap
-                      type="detail"
-                      routeDetails={routeDetailsValue}
+                  {/* Làm vậy để tránh tải lại bản đồ nhiều lần */}
+                  <Row
+                    className="select-pickup"
+                    style={{ display: showAddPickup ? "flex" : "none" }}
+                  >
+                    <Select
+                      allowClear
+                      showSearch
+                      placeholder="Chọn Trạm xe buýt để thêm"
+                      options={pickups?.map((pickup) => ({
+                        label:
+                          "#" +
+                          pickup?.id +
+                          " - " +
+                          pickup?.name +
+                          " - " +
+                          pickup?.category,
+                        value: pickup?.id,
+                      }))}
+                      value={pickupSelectedAdd?.id}
+                      onChange={(val: number) =>
+                        setPickupSelectedAdd(getItemById(pickups, val))
+                      }
                     />
-                  ) : (
+                    <Button
+                      htmlType="button"
+                      type="primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+
+                        if (
+                          routeDetailsValue?.some(
+                            (routeDetail) =>
+                              routeDetail.pickup?.id === pickupSelectedAdd?.id
+                          )
+                        ) {
+                          openNotification({
+                            type: "warning",
+                            message: "Cảnh báo",
+                            description:
+                              "Trạm được chọn hiện tại đã có trên tuyến đường !",
+                            duration: 1.5,
+                          });
+
+                          return;
+                        }
+
+                        let newRouteDetailsValue = routeDetailsValue?.map(
+                          (routeDetail) => routeDetail
+                        );
+                        newRouteDetailsValue.push({
+                          pickup: pickupSelectedAdd!,
+                          order: routeDetailsValue.length + 1,
+                        });
+                        setRouteDetailsValue(newRouteDetailsValue);
+                        setShowAddPickup(false);
+                        setPickupSelectedAdd(null);
+                        setPickupSelectedRemove(null);
+                      }}
+                    >
+                      Xác nhận
+                    </Button>
+                  </Row>
+                  <Row
+                    className="select-pickup"
+                    style={{ display: showRemovePickup ? "flex" : "none" }}
+                  >
+                    <Select
+                      allowClear
+                      showSearch
+                      placeholder="Chọn Trạm xe buýt để xoá"
+                      options={routeDetailsValue?.map((routeDetail) => ({
+                        label:
+                          "#" +
+                          routeDetail.pickup?.id +
+                          " - " +
+                          routeDetail.pickup?.name +
+                          " - " +
+                          routeDetail.pickup?.category,
+                        value: routeDetail.pickup?.id,
+                      }))}
+                      value={pickupSelectedRemove}
+                      onChange={(val: number) => setPickupSelectedRemove(val)}
+                    />
+                    <Button
+                      htmlType="button"
+                      type="primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+
+                        // if (routeDetailsValue.length == 2) {
+                        //   openNotification({
+                        //     type: "warning",
+                        //     message: "Cảnh báo",
+                        //     description:
+                        //       "Tuyến đường cần ít nhất 2 trạm đưa đón !",
+                        //     duration: 1.5,
+                        //   });
+
+                        //   return;
+                        // }
+
+                        let newRouteDetailsValue = routeDetailsValue
+                          ?.filter(
+                            (routeDetail) =>
+                              routeDetail.pickup?.id !== pickupSelectedRemove
+                          )
+                          ?.map((newRouteDetail, index) => ({
+                            pickup: newRouteDetail.pickup,
+                            order: index + 1,
+                          }));
+                        setRouteDetailsValue(newRouteDetailsValue);
+                        setShowRemovePickup(false);
+                        setPickupSelectedAdd(null);
+                        setPickupSelectedRemove(null);
+                      }}
+                    >
+                      Xác nhận
+                    </Button>
+                  </Row>
+                  <LeafletMap
+                    type="detail"
+                    routeDetails={routeDetailsValue}
+                    handleGetRouteInfo={handleGetBusInfo}
+                    hidden={!showMap}
+                  />
+                  {!showMap && (
                     <>
                       <List
                         itemLayout="horizontal"
@@ -860,6 +847,10 @@ const RoutePage = () => {
   };
   const RouteUpdate: React.FC<{ route: RouteFormatType }> = ({ route }) => {
     const [form] = Form.useForm<RouteFormatType>();
+    const [routeDetailsValue, setRouteDetailsValue] = useState<
+      RouteDetailsFormatType[]
+    >(route.routeDetails || []);
+
     const [showMap, setShowMap] = useState<boolean>(true);
     const [showAddPickup, setShowAddPickup] = useState<boolean>(false);
     const [showRemovePickup, setShowRemovePickup] = useState<boolean>(false);
@@ -868,17 +859,56 @@ const RoutePage = () => {
     const [pickupSelectedRemove, setPickupSelectedRemove] = useState<
       number | null
     >(null);
-    const [routeDetailsValue, setRouteDetailsValue] = useState<
-      RouteDetailsFormatType[]
-    >(route.routeDetails || []);
 
+    const handleGetBusInfo = ({
+      distance,
+      duration,
+    }: HandleGetRouteInfoProps) => {
+      form.setFieldValue("totalDistance", distance),
+        form.setFieldValue("totalTime", duration);
+    };
     useEffect(() => {
       if (routeDetailsValue.length >= 2) {
+        form.setFieldValue(
+          "name",
+          `Tuyến ${routeDetailsValue[0].pickup?.name} → ${
+            routeDetailsValue[routeDetailsValue.length - 1].pickup?.name
+          }`
+        );
+        form.setFieldValue("startPickup", routeDetailsValue[0].pickup?.name);
+        form.setFieldValue(
+          "endPickup",
+          routeDetailsValue[routeDetailsValue.length - 1].pickup?.name
+        );
         form.setFieldValue("routeDetails", routeDetailsValue);
       } else {
         form.setFieldValue("routeDetails", undefined);
       }
     }, [routeDetailsValue]);
+
+    const handleUpdateRoute = async () => {
+      const restResponse = await execute(
+        updateRoute(route.id!, {
+          name: form.getFieldValue("name") || undefined,
+          startPickup: form.getFieldValue("startPickup") || undefined,
+          endPickup: form.getFieldValue("endPickup") || undefined,
+          totalDistance: Number(
+            form.getFieldValue("totalDistance") || undefined
+          ),
+          totalTime: Number(form.getFieldValue("totalTime") || undefined),
+          pickups: routeDetailsValue?.map((routeDetail) => ({
+            pickupId: routeDetail?.pickup?.id!,
+            order: routeDetail?.order!,
+          })),
+        }),
+        true
+      );
+      notify(restResponse!, "Thêm tuyến đường thành công");
+      if (restResponse?.result) {
+        getRouteData();
+        setCurrentAction("list");
+      }
+    };
 
     return (
       <>
@@ -891,14 +921,12 @@ const RoutePage = () => {
               name: route.name || undefined,
               startPickup: route.startPickup || undefined,
               endPickup: route.endPickup || undefined,
-              startTime: route.startTime
-                ? dayjs(route.startTime, "HH:MM:SS")
-                : undefined,
-              endTime: route.endTime
-                ? dayjs(route.endTime, "HH:MM:SS")
-                : undefined,
+              totalDistance: route.totalDistance || undefined,
+              totalTime: route.totalTime || undefined,
               status: route.status || undefined,
             }}
+            autoComplete="off"
+            onFinish={handleUpdateRoute}
           >
             <Row className="split-3">
               <Col>
@@ -953,27 +981,29 @@ const RoutePage = () => {
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="startTime"
-                      htmlFor="update-startTime"
-                      label={defaultLabels.startTime}
-                      rules={[ruleRequired("Cần chọn Thời gian bắt đầu !")]}
+                      name="totalDistance"
+                      htmlFor="update-totalDistance"
+                      label={defaultLabels.totalDistance}
+                      rules={[ruleRequired("Cần nhập Tổng quãng đường (m) !")]}
                     >
-                      <TimePicker
-                        id="update-startTime"
-                        placeholder={defaultInputs.startTime}
+                      <InputNumber
+                        min={0}
+                        id="update-totalDistance"
+                        placeholder={defaultInputs.totalDistance}
                       />
                     </Form.Item>
                   </Col>
                   <Col>
                     <Form.Item
-                      name="endTime"
-                      htmlFor="update-endTime"
-                      label={defaultLabels.endTime}
-                      rules={[ruleRequired("Cần chọn Thời gian kết thúc !")]}
+                      name="totalTime"
+                      htmlFor="update-totalTime"
+                      label={defaultLabels.totalTime}
+                      rules={[ruleRequired("Cần nhập Tổng thời gian (s) !")]}
                     >
-                      <TimePicker
-                        id="update-endTime"
-                        placeholder={defaultInputs.endTime}
+                      <InputNumber
+                        min={0}
+                        id="update-totalTime"
+                        placeholder={defaultInputs.totalTime}
                       />
                     </Form.Item>
                   </Col>
@@ -1025,125 +1055,133 @@ const RoutePage = () => {
                       <span>Xem {!showMap ? "bản đồ" : "danh sách"}</span>
                     </Button>
                   </div>
-                  {showAddPickup && (
-                    <Row className="select-pickup">
-                      <Select
-                        allowClear
-                        showSearch
-                        placeholder="Chọn Trạm xe buýt để thêm"
-                        options={pickupData?.map((pickup) => ({
-                          label:
-                            "#" +
-                            pickup?.id +
-                            " - " +
-                            pickup?.name +
-                            " - " +
-                            pickup?.category,
-                          value: pickup?.id,
-                        }))}
-                        onChange={(val: number) =>
-                          setPickupSelectedAdd(getItemById(pickupData, val))
-                        }
-                      />
-                      <Button
-                        htmlType="button"
-                        type="primary"
-                        onClick={(e) => {
-                          e.preventDefault();
-
-                          if (
-                            routeDetailsValue?.some(
-                              (routeDetail) =>
-                                routeDetail.pickup?.id === pickupSelectedAdd?.id
-                            )
-                          ) {
-                            openNotification({
-                              type: "warning",
-                              message: "Cảnh báo",
-                              description:
-                                "Trạm được chọn hiện tại đã có trên tuyến đường !",
-                              duration: 1.5,
-                            });
-
-                            return;
-                          }
-
-                          let newRouteDetailsValue = routeDetailsValue?.map(
-                            (routeDetail) => routeDetail
-                          );
-                          newRouteDetailsValue.push({
-                            pickup: pickupSelectedAdd!,
-                            order: routeDetailsValue.length + 1,
-                          });
-                          setRouteDetailsValue(newRouteDetailsValue);
-                          setPickupSelectedAdd(null);
-                          setShowAddPickup(false);
-                        }}
-                      >
-                        Xác nhận
-                      </Button>
-                    </Row>
-                  )}
-                  {showRemovePickup && (
-                    <Row className="select-pickup">
-                      <Select
-                        allowClear
-                        showSearch
-                        placeholder="Chọn Trạm xe buýt để xoá"
-                        options={routeDetailsValue?.map((routeDetail) => ({
-                          label:
-                            "#" +
-                            routeDetail.pickup?.id +
-                            " - " +
-                            routeDetail.pickup?.name +
-                            " - " +
-                            routeDetail.pickup?.category,
-                          value: routeDetail.pickup?.id,
-                        }))}
-                        onChange={(val: number) => setPickupSelectedRemove(val)}
-                      />
-                      <Button
-                        htmlType="button"
-                        type="primary"
-                        onClick={(e) => {
-                          e.preventDefault();
-
-                          if (routeDetailsValue.length == 2) {
-                            openNotification({
-                              type: "warning",
-                              message: "Cảnh báo",
-                              description:
-                                "Tuyến đường cần ít nhất 2 trạm đưa đón !",
-                              duration: 1.5,
-                            });
-
-                            return;
-                          }
-
-                          let newRouteDetailsValue = routeDetailsValue
-                            ?.filter(
-                              (routeDetail) =>
-                                routeDetail.pickup?.id !== pickupSelectedRemove
-                            )
-                            ?.map((newRouteDetail, index) => ({
-                              pickup: newRouteDetail.pickup,
-                              order: index + 1,
-                            }));
-                          setRouteDetailsValue(newRouteDetailsValue);
-                          setPickupSelectedRemove(null);
-                          setShowRemovePickup(false);
-                        }}
-                      >
-                        Xác nhận
-                      </Button>
-                    </Row>
-                  )}
-                  {showMap ? (
-                    <LeafletMap
-                      type="detail"
-                      routeDetails={routeDetailsValue}
+                  {/* Làm vậy để tránh tải lại bản đồ nhiều lần */}
+                  <Row
+                    className="select-pickup"
+                    style={{ display: showAddPickup ? "flex" : "none" }}
+                  >
+                    <Select
+                      allowClear
+                      showSearch
+                      placeholder="Chọn Trạm xe buýt để thêm"
+                      options={pickups?.map((pickup) => ({
+                        label:
+                          "#" +
+                          pickup?.id +
+                          " - " +
+                          pickup?.name +
+                          " - " +
+                          pickup?.category,
+                        value: pickup?.id,
+                      }))}
+                      value={pickupSelectedAdd?.id}
+                      onChange={(val: number) =>
+                        setPickupSelectedAdd(getItemById(pickups, val))
+                      }
                     />
-                  ) : (
+                    <Button
+                      htmlType="button"
+                      type="primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+
+                        if (
+                          routeDetailsValue?.some(
+                            (routeDetail) =>
+                              routeDetail.pickup?.id === pickupSelectedAdd?.id
+                          )
+                        ) {
+                          openNotification({
+                            type: "warning",
+                            message: "Cảnh báo",
+                            description:
+                              "Trạm được chọn hiện tại đã có trên tuyến đường !",
+                            duration: 1.5,
+                          });
+
+                          return;
+                        }
+
+                        let newRouteDetailsValue = routeDetailsValue?.map(
+                          (routeDetail) => routeDetail
+                        );
+                        newRouteDetailsValue.push({
+                          pickup: pickupSelectedAdd!,
+                          order: routeDetailsValue.length + 1,
+                        });
+                        setRouteDetailsValue(newRouteDetailsValue);
+                        setShowAddPickup(false);
+                        setPickupSelectedAdd(null);
+                        setPickupSelectedRemove(null);
+                      }}
+                    >
+                      Xác nhận
+                    </Button>
+                  </Row>
+                  <Row
+                    className="select-pickup"
+                    style={{ display: showRemovePickup ? "flex" : "none" }}
+                  >
+                    <Select
+                      allowClear
+                      showSearch
+                      placeholder="Chọn Trạm xe buýt để xoá"
+                      options={routeDetailsValue?.map((routeDetail) => ({
+                        label:
+                          "#" +
+                          routeDetail.pickup?.id +
+                          " - " +
+                          routeDetail.pickup?.name +
+                          " - " +
+                          routeDetail.pickup?.category,
+                        value: routeDetail.pickup?.id,
+                      }))}
+                      value={pickupSelectedRemove}
+                      onChange={(val: number) => setPickupSelectedRemove(val)}
+                    />
+                    <Button
+                      htmlType="button"
+                      type="primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+
+                        // if (routeDetailsValue.length == 2) {
+                        //   openNotification({
+                        //     type: "warning",
+                        //     message: "Cảnh báo",
+                        //     description:
+                        //       "Tuyến đường cần ít nhất 2 trạm đưa đón !",
+                        //     duration: 1.5,
+                        //   });
+
+                        //   return;
+                        // }
+
+                        let newRouteDetailsValue = routeDetailsValue
+                          ?.filter(
+                            (routeDetail) =>
+                              routeDetail.pickup?.id !== pickupSelectedRemove
+                          )
+                          ?.map((newRouteDetail, index) => ({
+                            pickup: newRouteDetail.pickup,
+                            order: index + 1,
+                          }));
+                        setRouteDetailsValue(newRouteDetailsValue);
+                        setShowRemovePickup(false);
+                        setPickupSelectedAdd(null);
+                        setPickupSelectedRemove(null);
+                      }}
+                    >
+                      Xác nhận
+                    </Button>
+                  </Row>
+                  <LeafletMap
+                    type="detail"
+                    routeDetails={routeDetailsValue}
+                    handleGetRouteInfo={handleGetBusInfo}
+                    hidden={!showMap}
+                  />
+                  {!showMap && (
                     <>
                       <List
                         itemLayout="horizontal"
@@ -1208,6 +1246,26 @@ const RoutePage = () => {
     );
   };
   const RouteLock: React.FC<{ route: RouteFormatType }> = ({ route }) => {
+    const handleLockRoute = async () => {
+      const restResponse = await execute(
+        updateRoute(route.id!, {
+          status:
+            route.status === CommonStatusValue.active ? "INACTIVE" : "ACTIVE",
+        }),
+        true
+      );
+      notify(
+        restResponse!,
+        route.status === CommonStatusValue.active
+          ? "Khoá tuyến đường thành công"
+          : "Mở khoá tuyến đường thành công"
+      );
+      if (restResponse?.result) {
+        getRouteData();
+        setCurrentAction("list");
+      }
+    };
+
     return (
       <>
         <Alert
@@ -1232,14 +1290,7 @@ const RoutePage = () => {
             <Button
               color="danger"
               variant="solid"
-              onClick={() => {
-                openNotification({
-                  type: "success",
-                  message: "Thành công",
-                  description: "123 !",
-                  duration: 1.5,
-                });
-              }}
+              onClick={() => handleLockRoute()}
             >
               Xác nhận
             </Button>
@@ -1407,9 +1458,9 @@ const RoutePage = () => {
                 <Input
                   prefix={<SearchOutlined />}
                   placeholder="Tìm theo họ và tên tuyến đường"
-                  //   value={searchText}
-                  //   onChange={(e) => setSearchText(e.target.value)}
                   className="filter-find"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
                 />
                 <Select
                   allowClear
@@ -1425,12 +1476,17 @@ const RoutePage = () => {
                     },
                   ]}
                   className="filter-select"
+                  value={statusFilter}
+                  onChange={(value) => setStatusFilter(value)}
                 />
                 <Button
                   color="blue"
                   variant="filled"
                   icon={<ReloadOutlined />}
-                  //   onClick={() => setSearchText("")}
+                  onClick={() => {
+                    setSearchText("");
+                    setStatusFilter(undefined);
+                  }}
                   className="filter-reset"
                 >
                   Làm mới
@@ -1439,7 +1495,7 @@ const RoutePage = () => {
               <div className="right">
                 <Button
                   type="primary"
-                  icon={<FontAwesomeIcon icon={faPlus}/>}
+                  icon={<FontAwesomeIcon icon={faPlus} />}
                   onClick={() => setCurrentAction("create")}
                 >
                   {t("route-create")}
@@ -1448,9 +1504,9 @@ const RoutePage = () => {
             </div>
             <CustomTableActions<RouteFormatType>
               columns={columns}
-              data={demoData || []}
+              data={filteredRouteList || []}
               rowKey={(record) => String(record?.id)}
-              // loading={isLoading}
+              loading={loading}
               defaultPageSize={10}
               className="admin-layout__main-table table-data routes"
             />
