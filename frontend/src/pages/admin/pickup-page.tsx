@@ -58,7 +58,26 @@ const PickupPage = () => {
 
   const { execute } = useCallApi();
 
-  // Dữ liệu
+  // Cấu hình bảng dữ liệu (sau cập nhật lọc giới tính, phụ huynh, trạm và lớp)
+  const demoData: PickupType[] = [
+    {
+      id: 1,
+      name: "Trường Đại học Sài Gòn",
+      category: "Trường học",
+      lat: 10.75960314081626,
+      lng: 106.68201506137848,
+      status: "Hoạt động",
+    },
+    {
+      id: 2,
+      name: "Trạm Công viên Lê Thị Riêng",
+      category: "Điểm đưa đón",
+      lat: 10.786197005344277,
+      lng: 106.66577696800232,
+      status: "Tạm dừng",
+    },
+  ];
+
   const [pickupData, setPickupData] = useState<PickupType[]>([]);
 
   // Truy vấn dữ liệu

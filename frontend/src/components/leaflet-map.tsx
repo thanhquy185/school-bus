@@ -576,8 +576,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
       !busInfos?.length ||
       !routeDetailsList?.length ||
       !activePickupsList?.length
-    )
-      return;
+    ) return
 
     console.log("🚍 simulate bus moving...");
 

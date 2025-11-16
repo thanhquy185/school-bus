@@ -2,10 +2,24 @@ import { Button, Form, Input } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { ruleRequired } from "../../common/rules";
+import useCallApi from "../../api/useCall";
+import { login } from "../../services/auth-service";
+import { useAuth } from "../../contexts/authContext";
 
 // Trang đăng nhập
 const LoginPage = () => {
   const [form] = useForm();
+  const { execute, notify } = useCallApi();
+
+  const auth = useAuth();
+
+  const handleLogin = async () => {
+    const restResponse = await execute(login(form.getFieldValue("username"), form.getFieldValue("password")));
+    notify(restResponse, "Đăng nhập thành công");
+    if (restResponse?.result) {
+      auth.setAuth(restResponse.data);
+    }
+  }
 
   return (
     <>
@@ -28,6 +42,7 @@ const LoginPage = () => {
             layout="vertical"
             autoComplete="off"
             initialValues={{ remember: true }}
+            onFinish={handleLogin}
           >
             <Form.Item
               name="username"
