@@ -24,6 +24,8 @@ const AuthService = {
             } as RestResponse;
         }
 
+        
+
         const isMatch = await comparePassword(data.password, account?.password || "");
         if (!isMatch) {
             return {

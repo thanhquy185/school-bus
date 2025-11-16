@@ -7,6 +7,7 @@ import "./utils/i18n";
 import "./assets/styles/css/main.css";
 import { ConfigProvider } from "antd";
 import { App as AntdApp } from "antd";
+import { AuthProvider } from "./contexts/authContext";
 
 // App
 const App = () => {
@@ -44,7 +45,9 @@ const App = () => {
 
 //  Dấu ! sau document.getElementById("root")! trong TypeScript có tên là non-null assertion operator (toán tử khẳng định không null).
 createRoot(document.getElementById("root")!).render(
-  <AntdApp>
-    <App />
-  </AntdApp>
+  <AuthProvider>
+    <AntdApp>
+      <App />
+    </AntdApp>
+  </AuthProvider>
 );
