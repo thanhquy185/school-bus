@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import path from "path";
 
@@ -23,7 +23,8 @@ app.use(cors({ origin: "http://localhost:3000" }));
 app.use(express.json());
 
 app.use("/auth", AuthRouter);
-app.use("/api/accounts", AuthMiddleware(["ADMIN"]).authenticate, AccountRouter);
+// app.use("/api/accounts", AuthMiddleware(["ADMIN"]).authenticate, AccountRouter);
+app.use("/api/accounts", AccountRouter);
 
 app.use("/api/buses", BusRouter);
 
@@ -33,6 +34,12 @@ app.use("/api/classes", ClassRouter);
 app.use("/api/students", StudentRouter);
 
 app.use("/api/drivers", DriverRouter);
+
+app.get("/api/hello-world", (req: Request, res: Response) => {
+    res.status(200).json({
+        message: "Hello quy map"
+    })
+})
 
 
 app.use(useZod.errorHandle);

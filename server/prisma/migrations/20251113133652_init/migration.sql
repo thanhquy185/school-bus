@@ -45,7 +45,7 @@ CREATE TABLE `routes` (
 -- CreateTable
 CREATE TABLE `parents` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `avatar` VARCHAR(191) NOT NULL,
+    `avatar` VARCHAR(191) NULL,
     `full_name` VARCHAR(191) NOT NULL,
     `phone` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE `parents` (
 -- CreateTable
 CREATE TABLE `students` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `avatar` VARCHAR(191) NOT NULL,
+    `avatar` VARCHAR(191) NULL,
     `full_name` VARCHAR(191) NOT NULL,
     `birth_date` VARCHAR(191) NOT NULL,
     `gender` ENUM('MALE', 'FEMALE', 'OTHER') NOT NULL DEFAULT 'OTHER',
@@ -69,6 +69,7 @@ CREATE TABLE `students` (
     `status` ENUM('STUDYING', 'DROPPED_OUT', 'UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
     `parent_id` INTEGER NOT NULL,
     `class_id` INTEGER NOT NULL,
+    `pickup_id` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -76,9 +77,10 @@ CREATE TABLE `students` (
 -- CreateTable
 CREATE TABLE `drivers` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `avatar` VARCHAR(191) NOT NULL,
+    `avatar` VARCHAR(191) NULL,
     `full_name` VARCHAR(191) NOT NULL,
-    `birth_date` DATETIME(3) NOT NULL,
+    `birth_date` VARCHAR(191) NOT NULL,
+    `gender` ENUM('MALE', 'FEMALE', 'OTHER') NOT NULL DEFAULT 'OTHER',
     `phone` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
     `address` VARCHAR(191) NOT NULL,
@@ -132,6 +134,9 @@ ALTER TABLE `students` ADD CONSTRAINT `students_parent_id_fkey` FOREIGN KEY (`pa
 
 -- AddForeignKey
 ALTER TABLE `students` ADD CONSTRAINT `students_class_id_fkey` FOREIGN KEY (`class_id`) REFERENCES `classes`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `students` ADD CONSTRAINT `students_pickup_id_fkey` FOREIGN KEY (`pickup_id`) REFERENCES `pickups`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `drivers` ADD CONSTRAINT `drivers_account_id_fkey` FOREIGN KEY (`account_id`) REFERENCES `accounts`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

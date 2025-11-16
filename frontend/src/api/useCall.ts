@@ -9,6 +9,7 @@ const useCallApi = () => {
     const execute = async (apiCall: Promise<RestResponse>) => {
         try {
             setLoading(true);
+            
             const restResponse = await apiCall;
             const statusCode = restResponse?.statusCode || 500;
             if (statusCode === 401) {

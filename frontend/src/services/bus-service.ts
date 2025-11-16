@@ -2,6 +2,7 @@ import { api, type RestResponse } from "../api/api";
 
 export const getBuses = async (): Promise<RestResponse> => {
     const response = await api.get("/api/buses");
+    console.log(response)
     const restResponse: RestResponse = response.data;
     return restResponse;
 }
