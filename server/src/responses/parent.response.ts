@@ -6,5 +6,6 @@ export type ParentResponse = {
     address: string,
     account_id: number,
     username: string,
+    avatar?: string,
     status: "ACTIVE" | "INACTIVE",
 }

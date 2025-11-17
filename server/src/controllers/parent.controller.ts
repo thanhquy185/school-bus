@@ -9,8 +9,8 @@ const ParentController = {
         res.status(response.statusCode).json(response);
     },
 
-    async getByAccountId(req: Request, res: Response) {
-        const response = await ParentService.getByAccountId({ id: Number(req.params.id) });
+    async getParentInfo(_req: Request, res: Response) {
+        const response = await ParentService.getParentInfo(_req.headers.authorization);
         res.status(response.statusCode).json(response);
     },
 

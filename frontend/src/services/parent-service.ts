@@ -6,8 +6,8 @@ export const getParents = async (): Promise<RestResponse> => {
     return restResponse;
 }
 
-export const getParentByAccountId = async (accountId: number): Promise<RestResponse> => {
-    const response = await api.get(`/api/parents/account/${accountId}`);
+export const getParentByAccount = async (): Promise<RestResponse> => {
+    const response = await api.get(`/api/parents/account`);
     const restResponse: RestResponse = response.data;
     return restResponse;
 }

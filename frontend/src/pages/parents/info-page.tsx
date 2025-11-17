@@ -7,15 +7,18 @@ import { ruleRequired } from "../../common/rules";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "../../contexts/authContext";
-import { getParentByAccountId, updateParent } from "../../services/parent-service";
-import execute from "../../api/useCall";
+import { getParentByAccount, updateParent, uploadParentAvatar } from "../../services/parent-service";
 import { useNotification } from "../../utils/showNotification";
 import { updatePassword } from "../../services/account-service";
+import useCallApi from "../../api/useCall";
 
 // Info Page
 const ParentInfoPage = () => {
-
-  const [selectedMenu, setSelectedMenu] = useState<"personal" | "account">("personal");
+  const { execute } = useCallApi();
+  //
+  const [selectedMenu, setSelectedMenu] = useState<"personal" | "account">(
+    "personal"
+  );
   const handleMenuClick = (e: any) => {
     setSelectedMenu(e.key);
   };
@@ -29,12 +32,14 @@ const ParentInfoPage = () => {
     const { openNotification } = useNotification();
     const auth = useAuth();
 
+    const { execute } = useCallApi();
+
     useEffect(() => {
       form.setFieldsValue({ avatar: imageFile?.name });
     }, [imageFile]);
 
     const handleUpdate = async (values: any) => {
-      console.log("Submitted values:", values);
+      //console.log("Submitted values:", values);
       if (!parentInfo.id) return;
 
       const updateData = {
@@ -44,29 +49,28 @@ const ParentInfoPage = () => {
         address: values.address,
       };
 
-      try {
-        const response = await updateParent(parentInfo.id, updateData);
-        if (response.statusCode === 200) {
-          openNotification({
-            type: "success",
-            message: "Thành công",
-            description: "Cập nhật thông tin phụ huynh thành công!",
-            duration: 2,
-          });
-        }
-      } catch (error) {
-        console.log("Lỗi cập nhật thông tin phụ huynh:", error);
+      const response = await execute(updateParent(parentInfo.id, updateData));
+
+      if (!imageFile) return;
+      
+      const formData = new FormData();
+      formData.append("avatar", imageFile);
+      const uploadResponse = await execute(uploadParentAvatar(parentInfo.id, formData));
+
+      if (response.statusCode === 200) {
+        openNotification({
+          type: "success",
+          message: "Thành công",
+          description: "Cập nhật thông tin phụ huynh thành công!",
+          duration: 2,
+        });
       }
 
       setIsEditing(false); // sau khi submit xong quay lại trạng thái disable
     };
 
-    useEffect(() => {
-      const fetchParentInfo = async () => {
-        if (!auth.accountId) return;
-
-        try {
-          const response = await getParentByAccountId(auth.accountId);
+    const fetchParentInfo = async () => {
+          const response = await execute(getParentByAccount());
           const data = response.data;
           setParentInfo(data);
 
@@ -76,13 +80,14 @@ const ParentInfoPage = () => {
             email: data?.email ?? undefined,
             address: data?.address ?? undefined,
           });
-        } catch (error) {
-          console.log("Lỗi lấy thông tin phụ huynh:", error);
-        }
       };
 
+    useEffect(() => {;
+    }, [auth.accountId, form, execute, getParentByAccount]);
+
+    useEffect(() => {
       fetchParentInfo();
-    }, [auth.accountId, form, execute, getParentByAccountId]);
+    }, []);
 
     return (
       <div className="parent-content client">
