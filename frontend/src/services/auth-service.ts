@@ -5,3 +5,9 @@ export const login = async (username: string, password: string): Promise<RestRes
     const restResponse: RestResponse = response.data;
     return restResponse;
 }
+
+export const authConfig = async (): Promise<RestResponse> => {
+    const response = await api.post("/auth/authConfig");
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}

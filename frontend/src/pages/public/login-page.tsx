@@ -18,6 +18,7 @@ const LoginPage = () => {
     notify(restResponse, "Đăng nhập thành công");
     if (restResponse?.result) {
       auth.setAuth(restResponse.data);
+      window.location.href = `/${(restResponse.data.role as string).toLowerCase()}`
     }
   }
 

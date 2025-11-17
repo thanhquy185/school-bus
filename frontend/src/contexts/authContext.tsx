@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useMemo, useEffect } from "react";
 import useCallApi from "../api/useCall";
+import { authConfig } from "../services/auth-service";
 
 type UserAuth = {
   accessToken: string,
-  email: string,
   expiresAt: number,
   issuedAt: number,
   role: string
@@ -17,7 +17,6 @@ type CurrentUser = {
 
 type AuthContext = {
   token: string | null,
-  email: string | null,
   role: string | null,
   expiresAt: number | null,
   isAuthenticated: boolean,
@@ -30,29 +29,26 @@ const AuthContext = createContext<AuthContext | undefined>(undefined);
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [token, setToken] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
   const [role, setRole] = useState<string>("");
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
 
   const { execute } = useCallApi();
 
-//   useEffect(() => {
-//     const authSessionStr = sessionStorage.getItem("CURRENT_USER");
-//     if (!authSessionStr) return;
-//     const authSession: UserAuth = JSON.parse(authSessionStr);
+  useEffect(() => {
+    const authSessionStr = sessionStorage.getItem("CURRENT_USER");
+    if (!authSessionStr) return;
+    const validToken = async () => {
+      const restResponse = await execute(authConfig());
+      if (!restResponse?.result && restResponse?.statusCode === 401) {
+        clearAuth();
+        return;
+      }
+      const authResponse: UserAuth = restResponse.data;
+      setAuth({ accessToken: authResponse.accessToken, role: authResponse.role, issuedAt: authResponse.issuedAt, expiresAt: authResponse.expiresAt });
+    }
 
-//     const validToken = async () => {
-//       const restResponse = await execute(valid());
-//       if (!restResponse?.result && restResponse?.statusCode === 401) {
-//         clearAuth();
-//         return;
-//       }
-//       const authResponse: AuthResponse = restResponse.data;
-//       setAuth({ ...authSession, email: authResponse.email, role: authResponse.role, issuedAt: authResponse.issuedAt, expiresAt: authResponse.expiresAt });
-//     }
-
-//     validToken();
-//   }, []);
+    validToken();
+  }, []);
 
   useEffect(() => {
     if (!token || !expiresAt) return;
@@ -71,19 +67,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => window.clearTimeout(timeOut);
   }, [token, expiresAt]);
 
-  // Function clear token
   const clearAuth = () => {
     setToken("");
-    setEmail("");
     setRole("");
     setExpiresAt(0);
     sessionStorage.removeItem("CURRENT_USER");
   };
 
-  // Function set variable
   const setAuth = (authResponse: UserAuth) => {
     setToken(authResponse.accessToken);
-    setEmail(authResponse.email);
     setRole(authResponse.role);
     setExpiresAt(authResponse.expiresAt);
     sessionStorage.setItem("CURRENT_USER", JSON.stringify(authResponse));
@@ -91,7 +83,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const value = useMemo(() => ({
     token,
-    email,
     role,
     expiresAt,
     isAuthenticated: !!token,
