@@ -41,42 +41,30 @@ import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
 import useCallApi from "../../api/useCall";
 import { createPickup, getPickups, updatePickup as updatePickupService } from "../../services/pickup-service";
+import type { PickupResponse } from "../../responses/pickup.response";
+import { getCommonStatusText, getPickupCategoryName } from "../../utils/vi-trans";
 
 
 // Pickup Page
 const PickupPage = () => {
-  // Language
+
   const { t } = useTranslation();
 
-  // Notification
   const { openNotification } = useNotification();
 
   const { execute } = useCallApi();
 
-  const [pickupData, setPickupData] = useState<PickupType[]>([]);
+  const [pickupData, setPickupData] = useState<PickupResponse[]>([]);
 
-  const getData = async () => {
-    try {
-          const response = await execute(getPickups());
-
-          if (response.result) {
-            if (Array.isArray(response.data)) {
-              setPickupData(response.data.map(pickup => (
-                {
-                  ...pickup,
-                  category: pickup.category == 'SCHOOL' ? 'Trường học' : 'Điểm đưa đón',
-                  status: pickup.status == 'ACTIVE' ? 'Hoạt động' : 'Tạm dừng'
-                }
-              )));
-            }
-          }
-    } catch (error) {
-      console.error(error);
+  const handleGetData = async () => {
+    const restResponse = await execute(getPickups());
+    if (restResponse?.result) {
+      setPickupData(restResponse.data);
     }
   };
 
   useEffect(() => {
-    getData();
+    handleGetData();
   }, []);
 
   const columns: ColumnsType<PickupType> = [
@@ -100,6 +88,7 @@ const PickupPage = () => {
       key: "category",
       width: "18%",
       sorter: (a, b) => a?.category!.localeCompare(b?.category!),
+      render: (category: string) => getPickupCategoryName(category)
     },
     {
       title: "Toạ độ x",
@@ -120,8 +109,8 @@ const PickupPage = () => {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={status === CommonStatusValue.active ? "green" : "red"}>
-          {status}
+        <Tag color={status === "ACTIVE" ? "green" : "red"}>
+          {getCommonStatusText(status)}
         </Tag>
       ),
       width: "10%",
@@ -155,7 +144,7 @@ const PickupPage = () => {
             variant="filled"
             onClick={() => {
               setCurrentAction(
-                record.status === CommonStatusValue.active ? "lock" : "unlock"
+                record.status === "ACTIVE" ? "lock" : "unlock"
               );
               setCurrentSelectedItem(record);
             }}
@@ -217,10 +206,10 @@ const PickupPage = () => {
             initialValues={{
               id: pickup.id || undefined,
               name: pickup.name || undefined,
-              category: pickup.category || undefined,
+              category: getPickupCategoryName(pickup.category || ""),
               lat: pickup.lat || undefined,
               lng: pickup.lng || undefined,
-              status: pickup.status || undefined,
+              status: getCommonStatusText(pickup.status || ""),
             }}
           >
             <Row className="split-3">
@@ -303,7 +292,7 @@ const PickupPage = () => {
             duration: 2,
           });
           setCurrentAction("list");
-          getData();
+          handleGetData();
         }
       } catch (error) {
         console.error(error);
@@ -505,7 +494,6 @@ const PickupPage = () => {
         };
 
         const response = await execute(updatePickupService(formatData));
-        //console.log(response)
         if (response.statusCode == 200) {
           openNotification({
             type: "success",
@@ -514,7 +502,7 @@ const PickupPage = () => {
             duration: 2,
           });
           setCurrentAction("list");
-          getData();
+          handleGetData();
         }
       } catch (error) {
         console.error(error);
@@ -669,9 +657,9 @@ const PickupPage = () => {
             duration: 1.5
           })
           setCurrentAction("list");
-          getData();
+          handleGetData();
         }
-      } catch(error) {
+      } catch (error) {
         console.error(error);
         openNotification({
           type: "error",

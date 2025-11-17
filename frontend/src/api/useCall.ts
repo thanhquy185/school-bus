@@ -42,6 +42,7 @@ const useCallApi = () => {
 
     const notify = (restResponse: RestResponse, successMessage?: string) => {
         if (!restResponse) return;
+        if (successMessage === "") return;
         const isSuccess = restResponse.result && (restResponse.statusCode == 200 || restResponse.statusCode == 201);
         if (isSuccess) {
             if (successMessage) {

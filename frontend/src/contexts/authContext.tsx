@@ -7,7 +7,13 @@ type UserAuth = {
   expiresAt: number,
   issuedAt: number,
   role: string
-};
+}
+
+type CurrentUser = {
+  accessToken: string,
+  expiresAt: number,
+  issuedAt: number
+}
 
 type AuthContext = {
   token: string | null,
@@ -17,7 +23,7 @@ type AuthContext = {
   isAuthenticated: boolean,
   setAuth: (authResponse: UserAuth) => void,
   clearAuth: () => void
-};
+}
 
 const AuthContext = createContext<AuthContext | undefined>(undefined);
 
@@ -109,3 +115,4 @@ const useAuth = () => {
 
 export { AuthProvider, useAuth };
 export type { UserAuth };
+export type { CurrentUser };

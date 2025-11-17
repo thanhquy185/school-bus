@@ -50,13 +50,14 @@ import { getGenderText, getStudentStatusText } from "../../utils/vi-trans";
 import { getParents } from "../../services/parent-service";
 import { getPickups } from "../../services/pickup-service";
 import { getClasses } from "../../services/class-service";
+import type { StudentResponse } from "../../responses/student.response";
 
 const StudentPage = () => {
   const { execute, notify } = useCallApi();
   const { t } = useTranslation();
   const { openNotification } = useNotification();
 
-  const [students, setStudents] = useState<StudentFormatType[]>([]);
+  const [students, setStudents] = useState<StudentResponse[]>([]);
   const [parents, setParents] = useState<any[]>([]);
   const [pickups, setPickups] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
@@ -70,8 +71,7 @@ const StudentPage = () => {
     ]);
 
     if (studentRes?.result && Array.isArray(studentRes.data)) {
-      console.log(studentRes.data);
-      setStudents(studentRes.data as StudentFormatType[]);
+      setStudents(studentRes.data as StudentResponse[]);
     }
 
     if (parentRes?.result && Array.isArray(parentRes.data)) {

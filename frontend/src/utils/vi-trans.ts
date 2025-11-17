@@ -22,12 +22,34 @@ export const getAccountStatusText = (statusKey: string): string => {
     }
 }
 
+export const getCommonStatusText = (statusKey: string): string => {
+    switch (statusKey) {
+        case "ACTIVE":
+            return "Hoạt động";
+        case "INACTIVE":
+            return "Tạm dừng";
+        default:
+            return "Không xác định";
+    }
+}
+
 export const getGenderText = (genderKey: string): string => {
     switch (genderKey) {
         case "MALE":
             return "Nam";
         case "FEMALE":
             return "Nữ";
+        default:
+            return "Không xác định";
+    }
+}
+
+export const getPickupCategoryName = (categoryKey: string): string => {
+    switch (categoryKey) {
+        case "SCHOOL":
+            return "Trường học";
+        case "PICKUP":
+            return "Điểm đón";
         default:
             return "Không xác định";
     }
