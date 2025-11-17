@@ -49,7 +49,7 @@ export const getPickupCategoryName = (categoryKey: string): string => {
         case "SCHOOL":
             return "Trường học";
         case "PICKUP":
-            return "Điểm đón";
+            return "Điểm đưa đón";
         default:
             return "Không xác định";
     }
