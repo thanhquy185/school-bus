@@ -10,6 +10,8 @@ import { verifyToken } from "../utils/jwt.util";
 import { AuthenticationPayload } from "../middlewares/auth.middleware";
 import { StudentResponse } from "../responses/student.response";
 import { RestResponse } from "../responses/rest.response";
+import { get } from "http";
+import { is } from "zod/v4/locales";
 
 const ParentService = {
   async get(input: any) {
@@ -191,6 +193,7 @@ const ParentService = {
   },
 
   async getStudents(authentication: string) {
+    
     const payload: AuthenticationPayload = await verifyToken(authentication);
     console.log(payload)
     const account = await prisma.accounts.findUnique({
@@ -271,7 +274,28 @@ const ParentService = {
         name: studentUpdated.pickup.name
       }
     } as StudentResponse);
-  }
+  },
+
+  async getParentInfo(authentication: string) {
+    console.log(authentication)
+    const payload: AuthenticationPayload = await verifyToken(authentication);
+
+    const parent = await prisma.parents.findUnique({
+      where: {
+        account_id: payload.id
+      }
+    });
+
+    return isGetRest({
+      avatar: parent.avatar,
+      id: parent.id,
+      full_name: parent.full_name,
+      phone: parent.phone,
+      email: parent.email,
+      address: parent.address,
+      account_id: parent.account_id
+    } as ParentResponse);
+  },
 
 }
 
