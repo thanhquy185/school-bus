@@ -56,28 +56,39 @@ const PickupPage = () => {
   const { execute } = useCallApi();
 
   const [pickupData, setPickupData] = useState<PickupResponse[]>([]);
-
-  const handleGetData = async () => {
-    const restResponse = await execute(getPickups());
-    if (restResponse?.result) {
-      setPickupData(restResponse.data);
-    }
-  };
-  useEffect(() => {
-    handleGetData();
-  }, []);
-
+  const [filteredPickupList, setFilteredPickupList] = useState<PickupResponse[]>([]);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | undefined>(
     undefined
   );
-  const filteredPickupList = pickupData.filter((pickup) => {
-    const matchesName = pickup.name
-      ?.toLowerCase()
-      .includes(searchText.toLowerCase());
-    const matchesStatus = statusFilter ? pickup.status === statusFilter : true;
-    return matchesName && matchesStatus;
-  });
+
+  const handleGetData = async () => {
+    const restResponse = await execute(getPickups());
+    if (restResponse?.result) {
+      console.log(restResponse.data);
+      setPickupData(restResponse.data);
+    }
+  };
+
+  const filteringPickupList = () => {
+    setFilteredPickupList(pickupData.filter((pickup) => {
+      const matchesName = pickup.name.toLowerCase().includes(searchText.toLowerCase());
+      const matchesStatus = statusFilter ? pickup.status === statusFilter : true;
+      return matchesName && matchesStatus;
+    }));
+  } 
+
+  useEffect(() => {
+    handleGetData();
+  }, []);
+
+  useEffect(() => {
+    filteringPickupList();
+  }, [searchText, statusFilter, pickupData]);
+
+
+
+
 
   const columns: ColumnsType<PickupType> = [
     {
@@ -163,7 +174,7 @@ const PickupPage = () => {
           >
             <FontAwesomeIcon
               icon={
-                record.status === CommonStatusValue.active ? faLock : faLockOpen
+                record.status === "ACTIVE" ? faLock : faLockOpen
               }
             />
           </Button>
@@ -296,7 +307,7 @@ const PickupPage = () => {
           status: form.status == "Hoạt động" ? "ACTIVE" : "INACTIVE",
         };
 
-        const response = await execute(createPickup(formatData), true);
+        const response = await execute(createPickup(formatData));
         //console.log(response)
         if (response!.statusCode == 201) {
           openNotification({
@@ -313,7 +324,7 @@ const PickupPage = () => {
         openNotification({
           type: "error",
           message: "Lỗi",
-          description: "thêm trạm xe buýt thất bại!",
+          description: "Thêm trạm xe buýt thất bại!",
           duration: 2,
         });
       }
@@ -539,10 +550,10 @@ const PickupPage = () => {
             initialValues={{
               id: pickup.id || undefined,
               name: pickup.name || undefined,
-              category: pickup.category || undefined,
+              category: pickup.category == "SCHOOL" ? "Trường học" : "Điểm đưa đón",
               lat: pickup.lat || undefined,
               lng: pickup.lng || undefined,
-              status: pickup.status || undefined,
+              status: pickup.status == "ACTIVE" ? "Hoạt động" : "Tạm dừng",
             }}
             autoComplete="off"
             onFinish={() => {
@@ -660,10 +671,15 @@ const PickupPage = () => {
       </>
     );
   };
+
+
+
+
   const PickupLock: React.FC<{ pickup: PickupType }> = ({ pickup }) => {
     const updateStatus = async (form: PickupType) => {
       try {
-        const response = await execute(updatePickupService(form), true);
+        console.log(form);
+        const response = await execute(updatePickupService(form));
         if (response!.statusCode == 200) {
           openNotification({
             type: "success",
@@ -707,7 +723,7 @@ const PickupPage = () => {
           icon={
             <FontAwesomeIcon
               icon={
-                pickup?.status === CommonStatusValue.active
+                pickup?.status === "ACTIVE"
                   ? faLock
                   : faLockOpen
               }
@@ -715,7 +731,7 @@ const PickupPage = () => {
           }
           description={
             "Bạn có chắc chắc muốn" +
-            (pickup?.status === CommonStatusValue.active
+            (pickup?.status === "ACTIVE"
               ? " khoá "
               : " mở khoá ") +
             "trạm xe buýt này ? Hành động không thể hoàn tác !"
@@ -728,9 +744,7 @@ const PickupPage = () => {
               onClick={() => {
                 const newPickup = {
                   ...pickup,
-                  status: pickup.status == "Hoạt động" ? "INACTIVE" : "ACTIVE",
-                  category:
-                    pickup.category == "Trường học" ? "SCHOOL" : "PICKUP",
+                  status: pickup.status == "ACTIVE" ? "INACTIVE" : "ACTIVE"
                 };
 
                 updateStatus(newPickup);
@@ -886,10 +900,6 @@ const PickupPage = () => {
     }
   }, [currentAction]);
 
-  useEffect(() => {
-    console.log(filteredPickupList);
-  }, [filteredPickupList]);
-
   return (
     <div className="admin-layout__main-content">
       {/* Breadcrumb */}
@@ -916,11 +926,11 @@ const PickupPage = () => {
                   options={[
                     {
                       label: CommonStatusValue.active,
-                      value: CommonStatusValue.active,
+                      value: "ACTIVE",
                     },
                     {
                       label: CommonStatusValue.inactive,
-                      value: CommonStatusValue.inactive,
+                      value: "INACTIVE",
                     },
                   ]}
                   className="filter-select"
