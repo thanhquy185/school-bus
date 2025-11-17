@@ -6,6 +6,11 @@ import type { RcFile } from "antd/es/upload";
 import { ruleRequired } from "../../common/rules";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "../../contexts/authContext";
+import { getParentByAccountId, updateParent } from "../../services/parent-service";
+import execute from "../../api/useCall";
+import { useNotification } from "../../utils/showNotification";
+import { updatePassword } from "../../services/account-service";
 
 // Info Page
 const ParentInfoPage = () => {
@@ -16,29 +21,78 @@ const ParentInfoPage = () => {
   const handleMenuClick = (e: any) => {
     setSelectedMenu(e.key);
   };
+
+  
   //
   const PersonalInfo = () => {
     const [form] = Form.useForm();
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [imageFile, setImageFile] = useState<RcFile>();
+    const [parentInfo, setParentInfo] = useState<any>(null);
+
+    const { openNotification } = useNotification();
+    const auth = useAuth();
 
     useEffect(() => {
-      form.setFieldValue("avatar", imageFile?.name);
+      form.setFieldsValue({ avatar: imageFile?.name });
     }, [imageFile]);
 
-    const handleUpdate = (values: any) => {
+    const handleUpdate = async (values: any) => {
       console.log("Submitted values:", values);
+      if (!parentInfo.id) return;
+
+      const updateData = {
+        fullName: values.fullname,
+        phone: values.phone,
+        email: values.email,
+        address: values.address,
+      };
+
+      try {
+        const response = await updateParent(parentInfo.id, updateData);
+        if (response.statusCode === 200) {
+          openNotification({
+            type: "success",
+            message: "Thành công",
+            description: "Cập nhật thông tin phụ huynh thành công!",
+            duration: 2,
+          });
+        }
+      } catch (error) {
+        console.log("Lỗi cập nhật thông tin phụ huynh:", error);
+      }
+
       setIsEditing(false); // sau khi submit xong quay lại trạng thái disable
     };
+
+    useEffect(() => {
+      const fetchParentInfo = async () => {
+        if (!auth.accountId) return;
+
+        try {
+          const response = await getParentByAccountId(auth.accountId);
+          const data = response.data;
+          setParentInfo(data);
+
+          form.setFieldsValue({
+            fullname: data?.full_name ?? undefined,
+            phone: data?.phone ?? undefined,
+            email: data?.email ?? undefined,
+            address: data?.address ?? undefined,
+          });
+        } catch (error) {
+          console.log("Lỗi lấy thông tin phụ huynh:", error);
+        }
+      };
+
+      fetchParentInfo();
+    }, [auth.accountId, form, execute, getParentByAccountId]);
 
     return (
       <div className="parent-content client">
         <Form
           form={form}
           layout="vertical"
-          initialValues={{
-            fullname: "123",
-          }}
           onFinish={handleUpdate}
         >
           <Row className="split-2">
@@ -77,13 +131,43 @@ const ParentInfoPage = () => {
                 label="Số điện thoại"
                 rules={
                   isEditing
-                    ? [ruleRequired("Số điện thoại không được để trống !")]
+                    ? 
+                    [
+                      ruleRequired("Số điện thoại không được để trống !"),
+                      {
+                        min: 10,
+                        message: "Số điện thoại phải có ít nhất 10 ký tự!",
+                      },
+                      {
+                        max: 11,
+                        message: "Số điện thoại không được vượt quá 11 ký tự!",
+                      },
+                      {                        
+                        pattern: /^[0-9]+$/,
+                        message: "Số điện thoại không hợp lệ!"
+                      }
+                    ]
                     : []
                 }
               >
                 <Input placeholder="Nhập Số điện thoại" disabled={!isEditing} />
               </Form.Item>
-              <Form.Item name="email" label="Email">
+              <Form.Item 
+                name="email" 
+                label="Email"
+                rules={
+                  isEditing
+                    ? 
+                    [
+                      ruleRequired("Email không được để trống !"),
+                      {
+                        pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                        message: "Email không hợp lệ!",
+                      }
+                    ]
+                    : []
+                }
+              >
                 <Input placeholder="Nhập Email" disabled={!isEditing} />
               </Form.Item>
               <Form.Item name="address" label="Địa chỉ">
@@ -113,7 +197,6 @@ const ParentInfoPage = () => {
                   htmlType="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    form.resetFields();
                     setIsEditing(false);
                   }}
                 >
@@ -130,8 +213,53 @@ const ParentInfoPage = () => {
     const [form] = Form.useForm();
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
-    const handleUpdate = (values: any) => {
+    const auth = useAuth();
+    const { openNotification } = useNotification();
+
+    useEffect(() => {
+      form.setFieldsValue({
+        username: auth.username || "",
+        password: "Mật khẩu đã được mã hoá !",
+      });
+    }, []);
+
+    const handleUpdate = async (values: any) => {
       console.log("Submitted values:", values);
+      if (!auth.accountId) return;
+
+      if (values.newPassword.trim() !== values.newPassword2.trim()) {
+        openNotification({
+            type: "warning",
+            message: "Cảnh báo",
+            description: "Mật khẩu mới không khớp!",
+            duration: 2,
+        });
+        return;
+      }
+
+      try {
+        const response = await updatePassword(auth.accountId, values.newPassword);
+        if (response.statusCode === 400) {
+          openNotification({
+            type: "error",
+            message: "Lỗi",
+            description: response.errorMessage || "Cập nhật mật khẩu thất bại!",
+            duration: 2,
+          });
+        } else if (response.statusCode === 200) {
+          openNotification({
+            type: "success",
+            message: "Thành công",
+            description: "Cập nhật mật khẩu thành công!",
+            duration: 2,
+          });
+        }
+
+        form.resetFields();
+      } catch (error) {
+        console.log("Lỗi cập nhật mật khẩu:", error);
+      }
+
       setIsEditing(false);
     };
 
@@ -140,10 +268,6 @@ const ParentInfoPage = () => {
         <Form
           form={form}
           layout="vertical"
-          initialValues={{
-            username: "123",
-            password: "Mật khẩu đã được mã hoá !",
-          }}
           onFinish={handleUpdate}
         >
           <Row className="split-2">

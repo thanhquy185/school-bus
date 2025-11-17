@@ -4,6 +4,10 @@ export const getSchema = z.object({
     id: z.number().min(1, "Yêu cầu mã phụ huynh hợp lệ")
 });
 
+export const getByAccountIdSchema = z.object({
+    id: z.number().min(1, "Yêu cầu mã tài khoản hợp lệ")
+});
+
 export const createSchema = z.object({
     fullName: z.string().min(1, "Họ và tên không được để trống"),
     phone: z.string().min(1, "Số điện thoại không được để trống"),

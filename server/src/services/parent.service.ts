@@ -31,6 +31,29 @@ const ParentService = {
 
   },
 
+  async getByAccountId(input: any) {
+    const data = getSchema.parse(input);
+
+    const parent = await prisma.parents.findUnique(
+      {
+        where: {
+          account_id: data.id
+        }
+      }
+    );
+
+    return isGetRest(
+      {
+        id: parent.id,
+        full_name: parent.full_name,
+        phone: parent.phone,
+        email: parent.email,
+        address: parent.address,
+        account_id: parent.account_id
+      } as ParentResponse
+    );
+  },
+
   async getList() {
     const parent = await prisma.parents.findMany({
       include: {
