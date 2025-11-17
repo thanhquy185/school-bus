@@ -403,7 +403,7 @@ const ParentPage = () => {
       htmlFor="create-avatar"
       label={defaultLabels.avatar}
       valuePropName="fileList"
-      rules={[ruleRequired("Chọn ảnh đại diện !"), ruleImagePng()]}
+      // rules={[ruleRequired("Chọn ảnh đại diện !"), ruleImagePng()]}
     >
       <CustomUpload
         imageFile={imageFile}
