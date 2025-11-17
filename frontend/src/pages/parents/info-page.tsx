@@ -71,7 +71,6 @@ const ParentInfoPage = () => {
     };
 
     const fetchParentInfo = async () => {
-      if (!auth.accountId) return;
 
       const response = await execute(getParentByAccount());
       const data = response.data;
@@ -218,20 +217,29 @@ const ParentInfoPage = () => {
   const AccountInfo = () => {
     const [form] = Form.useForm();
     const [isEditing, setIsEditing] = useState<boolean>(false);
-
+    const [parentInfo, setParentInfo] = useState<any>(null);
     const auth = useAuth();
     const { openNotification } = useNotification();
 
+    
+
     useEffect(() => {
-      form.setFieldsValue({
-        username: auth.username || "",
-        password: "Mật khẩu đã được mã hoá !",
-      });
+      const fetchParentInfo = async () => {
+        const response = await execute(getParentByAccount());
+        const data = response.data;
+        console.log(data)
+        setParentInfo(data);
+
+        form.setFieldsValue({
+          username: data.username || "",
+          password: "Mật khẩu đã được mã hoá !",
+        });
+      };
+      fetchParentInfo();
     }, []);
 
     const handleUpdate = async (values: any) => {
       console.log("Submitted values:", values);
-      if (!auth.accountId) return;
 
       if (values.newPassword.trim() !== values.newPassword2.trim()) {
         openNotification({
@@ -244,7 +252,7 @@ const ParentInfoPage = () => {
       }
 
       try {
-        const response = await updatePassword(auth.accountId, values.newPassword);
+        const response = await updatePassword(parentInfo.account_id, values.newPassword);
         if (response.statusCode === 400) {
           openNotification({
             type: "error",
@@ -260,8 +268,11 @@ const ParentInfoPage = () => {
             duration: 2,
           });
         }
-
         form.resetFields();
+        form.setFieldsValue({
+          username: parentInfo.username || "",
+          password: "Mật khẩu đã được mã hoá !",
+        });
       } catch (error) {
         console.log("Lỗi cập nhật mật khẩu:", error);
       }
@@ -348,7 +359,6 @@ const ParentInfoPage = () => {
                   htmlType="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    form.resetFields();
                     setIsEditing(false);
                   }}
                 >

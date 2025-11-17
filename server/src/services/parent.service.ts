@@ -283,11 +283,20 @@ const ParentService = {
     const parent = await prisma.parents.findUnique({
       where: {
         account_id: payload.id
+      },
+
+      include: {
+        account: {
+          select: {
+            username: true
+          }
+        }
       }
     });
 
     return isGetRest({
       avatar: parent.avatar,
+      username: parent.account.username,
       id: parent.id,
       full_name: parent.full_name,
       phone: parent.phone,
