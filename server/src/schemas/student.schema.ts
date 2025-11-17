@@ -6,7 +6,7 @@ export const createSchema = z.object({
     gender: z.enum(["MALE", "FEMALE"], "Giới tính không hợp lệ"),
     address: z.string().min(1, "Địa chỉ không được để trống"),
 
-    status: z.enum(["STUDYING", "DROPPED_OUT", "UNKNOWN"], "Trạng thái không hợp lệ"),
+    status: z.enum(["STUDYING", "DROPPED_OUT"], "Trạng thái không hợp lệ"),
 
     parentId: z.number().min(1, "Yêu cầu mã phụ huynh"),
     classId: z.number().min(1, "Yêu cầu mã lớp học"),

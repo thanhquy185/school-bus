@@ -31,7 +31,7 @@ import type {
   BreadcrumbItemType,
   BreadcrumbSeparatorType,
 } from "antd/es/breadcrumb/Breadcrumb";
-import { ruleRequired } from "../../common/rules";
+import { ruleLicensePlate, ruleRequired } from "../../common/rules";
 import { BusStatusValue, CommonStatusValue } from "../../common/values";
 import type { BusType } from "../../common/types";
 import CustomTableActions from "../../components/table-actions";
@@ -46,17 +46,26 @@ const BusPage = () => {
   const [buses, setBuses] = useState<any[]>([]);
 
   const handleGetData = async () => {
-    const restResponse = await execute(getBuses());
+    const restResponse = await execute(getBuses(), false);
     if (restResponse?.result) {
       setBuses(restResponse.data);
     }
-  }
+  };
 
   useEffect(() => {
     handleGetData();
   }, []);
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    undefined
+  );
+  const filteredBusList = buses.filter((bus) => {
+    const matchesLicensePlate = bus.licensePlate
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase());
+    const matchesStatus = statusFilter ? bus.status === statusFilter : true;
+    return matchesLicensePlate && matchesStatus;
+  });
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -64,8 +73,6 @@ const BusPage = () => {
         return "Hoạt động";
       case "INACTIVE":
         return "Tạm dừng";
-      case "MAINTENANCE":
-        return "Bảo trì";
       default:
         return "Không xác định";
     }
@@ -73,7 +80,6 @@ const BusPage = () => {
   const statusOptions = [
     { value: "ACTIVE", label: getStatusLabel("ACTIVE") },
     { value: "INACTIVE", label: getStatusLabel("INACTIVE") },
-    { value: "MAINTENANCE", label: getStatusLabel("MAINTENANCE") },
   ];
   const columns: ColumnsType<BusType> = [
     {
@@ -102,7 +108,13 @@ const BusPage = () => {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={getStatusLabel(status) === CommonStatusValue.active ? "green" : status === "MAINTENANCE" ? "orange" : "red"}>
+        <Tag
+          color={
+            getStatusLabel(status) === CommonStatusValue.active
+              ? "green"
+              : "red"
+          }
+        >
           {getStatusLabel(status)}
         </Tag>
       ),
@@ -137,14 +149,18 @@ const BusPage = () => {
             variant="filled"
             onClick={() => {
               setCurrentAction(
-                getStatusLabel(record.status) === CommonStatusValue.active ? "lock" : "unlock"
+                getStatusLabel(record.status) === CommonStatusValue.active
+                  ? "lock"
+                  : "unlock"
               );
               setCurrentSelectedItem(record);
             }}
           >
             <FontAwesomeIcon
               icon={
-                getStatusLabel(record.status) === CommonStatusValue.active ? faLock : faLockOpen
+                getStatusLabel(record.status) === CommonStatusValue.active
+                  ? faLock
+                  : faLockOpen
               }
             />
           </Button>
@@ -157,8 +173,11 @@ const BusPage = () => {
 
   const [currentSelectedItem, setCurrentSelectedItem] = useState<BusType>();
   const [currentAction, setCurrentAction] = useState<string>("list");
-  const [currentBreadcrumbItems, setCurrentBreadcrumbItems] = useState<Partial<BreadcrumbItemType & BreadcrumbSeparatorType>[]>();
-  const [currentCardTitle, setCurrentCardTitle] = useState<string>(t("bus-list"));
+  const [currentBreadcrumbItems, setCurrentBreadcrumbItems] =
+    useState<Partial<BreadcrumbItemType & BreadcrumbSeparatorType>[]>();
+  const [currentCardTitle, setCurrentCardTitle] = useState<string>(
+    t("bus-list")
+  );
   const [currentCardContent, setCurrentCardContent] = useState<string>("list");
 
   const defaultLabels = {
@@ -193,7 +212,11 @@ const BusPage = () => {
             <Row className="split-3">
               <Col></Col>
               <Col>
-                <Form.Item name="id" label={defaultLabels.id} className="text-center">
+                <Form.Item
+                  name="id"
+                  label={defaultLabels.id}
+                  className="text-center"
+                >
                   <Input disabled />
                 </Form.Item>
                 <Form.Item name="status" label={defaultLabels.status}>
@@ -224,11 +247,14 @@ const BusPage = () => {
     const [form] = Form.useForm<BusType>();
 
     const handleSubmitCreateForm = async () => {
-      const restResponse = await execute(createBus({
-        licensePlate: form.getFieldValue("licensePlate")?.trim(),
-        capacity: Number(form.getFieldValue("capacity")),
-        status: form.getFieldValue("status"),
-      }));
+      const restResponse = await execute(
+        createBus({
+          licensePlate: form.getFieldValue("licensePlate")?.trim(),
+          capacity: Number(form.getFieldValue("capacity")),
+          status: form.getFieldValue("status"),
+        }),
+        true
+      );
       notify(restResponse!, "Thêm xe buýt thành công");
       if (restResponse?.result) {
         handleGetData();
@@ -247,15 +273,13 @@ const BusPage = () => {
               capacity: undefined,
               status: undefined,
             }}
+            autoComplete="off"
             onFinish={handleSubmitCreateForm}
           >
             <Row className="split-3">
               <Col></Col>
               <Col>
-                <Form.Item
-                  label={defaultLabels.id}
-                  className="text-center"
-                >
+                <Form.Item label={defaultLabels.id} className="text-center">
                   <Input placeholder={defaultInputs.id} disabled />
                 </Form.Item>
                 <Form.Item
@@ -271,7 +295,6 @@ const BusPage = () => {
                     options={[
                       { label: BusStatusValue.active, value: "ACTIVE" },
                       { label: BusStatusValue.inactive, value: "INACTIVE" },
-                      { label: BusStatusValue.maintenance, value: "MAINTENANCE" },
                     ]}
                   />
                 </Form.Item>
@@ -280,21 +303,20 @@ const BusPage = () => {
                   htmlFor="create-licensePlate"
                   label={defaultLabels.licensePlate}
                   rules={[
-                    ruleRequired("Số đăng ký xe không được để trống !")
+                    ruleRequired("Số đăng ký xe không được để trống !"),
+                    ruleLicensePlate(),
                   ]}
                 >
                   <Input
                     id="create-licensePlate"
-                    placeholder="VD: 52N-89341"
+                    placeholder={defaultInputs.licensePlate}
                   />
                 </Form.Item>
                 <Form.Item
                   name="capacity"
                   htmlFor="create-capacity"
                   label={defaultLabels.capacity}
-                  rules={[
-                    ruleRequired("Số chỗ ngồi không được để trống !")
-                  ]}
+                  rules={[ruleRequired("Số chỗ ngồi không được để trống !")]}
                 >
                   <InputNumber
                     min={0}
@@ -319,16 +341,18 @@ const BusPage = () => {
       </>
     );
   };
-
   const BusUpdate: React.FC<{ bus: BusType }> = ({ bus }) => {
     const [form] = Form.useForm<BusType>();
 
     const handleSubmitUpdateForm = async () => {
-      const restResponse = await execute(updateBus(bus.id!, {
-        licensePlate: form.getFieldValue("licensePlate")?.trim(),
-        capacity: Number(form.getFieldValue("capacity")),
-        status: form.getFieldValue("status"),
-      }));
+      const restResponse = await execute(
+        updateBus(bus.id!, {
+          licensePlate: form.getFieldValue("licensePlate")?.trim(),
+          capacity: Number(form.getFieldValue("capacity")),
+          status: form.getFieldValue("status"),
+        }),
+        true
+      );
       notify(restResponse!, "Cập nhật xe buýt thành công");
       if (restResponse?.result) {
         handleGetData();
@@ -348,7 +372,10 @@ const BusPage = () => {
               capacity: bus.capacity || undefined,
               status: bus.status || undefined,
             }}
-            onFinish={() => { handleSubmitUpdateForm() }}
+            autoComplete="off"
+            onFinish={() => {
+              handleSubmitUpdateForm();
+            }}
           >
             <Row className="split-3">
               <Col></Col>
@@ -361,7 +388,7 @@ const BusPage = () => {
                   <Input disabled />
                 </Form.Item>
                 <Form.Item name="status" label={defaultLabels.status}>
-                  <Select options={statusOptions} />
+                  <Select disabled options={statusOptions} />
                 </Form.Item>
                 <Form.Item
                   name="licensePlate"
@@ -369,6 +396,7 @@ const BusPage = () => {
                   label={defaultLabels.licensePlate}
                   rules={[
                     ruleRequired("Số đăng ký xe không được để trống !"),
+                    ruleLicensePlate(),
                   ]}
                 >
                   <Input
@@ -380,9 +408,7 @@ const BusPage = () => {
                   name="capacity"
                   htmlFor="create-capacity"
                   label={defaultLabels.capacity}
-                  rules={[
-                    ruleRequired("Số chỗ ngồi không được để trống !"),
-                  ]}
+                  rules={[ruleRequired("Số chỗ ngồi không được để trống !")]}
                 >
                   <InputNumber
                     min={0}
@@ -409,11 +435,20 @@ const BusPage = () => {
   };
   const BusLock: React.FC<{ bus: BusType }> = ({ bus }) => {
     const handleConfirmLockUnlock = async () => {
-      const restResponse = await execute(updateBus(bus.id!, {
-        status: getStatusLabel(bus.status ?? "") === CommonStatusValue.active ? "INACTIVE" : "ACTIVE"
-      }));
-      notify(restResponse!, 
-        getStatusLabel(bus.status ?? "") === CommonStatusValue.active ? "Khoá xe buýt thành công" : "Mở khoá xe buýt thành công"
+      const restResponse = await execute(
+        updateBus(bus.id!, {
+          status:
+            getStatusLabel(bus.status ?? "") === CommonStatusValue.active
+              ? "INACTIVE"
+              : "ACTIVE",
+        }),
+        true
+      );
+      notify(
+        restResponse!,
+        getStatusLabel(bus.status ?? "") === CommonStatusValue.active
+          ? "Khoá xe buýt thành công"
+          : "Mở khoá xe buýt thành công"
       );
       if (restResponse?.result) {
         handleGetData();
@@ -437,7 +472,9 @@ const BusPage = () => {
           icon={
             <FontAwesomeIcon
               icon={
-                getStatusLabel(bus?.status ?? "") === BusStatusValue.maintenance ? faLock : faLockOpen
+                getStatusLabel(bus?.status ?? "") === BusStatusValue.active
+                  ? faLock
+                  : faLockOpen
               }
             />
           }
@@ -482,9 +519,7 @@ const BusPage = () => {
       },
       {
         title: (
-          <span onClick={() => setCurrentAction("list")}>
-            {t("bus-list")}
-          </span>
+          <span onClick={() => setCurrentAction("list")}>{t("bus-list")}</span>
         ),
       },
     ];
@@ -496,42 +531,47 @@ const BusPage = () => {
         setCurrentCardContent("list");
         break;
       case "detail":
-        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("bus-detail")}</span> }]);
+        setCurrentBreadcrumbItems([
+          ...baseBreadcrumb,
+          { title: <span>{t("bus-detail")}</span> },
+        ]);
         setCurrentCardTitle(t("bus-detail"));
         setCurrentCardContent("detail");
         break;
       case "create":
-        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("bus-create")}</span> }]);
+        setCurrentBreadcrumbItems([
+          ...baseBreadcrumb,
+          { title: <span>{t("bus-create")}</span> },
+        ]);
         setCurrentCardTitle(t("bus-create"));
         setCurrentCardContent("create");
         break;
       case "update":
-        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("bus-update")}</span> }]);
+        setCurrentBreadcrumbItems([
+          ...baseBreadcrumb,
+          { title: <span>{t("bus-update")}</span> },
+        ]);
         setCurrentCardTitle(t("bus-update"));
         setCurrentCardContent("update");
         break;
       case "lock":
-        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("bus-lock")}</span> }]);
+        setCurrentBreadcrumbItems([
+          ...baseBreadcrumb,
+          { title: <span>{t("bus-lock")}</span> },
+        ]);
         setCurrentCardTitle(t("bus-lock"));
         setCurrentCardContent("lock");
         break;
       case "unlock":
-        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("bus-unlock")}</span> }]);
+        setCurrentBreadcrumbItems([
+          ...baseBreadcrumb,
+          { title: <span>{t("bus-unlock")}</span> },
+        ]);
         setCurrentCardTitle(t("bus-unlock"));
         setCurrentCardContent("unlock");
         break;
     }
   }, [currentAction]);
-
-  const filteredBusList = buses.filter((bus) => {
-    const matchesLicensePlate = bus.licensePlate
-      ?.toLowerCase()
-      .includes(searchText.toLowerCase());
-    const matchesStatus = statusFilter
-      ? bus.status === statusFilter
-      : true;
-    return matchesLicensePlate && matchesStatus;
-  });
 
   return (
     <div className="admin-layout__main-content">
@@ -547,20 +587,20 @@ const BusPage = () => {
                 <Input
                   prefix={<SearchOutlined />}
                   placeholder="Tìm theo số đăng ký xe buýt"
+                  className="filter-find"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  className="filter-find"
                 />
                 <Select
                   allowClear
                   placeholder="Chọn Trạng thái"
-                  value={statusFilter}
-                  onChange={(value) => setStatusFilter(value)}
                   options={[
                     { label: CommonStatusValue.active, value: "ACTIVE" },
                     { label: CommonStatusValue.inactive, value: "INACTIVE" },
                   ]}
                   className="filter-select"
+                  value={statusFilter}
+                  onChange={(value) => setStatusFilter(value)}
                 />
                 <Button
                   color="blue"

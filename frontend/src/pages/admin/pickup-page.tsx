@@ -44,6 +44,7 @@ import { createPickup, getPickups, updatePickup as updatePickupService } from ".
 import type { PickupResponse } from "../../responses/pickup.response";
 import { getCommonStatusText, getPickupCategoryName } from "../../utils/vi-trans";
 
+const { Option } = Select;
 
 // Pickup Page
 const PickupPage = () => {
@@ -62,10 +63,21 @@ const PickupPage = () => {
       setPickupData(restResponse.data);
     }
   };
-
   useEffect(() => {
     handleGetData();
   }, []);
+
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    undefined
+  );
+  const filteredPickupList = pickupData.filter((pickup) => {
+    const matchesName = pickup.name
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase());
+    const matchesStatus = statusFilter ? pickup.status === statusFilter : true;
+    return matchesName && matchesStatus;
+  });
 
   const columns: ColumnsType<PickupType> = [
     {
@@ -76,14 +88,14 @@ const PickupPage = () => {
       sorter: (a, b) => a?.id! - b?.id!,
     },
     {
-      title: "Tên",
+      title: "Tên trạm",
       dataIndex: "name",
       key: "name",
       width: "27%",
       sorter: (a, b) => a?.name!.localeCompare(b?.name!),
     },
     {
-      title: "Loại",
+      title: "Loại trạm",
       dataIndex: "category",
       key: "category",
       width: "18%",
@@ -272,19 +284,21 @@ const PickupPage = () => {
     // Dữ liệu giúp đồng nhất với bản đồ
     const [latValue, setLatValue] = useState<number | undefined>(undefined);
     const [lngValue, setLngValue] = useState<number | undefined>(undefined);
-    const [categoryValue, setCategoryValue] = useState<string | undefined>(undefined);
+    const [categoryValue, setCategoryValue] = useState<string | undefined>(
+      undefined
+    );
 
     const addPickup = async (form: PickupType) => {
       try {
         const formatData = {
           ...form,
-          category: form.category == 'Trường học' ? 'SCHOOL' : 'PICKUP',
-          status: form.status == 'Hoạt động' ? 'ACTIVE' : 'INACTIVE'
+          category: form.category == "Trường học" ? "SCHOOL" : "PICKUP",
+          status: form.status == "Hoạt động" ? "ACTIVE" : "INACTIVE",
         };
 
-        const response = await execute(createPickup(formatData));
+        const response = await execute(createPickup(formatData), true);
         //console.log(response)
-        if (response.statusCode == 201) {
+        if (response!.statusCode == 201) {
           openNotification({
             type: "success",
             message: "Thành công",
@@ -331,6 +345,7 @@ const PickupPage = () => {
               lng: undefined,
               status: undefined,
             }}
+            autoComplete="off"
             onFinish={() => {
               addPickup(form.getFieldsValue());
               console.log("Form values:", form.getFieldsValue());
@@ -489,8 +504,8 @@ const PickupPage = () => {
       try {
         const formatData = {
           ...form,
-          category: form.category == 'Trường học' ? 'SCHOOL' : 'PICKUP',
-          status: form.status == 'Hoạt động' ? 'ACTIVE' : 'INACTIVE'
+          category: form.category == "Trường học" ? "SCHOOL" : "PICKUP",
+          status: form.status == "Hoạt động" ? "ACTIVE" : "INACTIVE",
         };
 
         const response = await execute(updatePickupService(formatData));
@@ -529,6 +544,7 @@ const PickupPage = () => {
               lng: pickup.lng || undefined,
               status: pickup.status || undefined,
             }}
+            autoComplete="off"
             onFinish={() => {
               updatePickup(form.getFieldsValue());
               console.log("Form values:", form.getFieldsValue());
@@ -645,17 +661,19 @@ const PickupPage = () => {
     );
   };
   const PickupLock: React.FC<{ pickup: PickupType }> = ({ pickup }) => {
-
     const updateStatus = async (form: PickupType) => {
       try {
-        const response = await execute(updatePickupService(form));
-        if (response.statusCode == 200) {
+        const response = await execute(updatePickupService(form), true);
+        if (response!.statusCode == 200) {
           openNotification({
             type: "success",
             message: "Thành công",
-            description: form.status == 'INACTIVE' ? "Khóa trạm xe buýt thành công!" : "Mở khóa trạm xe buýt thành công!",
-            duration: 1.5
-          })
+            description:
+              form.status == "INACTIVE"
+                ? "Khóa trạm xe buýt thành công!"
+                : "Mở khóa trạm xe buýt thành công!",
+            duration: 1.5,
+          });
           setCurrentAction("list");
           handleGetData();
         }
@@ -664,9 +682,12 @@ const PickupPage = () => {
         openNotification({
           type: "error",
           message: "Lỗi",
-          description: form.status == 'INACTIVE' ? "Khóa trạm xe buýt thất bại!" : "Mở khóa trạm xe buýt thất bại!",
+          description:
+            form.status == "INACTIVE"
+              ? "Khóa trạm xe buýt thất bại!"
+              : "Mở khóa trạm xe buýt thất bại!",
           duration: 1.5,
-        })
+        });
       }
     };
 
@@ -707,8 +728,9 @@ const PickupPage = () => {
               onClick={() => {
                 const newPickup = {
                   ...pickup,
-                  status: pickup.status == 'Hoạt động' ? 'INACTIVE' : 'ACTIVE',
-                  category: pickup.category == 'Trường học' ? 'SCHOOL' : 'PICKUP'
+                  status: pickup.status == "Hoạt động" ? "INACTIVE" : "ACTIVE",
+                  category:
+                    pickup.category == "Trường học" ? "SCHOOL" : "PICKUP",
                 };
 
                 updateStatus(newPickup);
@@ -864,6 +886,10 @@ const PickupPage = () => {
     }
   }, [currentAction]);
 
+  useEffect(() => {
+    console.log(filteredPickupList);
+  }, [filteredPickupList]);
+
   return (
     <div className="admin-layout__main-content">
       {/* Breadcrumb */}
@@ -880,9 +906,9 @@ const PickupPage = () => {
                 <Input
                   prefix={<SearchOutlined />}
                   placeholder="Tìm theo họ và tên trạm xe buýt"
-                  //   value={searchText}
-                  //   onChange={(e) => setSearchText(e.target.value)}
                   className="filter-find"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
                 />
                 <Select
                   allowClear
@@ -898,12 +924,17 @@ const PickupPage = () => {
                     },
                   ]}
                   className="filter-select"
+                  value={statusFilter}
+                  onChange={(value) => setStatusFilter(value)}
                 />
                 <Button
                   color="blue"
                   variant="filled"
                   icon={<ReloadOutlined />}
-                  //   onClick={() => setSearchText("")}
+                  onClick={() => {
+                    setSearchText("");
+                    setStatusFilter(undefined);
+                  }}
                   className="filter-reset"
                 >
                   Làm mới
@@ -921,7 +952,7 @@ const PickupPage = () => {
             </div>
             <CustomTableActions<PickupType>
               columns={columns}
-              data={pickupData || []}
+              data={filteredPickupList || []}
               rowKey={(record) => String(record?.id)}
               // loading={isLoading}
               defaultPageSize={10}

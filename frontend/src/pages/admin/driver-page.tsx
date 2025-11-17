@@ -34,14 +34,19 @@ import {
   faPenToSquare,
   faChalkboardUser,
 } from "@fortawesome/free-solid-svg-icons";
-import { ruleRequired } from "../../common/rules";
+import { ruleEmail, rulePhone, ruleRequired } from "../../common/rules";
 import { CommonGenderValue, CommonStatusValue } from "../../common/values";
 import type { DriverNotFormatType, DriverFormatType } from "../../common/types";
 import CustomUpload from "../../components/upload";
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
 import useCallApi from "../../api/useCall";
-import { createDriver, getDrivers, updateDriver, uploadDriverAvatar } from "../../services/driver-service";
+import {
+  createDriver,
+  getDrivers,
+  updateDriver,
+  uploadDriverAvatar,
+} from "../../services/driver-service";
 import { getAccountStatusText, getGenderText } from "../../utils/vi-trans";
 import dayjs from "dayjs";
 
@@ -54,14 +59,16 @@ const DriverPage = () => {
   const [drivers, setDrivers] = useState<DriverFormatType[]>([]);
 
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    undefined
+  );
 
   const handleGetData = async () => {
-    const restResponse = await execute(getDrivers());
+    const restResponse = await execute(getDrivers(), false);
     if (restResponse?.result && Array.isArray(restResponse.data)) {
       setDrivers(restResponse.data);
     }
-  }
+  };
 
   useEffect(() => {
     handleGetData();
@@ -78,7 +85,7 @@ const DriverPage = () => {
       title: "Hình ảnh",
       dataIndex: "avatar",
       key: "avatar",
-      width: "5%",
+      width: "10%",
       render: (avatar: string) => {
         const imageUrl = avatar
           ? avatar
@@ -88,9 +95,9 @@ const DriverPage = () => {
           <Image
             src={imageUrl}
             alt=""
-            width={60}
-            height={60}
-            style={{ objectFit: "cover", borderRadius: "8px" }}
+            width={80}
+            height={100}
+            style={{ objectFit: "cover", borderRadius: "6px" }}
           />
         );
       },
@@ -100,15 +107,15 @@ const DriverPage = () => {
       title: "Họ và tên",
       dataIndex: "full_name",
       key: "full_name",
-      width: "30%",
+      width: "36%",
       sorter: (a, b) => a?.full_name!.localeCompare(b?.full_name!),
     },
     {
       title: "Số điện thoại",
       dataIndex: "phone",
       key: "phone",
-      width: "10%",
-      sorter: (a, b) => a?.phone!.localeCompare(b?.phone!),
+      width: "15%",
+      // sorter: (a, b) => a?.phone!.localeCompare(b?.phone!),
     },
     {
       title: "Trạng thái",
@@ -118,7 +125,7 @@ const DriverPage = () => {
           {getAccountStatusText(record.status || "")}
         </Tag>
       ),
-      sorter: (a, b) => (a.status || "").localeCompare(b.status || ""),
+      // sorter: (a, b) => (a.status || "").localeCompare(b.status || ""),
       width: "10%",
     },
     {
@@ -149,16 +156,12 @@ const DriverPage = () => {
             color="red"
             variant="filled"
             onClick={() => {
-              setCurrentAction(
-                record.status === "ACTIVE" ? "lock" : "unlock"
-              );
+              setCurrentAction(record.status === "ACTIVE" ? "lock" : "unlock");
               setCurrentSelectedItem(record);
             }}
           >
             <FontAwesomeIcon
-              icon={
-                record.status === "ACTIVE" ? faLock : faLockOpen
-              }
+              icon={record.status === "ACTIVE" ? faLock : faLockOpen}
             />
           </Button>
           <Button
@@ -173,7 +176,7 @@ const DriverPage = () => {
           </Button>
         </div>
       ),
-      width: "15%",
+      width: "14%",
       className: "actions",
     },
   ];
@@ -274,7 +277,9 @@ const DriverPage = () => {
               password: "Mật khẩu đã được mã hoá !",
               avatar: driver.avatar || undefined,
               fullname: driver.full_name || undefined,
-              birthday: driver.birth_date ? dayjs(driver.birth_date) : undefined,
+              birthday: driver.birth_date
+                ? dayjs(driver.birth_date)
+                : undefined,
               gender: driver.gender || undefined,
               phone: driver.phone || undefined,
               email: driver.email || undefined,
@@ -311,10 +316,7 @@ const DriverPage = () => {
                 <Form.Item name="username" label={defaultLabels.username}>
                   <Input disabled />
                 </Form.Item>
-                <Form.Item
-                  name="fullname"
-                  label={defaultLabels.fullname}
-                >
+                <Form.Item name="fullname" label={defaultLabels.fullname}>
                   <Input disabled />
                 </Form.Item>
                 <Form.Item name="phone" label={defaultLabels.phone}>
@@ -330,12 +332,12 @@ const DriverPage = () => {
               </Col>
               <Col>
                 <Form.Item name="status" label={defaultLabels.status}>
-                  <Select disabled
+                  <Select
+                    disabled
                     options={[
                       { label: "Hoạt động", value: "ACTIVE" },
                       { label: "Tạm dừng", value: "INACTIVE" },
                     ]}
-                  
                   />
                 </Form.Item>
                 <Form.Item name="password" label={defaultLabels.password}>
@@ -349,7 +351,8 @@ const DriverPage = () => {
                   </Col>
                   <Col>
                     <Form.Item name="gender" label={defaultLabels.gender}>
-                      <Select disabled
+                      <Select
+                        disabled
                         options={[
                           { label: "Nam", value: "MALE" },
                           { label: "Nữ", value: "FEMALE" },
@@ -373,30 +376,36 @@ const DriverPage = () => {
     const [imageFile, setImageFile] = useState<RcFile>();
 
     const handleSubmit = async () => {
-      const createResponse = await execute(createDriver({
-        fullName: form.getFieldValue("fullname"),
-        birthDate: form.getFieldValue("birthday"),
-        gender: form.getFieldValue("gender"),
-        phone: form.getFieldValue("phone"),
-        email: form.getFieldValue("email"),
-        address: form.getFieldValue("address"),
-        status: form.getFieldValue("status"),
-        username: form.getFieldValue("username"),
-        password: form.getFieldValue("password"),
-      }));
+      const createResponse = await execute(
+        createDriver({
+          fullName: form.getFieldValue("fullname"),
+          birthDate: form.getFieldValue("birthday"),
+          gender: form.getFieldValue("gender"),
+          phone: form.getFieldValue("phone"),
+          email: form.getFieldValue("email"),
+          address: form.getFieldValue("address"),
+          status: form.getFieldValue("status"),
+          username: form.getFieldValue("username"),
+          password: form.getFieldValue("password"),
+        }),
+        true
+      );
       notify(createResponse!, "Thêm tài xế thành công");
       if (createResponse?.result) {
         const driverId = createResponse.data.id;
         if (imageFile && driverId) {
           const formData = new FormData();
           formData.append("avatar", imageFile);
-          const uploadResponse = await execute(uploadDriverAvatar(driverId, formData));
+          const uploadResponse = await execute(
+            uploadDriverAvatar(driverId, formData),
+            true
+          );
           notify(uploadResponse!, "Tải ảnh đại diện thành công");
         }
         handleGetData();
         setCurrentAction("list");
       }
-    }
+    };
 
     useEffect(() => {
       form.setFieldValue("avatar", imageFile?.name);
@@ -468,7 +477,10 @@ const DriverPage = () => {
                 <Form.Item
                   name="phone"
                   label={defaultLabels.phone}
-                  rules={[ruleRequired("Số điện thoại không được để trống !")]}
+                  rules={[
+                    ruleRequired("Số điện thoại không được để trống !"),
+                    rulePhone(),
+                  ]}
                 >
                   <Input placeholder={defaultInputs.phone} />
                 </Form.Item>
@@ -549,7 +561,11 @@ const DriverPage = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-                <Form.Item name="email" label={defaultLabels.email}>
+                <Form.Item
+                  name="email"
+                  label={defaultLabels.email}
+                  rules={[ruleEmail()]}
+                >
                   <Input placeholder={defaultInputs.email} />
                 </Form.Item>
               </Col>
@@ -573,27 +589,33 @@ const DriverPage = () => {
     const [imageFile, setImageFile] = useState<RcFile>();
 
     const handleSubmit = async () => {
-      const updateResponse = await execute(updateDriver(driver.id!, {
-        fullName: form.getFieldValue("fullname"),
-        birthDate: form.getFieldValue("birthday"),
-        gender: form.getFieldValue("gender"),
-        address: form.getFieldValue("address"),
-        phone: form.getFieldValue("phone"),
-        email: form.getFieldValue("email"),
-      }));
+      const updateResponse = await execute(
+        updateDriver(driver.id!, {
+          fullName: form.getFieldValue("fullname"),
+          birthDate: form.getFieldValue("birthday"),
+          gender: form.getFieldValue("gender"),
+          address: form.getFieldValue("address"),
+          phone: form.getFieldValue("phone"),
+          email: form.getFieldValue("email"),
+        }),
+        true
+      );
 
       notify(updateResponse!, "Cập nhật tài xế thành công");
       if (updateResponse?.result && driver.id) {
         if (imageFile) {
           const formData = new FormData();
           formData.append("avatar", imageFile);
-          const uploadResponse = await execute(uploadDriverAvatar(driver.id, formData));
+          const uploadResponse = await execute(
+            uploadDriverAvatar(driver.id, formData),
+            true
+          );
           notify(uploadResponse!, "Cập nhật avatar tài xế thành công");
         }
-        handleGetData();
         setCurrentAction("list");
+        handleGetData();
       }
-    }
+    };
 
     useEffect(() => {
       form.setFieldValue("avatar", imageFile?.name);
@@ -607,11 +629,13 @@ const DriverPage = () => {
             layout="vertical"
             initialValues={{
               id: driver.id || undefined,
+              avatar: driver.avatar || undefined,
               username: driver.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
-              avatar: driver.avatar || undefined,
               fullname: driver.full_name || undefined,
-              birthday: driver.birth_date ? dayjs(driver.birth_date) : undefined,
+              birthday: driver.birth_date
+                ? dayjs(driver.birth_date)
+                : undefined,
               gender: driver.gender || undefined,
               phone: driver.phone || undefined,
               email: driver.email || undefined,
@@ -627,6 +651,7 @@ const DriverPage = () => {
                   htmlFor="create-avatar"
                   label={defaultLabels.avatar}
                   valuePropName="fileList"
+                  // rules={[ruleRequired("Ảnh đại diện không được để trống !")]}
                 >
                   <CustomUpload
                     defaultSrc={driver.avatar ? driver.avatar : ""}
@@ -661,7 +686,10 @@ const DriverPage = () => {
                 <Form.Item
                   name="phone"
                   label={defaultLabels.phone}
-                  rules={[ruleRequired("Số điện thoại không được để trống !")]}
+                  rules={[
+                    ruleRequired("Số điện thoại không được để trống !"),
+                    rulePhone(),
+                  ]}
                 >
                   <Input placeholder={defaultInputs.phone} />
                 </Form.Item>
@@ -675,7 +703,8 @@ const DriverPage = () => {
               </Col>
               <Col>
                 <Form.Item name="status" label={defaultLabels.status}>
-                  <Select disabled
+                  <Select
+                    disabled
                     options={[
                       { label: CommonStatusValue.active, value: "ACTIVE" },
                       { label: CommonStatusValue.inactive, value: "INACTIVE" },
@@ -726,7 +755,11 @@ const DriverPage = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-                <Form.Item name="email" label={defaultLabels.email}>
+                <Form.Item
+                  name="email"
+                  label={defaultLabels.email}
+                  rules={[ruleEmail()]}
+                >
                   <Input placeholder={defaultInputs.email} />
                 </Form.Item>
               </Col>
@@ -747,15 +780,21 @@ const DriverPage = () => {
   };
   const DriverLock: React.FC<{ driver: DriverFormatType }> = ({ driver }) => {
     const handleChangeStatus = async () => {
-      const restResponse = await execute(updateDriver(driver.id!, {
-        status: driver.status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
-      }));
-      notify(restResponse!, `${driver.status === "ACTIVE" ? "Khoá" : "Mở khoá"} tài xế thành công`);
+      const restResponse = await execute(
+        updateDriver(driver.id!, {
+          status: driver.status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
+        }),
+        true
+      );
+      notify(
+        restResponse!,
+        `${driver.status === "ACTIVE" ? "Khoá" : "Mở khoá"} tài xế thành công`
+      );
       if (restResponse?.result) {
         setCurrentAction("list");
         handleGetData();
       }
-    }
+    };
 
     return (
       <>
@@ -772,27 +811,17 @@ const DriverPage = () => {
           showIcon
           icon={
             <FontAwesomeIcon
-              icon={
-                driver?.status === "ACTIVE"
-                  ? faLock
-                  : faLockOpen
-              }
+              icon={driver?.status === "ACTIVE" ? faLock : faLockOpen}
             />
           }
           description={
             "Bạn có chắc chắc muốn" +
-            (driver?.status === "ACTIVE"
-              ? " khoá "
-              : " mở khoá ") +
+            (driver?.status === "ACTIVE" ? " khoá " : " mở khoá ") +
             "tài xế này ? Hành động không thể hoàn tác !"
           }
           type="error"
           action={
-            <Button
-              color="danger"
-              variant="solid"
-              onClick={handleChangeStatus}
-            >
+            <Button color="danger" variant="solid" onClick={handleChangeStatus}>
               Xác nhận
             </Button>
           }
@@ -806,16 +835,22 @@ const DriverPage = () => {
     const [form] = Form.useForm<DriverNotFormatType>();
 
     const handleSubmitUpdate = async () => {
-      const passwordData = validateAndGetPassword(form.getFieldsValue(), openNotification);
+      const passwordData = validateAndGetPassword(
+        form.getFieldsValue(),
+        openNotification
+      );
       if (!passwordData) return;
 
-      const restResponse = await execute(updateDriver(driver.id!, passwordData));
+      const restResponse = await execute(
+        updateDriver(driver.id!, passwordData),
+        true
+      );
       notify(restResponse!, "Cập nhật mật khẩu tài xế thành công");
       if (restResponse?.result) {
         setCurrentAction("list");
         handleGetData();
       }
-    }
+    };
 
     return (
       <>
@@ -1049,8 +1084,8 @@ const DriverPage = () => {
                   <Input
                     prefix={<SearchOutlined />}
                     placeholder="Tìm theo họ và tên tài xế"
-                    //   value={searchText}
-                    //   onChange={(e) => setSearchText(e.target.value)}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
                     className="filter-find"
                   />
                   <Select
@@ -1067,13 +1102,18 @@ const DriverPage = () => {
                       },
                     ]}
                     className="filter-select"
+                    value={statusFilter}
+                    onChange={(value) => setStatusFilter(value)}
                   />
                   <Button
                     color="blue"
                     variant="filled"
                     icon={<ReloadOutlined />}
-                    //   onClick={() => setSearchText("")}
                     className="filter-reset"
+                    onClick={() => {
+                      setSearchText("");
+                      setStatusFilter(undefined);
+                    }}
                   >
                     Làm mới
                   </Button>
@@ -1090,7 +1130,7 @@ const DriverPage = () => {
               </div>
               <CustomTableActions<DriverFormatType>
                 columns={columns}
-                data={drivers}
+                data={filteredDriverList || []}
                 rowKey={(record) => String(record?.id)}
                 // loading={isLoading}
                 defaultPageSize={10}

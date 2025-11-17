@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useMemo, useEffect } from "react";
+import { jwtDecode } from 'jwt-decode';
 import useCallApi from "../api/useCall";
 import { authConfig } from "../services/auth-service";
 
@@ -78,6 +79,16 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(authResponse.accessToken);
     setRole(authResponse.role);
     setExpiresAt(authResponse.expiresAt);
+
+    try {
+      const payload: any = jwtDecode(authResponse.accessToken);
+      setAccountId(payload.id);
+      setUsername(payload.username);
+      setRole(payload.role);
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
+
     sessionStorage.setItem("CURRENT_USER", JSON.stringify(authResponse));
   };
 

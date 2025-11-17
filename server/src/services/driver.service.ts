@@ -43,11 +43,10 @@ const DriverService = {
             data: {
                 full_name: data.fullName,
                 birth_date: data.birthDate,
+                gender: data.gender,
                 phone: data.phone,
                 email: data.email,
                 address: data.address,
-                gender: data.gender,
-
                 account: {
                     connect: { id: account.id }
                 }

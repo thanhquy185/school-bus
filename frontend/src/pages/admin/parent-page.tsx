@@ -33,7 +33,7 @@ import {
   faPenToSquare,
   faPeopleRoof,
 } from "@fortawesome/free-solid-svg-icons";
-import { ruleRequired } from "../../common/rules";
+import { ruleEmail, ruleImagePng, rulePassword, rulePhone, ruleRequired } from "../../common/rules";
 import { CommonStatusValue } from "../../common/values";
 import type { ParentNotFormatType, ParentFormatType } from "../../common/types";
 import CustomUpload from "../../components/upload";
@@ -55,7 +55,7 @@ const ParentPage = () => {
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
 
   const handleGetData = async () => {
-    const restResponse = await execute(getParents());
+    const restResponse = await execute(getParents(), false);
     if (restResponse?.result && Array.isArray(restResponse.data)) {
       setParents(restResponse.data.map(parent => ({
         ...parent,
@@ -80,7 +80,7 @@ const ParentPage = () => {
       title: "Hình ảnh",
       dataIndex: "avatar",
       key: "avatar",
-      width: "5%",
+      width: "10%",
       render: (avatar: string) => {
         const imageUrl = avatar
           ? avatar
@@ -90,9 +90,9 @@ const ParentPage = () => {
           <Image
             src={imageUrl}
             alt=""
-            width={60}
-            height={60}
-            style={{ objectFit: "cover", borderRadius: "8px" }}
+            width={80}
+            height={100}
+            style={{ objectFit: "cover", borderRadius: "6px" }}
           />
         );
       },
@@ -102,13 +102,13 @@ const ParentPage = () => {
       title: "Họ và tên",
       dataIndex: "full_name",
       key: "full_name",
-      width: "30%",
+      width: "28%",
       sorter: (a, b) => a?.full_name!.localeCompare(b?.full_name!),
     },
     {
       title: "Tên tài khoản",
       key: "username",
-      width: "20%",
+      width: "18%",
       render: (record: ParentFormatType) => record.username,
       sorter: (a, b) => a.username!.localeCompare(b.username!),
     },
@@ -118,7 +118,7 @@ const ParentPage = () => {
       dataIndex: "phone",
       key: "phone",
       width: "10%",
-      sorter: (a, b) => a?.phone!.localeCompare(b?.phone!),
+      // sorter: (a, b) => a?.phone!.localeCompare(b?.phone!),
     },
     {
       title: "Trạng thái",
@@ -128,7 +128,7 @@ const ParentPage = () => {
           {record.status}
         </Tag>
       ),
-      sorter: (a, b) => (a.status || "").localeCompare(b.status || ""),
+      // sorter: (a, b) => (a.status || "").localeCompare(b.status || ""),
       width: "10%",
     },
 
@@ -184,7 +184,7 @@ const ParentPage = () => {
           </Button>
         </div>
       ),
-      width: "15%",
+      width: "14%",
       className: "actions",
     },
   ];
@@ -361,14 +361,14 @@ const ParentPage = () => {
         username: form.getFieldValue("username"),
         password: form.getFieldValue("password"),
         status: form.getFieldValue("status")
-      }));
+      }), true);
       notify(createResponse!, "Thêm phụ huynh thành công");
       if (createResponse?.result) {
         const parentId = createResponse.data.id;
         if (imageFile && parentId) {
           const formData = new FormData();
           formData.append("avatar", imageFile);
-          const uploadResponse = await execute(uploadParentAvatar(parentId, formData));
+          const uploadResponse = await execute(uploadParentAvatar(parentId, formData), true);
           notify(uploadResponse!, "Tải ảnh đại diện phụ huynh thành công");
         }
         setCurrentAction("list");
@@ -379,125 +379,129 @@ const ParentPage = () => {
     return (
       <>
         <div className="parent-content create">
-          <Form
-            form={form}
-            layout="vertical"
-            initialValues={{
-              id: undefined,
-              username: undefined,
-              password: undefined,
-              avatar: undefined,
-              fullname: undefined,
-              phone: undefined,
-              email: undefined,
-              address: undefined,
-              status: undefined,
-            }}
-            onFinish={handleSubmit}
-          >
-            <Row className="split-3">
-              <Col>
-                <Form.Item
-                  name="avatar"
-                  htmlFor="create-avatar"
-                  label={defaultLabels.avatar}
-                  valuePropName="fileList"
-                >
-                  <CustomUpload
-                    imageFile={imageFile}
-                    setImageFile={setImageFile}
-                    alt="image-preview"
-                    htmlFor="create-avatar"
-                    imageClassName="image-preview"
-                    uploadClassName="image-uploader"
-                    labelButton={defaultInputs.avatar}
-                  />
-                </Form.Item>
-              </Col>
-              <Col>
-                <Form.Item
-                  name="id"
-                  label={defaultLabels.id}
-                  className="text-center"
-                >
-                  <Input placeholder={defaultInputs.id} disabled />
-                </Form.Item>
-                <Form.Item
-                  name="username"
-                  label={defaultLabels.username}
-                  rules={[ruleRequired("Tên tài khoản không được để trống !")]}
-                >
-                  <Input placeholder={defaultInputs.username} />
-                </Form.Item>
-                <Form.Item
-                  name="fullname"
-                  label={defaultLabels.fullname}
-                  rules={[ruleRequired("Họ và tên không được để trống !")]}
-                  className="multiple-2"
-                >
-                  <Input placeholder={defaultInputs.fullname} />
-                </Form.Item>
-                <Form.Item
-                  name="phone"
-                  label={defaultLabels.phone}
-                  rules={[ruleRequired("Số điện thoại không được để trống !")]}
-                >
-                  <Input placeholder={defaultInputs.phone} />
-                </Form.Item>
-                <Form.Item
-                  name="address"
-                  label={defaultLabels.address}
-                  className="multiple-2"
-                >
-                  <Input placeholder={defaultInputs.address} />
-                </Form.Item>
-              </Col>
-              <Col>
-                <Form.Item
-                  name="status"
-                  label={defaultLabels.status}
-                  rules={[ruleRequired("Trạng thái không được để trống !")]}
-                >
-                  <Select
-                    allowClear
-                    options={[
-                      {
-                        label: CommonStatusValue.active,
-                        value: "ACTIVE",
-                      },
-                      {
-                        label: CommonStatusValue.inactive,
-                        value: "INACTIVE",
-                      },
-                    ]}
-                    placeholder={defaultInputs.status}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name="password"
-                  label={defaultLabels.password}
-                  rules={[ruleRequired("Mật khẩu không được để trống !")]}
-                >
-                  <Input placeholder={defaultInputs.password} />
-                </Form.Item>
-                <Form.Item label="." className="hidden">
-                  <Input />
-                </Form.Item>
-                <Form.Item name="email" label={defaultLabels.email}>
-                  <Input placeholder={defaultInputs.email} />
-                </Form.Item>
-              </Col>
-            </Row>
-            <div className="buttons">
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="submit-button"
-              >
-                Xác nhận
-              </Button>
-            </div>
-          </Form>
+<Form
+  form={form}
+  layout="vertical"
+  initialValues={{
+    id: undefined,
+    username: undefined,
+    password: undefined,
+    avatar: undefined,
+    fullname: undefined,
+    phone: undefined,
+    email: undefined,
+    address: undefined,
+    status: undefined,
+  }}
+  validateTrigger="onBlur"
+  onFinish={handleSubmit}
+>
+  <Row className="split-3">
+    <Col>
+    <Form.Item
+      name="avatar"
+      htmlFor="create-avatar"
+      label={defaultLabels.avatar}
+      valuePropName="fileList"
+      // rules={[ruleRequired("Chọn ảnh đại diện !"), ruleImagePng()]}
+    >
+      <CustomUpload
+        imageFile={imageFile}
+        setImageFile={setImageFile}
+        alt="image-preview"
+        htmlFor="create-avatar"
+        imageClassName="image-preview"
+        uploadClassName="image-uploader"
+        labelButton={defaultInputs.avatar}
+
+      />
+    </Form.Item>
+
+    </Col>
+    <Col>
+      <Form.Item
+        name="id"
+        label={defaultLabels.id}
+        className="text-center"
+      >
+        <Input placeholder={defaultInputs.id} disabled />
+      </Form.Item>
+      <Form.Item
+        name="username"
+        label={defaultLabels.username}
+        rules={[ruleRequired("Tên tài khoản không được để trống !")]}
+      >
+        <Input placeholder={defaultInputs.username} />
+      </Form.Item>
+      <Form.Item
+        name="fullname"
+        label={defaultLabels.fullname}
+        rules={[ruleRequired("Họ và tên không được để trống !")]}
+        className="multiple-2"
+      >
+        <Input placeholder={defaultInputs.fullname} />
+      </Form.Item>
+      <Form.Item
+        name="phone"
+        label={defaultLabels.phone}
+        rules={[ruleRequired("Số điện thoại không được để trống !"), rulePhone()]}
+      >
+        <Input placeholder={defaultInputs.phone} />
+      </Form.Item>
+      <Form.Item
+        name="address"
+        label={defaultLabels.address}
+        rules={[ruleRequired("Địa chỉ không được để trống !")]}
+        className="multiple-2"
+      >
+        <Input placeholder={defaultInputs.address} />
+      </Form.Item>
+    </Col>
+    <Col>
+      <Form.Item
+        name="status"
+        label={defaultLabels.status}
+        rules={[ruleRequired("Trạng thái không được để trống !")]}
+      >
+        <Select
+          allowClear
+          options={[
+            { label: CommonStatusValue.active, value: "ACTIVE" },
+            { label: CommonStatusValue.inactive, value: "INACTIVE" },
+          ]}
+          placeholder={defaultInputs.status}
+        />
+      </Form.Item>
+      <Form.Item
+        name="password"
+        label={defaultLabels.password}
+        rules={[
+          ruleRequired("Mật khẩu không được để trống !"),
+          rulePassword()
+        ]}
+      >
+        <Input.Password placeholder={defaultInputs.password} />
+      </Form.Item>
+      <Form.Item label="." className="hidden">
+        <Input />
+      </Form.Item>
+      <Form.Item
+        name="email"
+        label={defaultLabels.email}
+        rules={[ruleRequired("Email không được để trống !"), ruleEmail()]}
+      >
+        <Input placeholder={defaultInputs.email} />
+      </Form.Item>
+    </Col>
+  </Row>
+
+  <div className="buttons">
+    <Button type="primary" htmlType="submit" className="submit-button">
+      Xác nhận
+    </Button>
+  </div>
+</Form>
+
         </div>
       </>
     );
@@ -512,13 +516,13 @@ const ParentPage = () => {
         phone: form.getFieldValue("phone"),
         email: form.getFieldValue("email"),
         address: form.getFieldValue("address"),
-      }));
+      }), true);
       notify(updateResponse!, "Cập nhật phụ huynh thành công");
       if (updateResponse?.result && parent.id) {
         if (imageFile) {
           const formData = new FormData();
           formData.append("avatar", imageFile);
-          const uploadResponse = await execute(uploadParentAvatar(parent.id!, formData));
+          const uploadResponse = await execute(uploadParentAvatar(parent.id!, formData), true);
           notify(uploadResponse!, "Tải ảnh đại diện phụ huynh thành công");
         }
         setCurrentAction("list");
@@ -637,7 +641,7 @@ const ParentPage = () => {
     const handleChangeStatus = async () => {
       const restResponse = await execute(updateParent(parent.id!, {
         status: parent.status === CommonStatusValue.active ? "INACTIVE" : "ACTIVE",
-      }));
+      }), true);
       notify(restResponse!, `${parent.status === CommonStatusValue.active ? "Khoá" : "Mở khoá"} phụ huynh thành công`);
       if (restResponse?.result) {
         setCurrentAction("list");
@@ -698,7 +702,7 @@ const ParentPage = () => {
       const passwordData = validateAndGetPassword(form.getFieldsValue(), openNotification);
       if (!passwordData) return;
 
-      const restResponse = await execute(updateParent(parent.id!, passwordData));
+      const restResponse = await execute(updateParent(parent.id!, passwordData), true);
       notify(restResponse!, "Cập nhật mật khẩu phụ huynh thành công");
       if (restResponse?.result) {
         setCurrentAction("list");
@@ -945,9 +949,6 @@ const ParentPage = () => {
                     className="filter-find"
                   />
                   <Select
-
-
-
                     allowClear
                     placeholder="Chọn Trạng thái"
                     value={statusFilter}

@@ -17,6 +17,7 @@ const LoginPage = () => {
     const restResponse = await execute(login(form.getFieldValue("username"), form.getFieldValue("password")));
     notify(restResponse, "Đăng nhập thành công");
     if (restResponse?.result) {
+      
       auth.setAuth(restResponse.data);
       window.location.href = `/${(restResponse.data.role as string).toLowerCase()}`
     }

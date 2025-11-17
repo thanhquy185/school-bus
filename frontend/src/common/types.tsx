@@ -128,8 +128,8 @@ export interface RouteNotFormatType {
   name?: string;
   startPickup?: string;
   endPickup?: string;
-  startTime?: string;
-  endTime?: string;
+  totalDistance?: number;
+  totalTime?: number;
   status?: string;
   routeDetails?: RouteDetailsNotFormatType[];
 }
@@ -139,8 +139,8 @@ export interface RouteFormatType {
   name?: string;
   startPickup?: string;
   endPickup?: string;
-  startTime?: string;
-  endTime?: string;
+  totalDistance?: number;
+  totalTime?: number;
   status?: string;
   routeDetails?: RouteDetailsFormatType[];
 }

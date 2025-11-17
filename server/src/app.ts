@@ -6,6 +6,7 @@ import AuthMiddleware from './middlewares/auth.middleware';
 
 import AuthRouter from './routes/auth.route';
 import AccountRouter from './routes/account.route';
+import RouteRouter from './routes/route.route';
 import PickupRouter from './routes/pickup.route';
 import BusRouter from './routes/bus.route';
 import ParentRouter from './routes/parent.route';
@@ -27,7 +28,7 @@ app.use("/auth", AuthRouter);
 app.use("/api/accounts", AccountRouter);
 
 app.use("/api/buses", BusRouter);
-
+app.use("/api/routes", RouteRouter);
 app.use("/api/pickups", PickupRouter);
 app.use("/api/parents", ParentRouter);
 app.use("/api/classes", ClassRouter);

@@ -9,6 +9,11 @@ const ParentController = {
         res.status(response.statusCode).json(response);
     },
 
+    async getByAccountId(req: Request, res: Response) {
+        const response = await ParentService.getByAccountId({ id: Number(req.params.id) });
+        res.status(response.statusCode).json(response);
+    },
+
     async update(req: Request, res: Response) {
         const response = await ParentService.update({ id: Number(req.params.id), ...req.body });
         res.status(response.statusCode).json(response);

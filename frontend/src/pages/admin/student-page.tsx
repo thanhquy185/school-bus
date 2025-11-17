@@ -64,10 +64,10 @@ const StudentPage = () => {
 
   const handleGetData = async () => {
     const [studentRes, parentRes, pickupRes, classRes] = await Promise.all([
-      execute(getStudents()),
-      execute(getParents()),
-      execute(getPickups()),
-      execute(getClasses()),
+      execute(getStudents(), false),
+      execute(getParents(), false),
+      execute(getPickups(), false),
+      execute(getClasses(), false),
     ]);
 
     if (studentRes?.result && Array.isArray(studentRes.data)) {
@@ -340,10 +340,6 @@ const StudentPage = () => {
                        label: StudentStatusValue.dropped_out,
                        value: "DROPPED_OUT",
                      },
-                     {
-                       label: StudentStatusValue.unknown,
-                       value: "UNKNOWN",
-                     },
                    ]}
                   />
                 </Form.Item>
@@ -380,7 +376,6 @@ const StudentPage = () => {
       </>
     );
   };
-
   const StudentCreate: React.FC = () => {
     const [form] = Form.useForm<StudentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
@@ -395,14 +390,14 @@ const StudentPage = () => {
         parentId: form.getFieldValue("parentId"),
         classId: form.getFieldValue("classId"),
         pickupId: form.getFieldValue("pickupId"),
-      }));
+      }), true);
       notify(createResponse!, "Thêm học sinh thành công !");
       if (createResponse?.result) {
         const studentId = createResponse.data.id;
         if (imageFile && studentId) {
           const formData = new FormData();
           formData.append("avatar", imageFile);
-          const uploadResponse = await execute(uploadStudentAvatar(studentId, formData));
+          const uploadResponse = await execute(uploadStudentAvatar(studentId, formData), false);
           notify(uploadResponse!, "Tải ảnh đại diện thành công !");
           if (uploadResponse?.result) {
             setCurrentAction("list");
@@ -567,10 +562,6 @@ const StudentPage = () => {
                         label: StudentStatusValue.dropped_out,
                         value: "DROPPED_OUT",
                       },
-                      {
-                        label: StudentStatusValue.unknown,
-                        value: "UNKNOWN",
-                      },
                     ]}
                   />
                 </Form.Item>
@@ -643,13 +634,13 @@ const StudentPage = () => {
         pickupId: form.getFieldValue("pickupId"),
         classId: form.getFieldValue("classId"),
         parentId: form.getFieldValue("parentId"),
-      }));
+      }), true);
       notify(updateResponse!, "Cập nhật học sinh thành công !");
       if (updateResponse?.result) {
         if (imageFile && student.id) {
           const formData = new FormData();
           formData.append("avatar", imageFile);
-           const uploadResponse = await execute(uploadStudentAvatar(student.id, formData));
+           const uploadResponse = await execute(uploadStudentAvatar(student.id, formData), false);
           notify(uploadResponse!, "Tải ảnh đại diện thành công !");
         }
         setCurrentAction("list");
@@ -803,10 +794,6 @@ const StudentPage = () => {
                         label: StudentStatusValue.dropped_out,
                         value: "DROPPED_OUT",
                       },
-                      {
-                        label: StudentStatusValue.unknown,
-                        value: "UNKNOWN",
-                      }
                     ]}
                   />
                 </Form.Item>

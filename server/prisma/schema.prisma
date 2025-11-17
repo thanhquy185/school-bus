@@ -16,7 +16,6 @@ enum Role {
 enum Gender {
   MALE
   FEMALE
-  OTHER
 }
 
 enum AccountStatus {
@@ -27,13 +26,11 @@ enum AccountStatus {
 enum StudentStatus {
   STUDYING
   DROPPED_OUT
-  UNKNOWN
 }
 
 enum BusStatus {
   ACTIVE
   INACTIVE
-  MAINTENANCE
 }
 
 enum RouteStatus {
@@ -83,12 +80,34 @@ model routes {
   name        String
   start_pickup String
   end_pickup   String
-  start_time  String
-  end_time    String
+  total_distance  Int
+  total_time    Int
   status    RouteStatus @default(ACTIVE)
 
   schedules schedules[]
-  pickups   pickupToRoute[]
+  pickups   routePickups[]
+}
+
+model pickups {
+  id        Int @id @default(autoincrement())
+  name      String
+  category  PickupCategory
+  lat       Float
+  lng       Float
+  status    PickupStatus @default(ACTIVE)
+
+  routes    routePickups[]
+  students  students[]
+}
+
+model routePickups {
+  route_id    Int
+  pickup_id   Int
+  order       Int
+
+  @@id([route_id, pickup_id])
+  route   routes @relation(fields: [route_id], references: [id], onDelete: Cascade)
+  pickup  pickups @relation(fields: [pickup_id], references: [id], onDelete: Cascade)
 }
 
 model parents {
@@ -110,9 +129,9 @@ model students {
   avatar     String?
   full_name  String
   birth_date String
-  gender     Gender   @default(OTHER)
+  gender     Gender   @default(MALE)
   address    String
-  status    StudentStatus @default(UNKNOWN)
+  status    StudentStatus @default(STUDYING)
 
   parent_id Int
   parent    parents   @relation(fields: [parent_id], references: [id])
@@ -129,7 +148,7 @@ model drivers {
   avatar     String?
   full_name  String
   birth_date String
-  gender     Gender   @default(OTHER)    
+  gender     Gender   @default(MALE)    
   phone      String   @unique
   email      String   @unique
   address    String
@@ -152,26 +171,4 @@ model schedules {
 
   route_id Int
   route routes @relation(fields: [route_id], references: [id])
-}
-
-model pickups {
-  id        Int @id @default(autoincrement())
-  name      String
-  category  PickupCategory
-  lat       Float
-  lng       Float
-  status    PickupStatus @default(ACTIVE)
-
-  routes    pickupToRoute[]
-  students  students[]
-}
-
-model pickupToRoute {
-  route_id    Int
-  pickup_id   Int
-  order       Int
-
-  @@id([route_id, pickup_id])
-  route   routes @relation(fields: [route_id], references: [id], onDelete: Cascade)
-  pickup  pickups @relation(fields: [pickup_id], references: [id], onDelete: Cascade)
 }
