@@ -33,7 +33,7 @@ import {
   faPenToSquare,
   faPeopleRoof,
 } from "@fortawesome/free-solid-svg-icons";
-import { ruleRequired } from "../../common/rules";
+import { ruleEmail, ruleImagePng, rulePassword, rulePhone, ruleRequired } from "../../common/rules";
 import { CommonStatusValue } from "../../common/values";
 import type { ParentNotFormatType, ParentFormatType } from "../../common/types";
 import CustomUpload from "../../components/upload";
@@ -379,125 +379,129 @@ const ParentPage = () => {
     return (
       <>
         <div className="parent-content create">
-          <Form
-            form={form}
-            layout="vertical"
-            initialValues={{
-              id: undefined,
-              username: undefined,
-              password: undefined,
-              avatar: undefined,
-              fullname: undefined,
-              phone: undefined,
-              email: undefined,
-              address: undefined,
-              status: undefined,
-            }}
-            onFinish={handleSubmit}
-          >
-            <Row className="split-3">
-              <Col>
-                <Form.Item
-                  name="avatar"
-                  htmlFor="create-avatar"
-                  label={defaultLabels.avatar}
-                  valuePropName="fileList"
-                >
-                  <CustomUpload
-                    imageFile={imageFile}
-                    setImageFile={setImageFile}
-                    alt="image-preview"
-                    htmlFor="create-avatar"
-                    imageClassName="image-preview"
-                    uploadClassName="image-uploader"
-                    labelButton={defaultInputs.avatar}
-                  />
-                </Form.Item>
-              </Col>
-              <Col>
-                <Form.Item
-                  name="id"
-                  label={defaultLabels.id}
-                  className="text-center"
-                >
-                  <Input placeholder={defaultInputs.id} disabled />
-                </Form.Item>
-                <Form.Item
-                  name="username"
-                  label={defaultLabels.username}
-                  rules={[ruleRequired("Tên tài khoản không được để trống !")]}
-                >
-                  <Input placeholder={defaultInputs.username} />
-                </Form.Item>
-                <Form.Item
-                  name="fullname"
-                  label={defaultLabels.fullname}
-                  rules={[ruleRequired("Họ và tên không được để trống !")]}
-                  className="multiple-2"
-                >
-                  <Input placeholder={defaultInputs.fullname} />
-                </Form.Item>
-                <Form.Item
-                  name="phone"
-                  label={defaultLabels.phone}
-                  rules={[ruleRequired("Số điện thoại không được để trống !")]}
-                >
-                  <Input placeholder={defaultInputs.phone} />
-                </Form.Item>
-                <Form.Item
-                  name="address"
-                  label={defaultLabels.address}
-                  className="multiple-2"
-                >
-                  <Input placeholder={defaultInputs.address} />
-                </Form.Item>
-              </Col>
-              <Col>
-                <Form.Item
-                  name="status"
-                  label={defaultLabels.status}
-                  rules={[ruleRequired("Trạng thái không được để trống !")]}
-                >
-                  <Select
-                    allowClear
-                    options={[
-                      {
-                        label: CommonStatusValue.active,
-                        value: "ACTIVE",
-                      },
-                      {
-                        label: CommonStatusValue.inactive,
-                        value: "INACTIVE",
-                      },
-                    ]}
-                    placeholder={defaultInputs.status}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name="password"
-                  label={defaultLabels.password}
-                  rules={[ruleRequired("Mật khẩu không được để trống !")]}
-                >
-                  <Input placeholder={defaultInputs.password} />
-                </Form.Item>
-                <Form.Item label="." className="hidden">
-                  <Input />
-                </Form.Item>
-                <Form.Item name="email" label={defaultLabels.email}>
-                  <Input placeholder={defaultInputs.email} />
-                </Form.Item>
-              </Col>
-            </Row>
-            <div className="buttons">
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="submit-button"
-              >
-                Xác nhận
-              </Button>
-            </div>
-          </Form>
+<Form
+  form={form}
+  layout="vertical"
+  initialValues={{
+    id: undefined,
+    username: undefined,
+    password: undefined,
+    avatar: undefined,
+    fullname: undefined,
+    phone: undefined,
+    email: undefined,
+    address: undefined,
+    status: undefined,
+  }}
+  validateTrigger="onBlur"
+  onFinish={handleSubmit}
+>
+  <Row className="split-3">
+    <Col>
+    <Form.Item
+      name="avatar"
+      htmlFor="create-avatar"
+      label={defaultLabels.avatar}
+      valuePropName="fileList"
+      rules={[ruleRequired("Chọn ảnh đại diện !"), ruleImagePng()]}
+    >
+      <CustomUpload
+        imageFile={imageFile}
+        setImageFile={setImageFile}
+        alt="image-preview"
+        htmlFor="create-avatar"
+        imageClassName="image-preview"
+        uploadClassName="image-uploader"
+        labelButton={defaultInputs.avatar}
+
+      />
+    </Form.Item>
+
+    </Col>
+    <Col>
+      <Form.Item
+        name="id"
+        label={defaultLabels.id}
+        className="text-center"
+      >
+        <Input placeholder={defaultInputs.id} disabled />
+      </Form.Item>
+      <Form.Item
+        name="username"
+        label={defaultLabels.username}
+        rules={[ruleRequired("Tên tài khoản không được để trống !")]}
+      >
+        <Input placeholder={defaultInputs.username} />
+      </Form.Item>
+      <Form.Item
+        name="fullname"
+        label={defaultLabels.fullname}
+        rules={[ruleRequired("Họ và tên không được để trống !")]}
+        className="multiple-2"
+      >
+        <Input placeholder={defaultInputs.fullname} />
+      </Form.Item>
+      <Form.Item
+        name="phone"
+        label={defaultLabels.phone}
+        rules={[ruleRequired("Số điện thoại không được để trống !"), rulePhone()]}
+      >
+        <Input placeholder={defaultInputs.phone} />
+      </Form.Item>
+      <Form.Item
+        name="address"
+        label={defaultLabels.address}
+        rules={[ruleRequired("Địa chỉ không được để trống !")]}
+        className="multiple-2"
+      >
+        <Input placeholder={defaultInputs.address} />
+      </Form.Item>
+    </Col>
+    <Col>
+      <Form.Item
+        name="status"
+        label={defaultLabels.status}
+        rules={[ruleRequired("Trạng thái không được để trống !")]}
+      >
+        <Select
+          allowClear
+          options={[
+            { label: CommonStatusValue.active, value: "ACTIVE" },
+            { label: CommonStatusValue.inactive, value: "INACTIVE" },
+          ]}
+          placeholder={defaultInputs.status}
+        />
+      </Form.Item>
+      <Form.Item
+        name="password"
+        label={defaultLabels.password}
+        rules={[
+          ruleRequired("Mật khẩu không được để trống !"),
+          rulePassword()
+        ]}
+      >
+        <Input.Password placeholder={defaultInputs.password} />
+      </Form.Item>
+      <Form.Item label="." className="hidden">
+        <Input />
+      </Form.Item>
+      <Form.Item
+        name="email"
+        label={defaultLabels.email}
+        rules={[ruleRequired("Email không được để trống !"), ruleEmail()]}
+      >
+        <Input placeholder={defaultInputs.email} />
+      </Form.Item>
+    </Col>
+  </Row>
+
+  <div className="buttons">
+    <Button type="primary" htmlType="submit" className="submit-button">
+      Xác nhận
+    </Button>
+  </div>
+</Form>
+
         </div>
       </>
     );
