@@ -36,8 +36,11 @@ export const updateSchema = z.object({
         .describe("Mật khẩu mới"),
 });
 
-export const deleteSchema = z.object(
-    {
-        id: z.number().min(1, "ID phụ huynh không hợp lệ")
-    }
-);
+export const deleteSchema = z.object({
+    id: z.number().min(1, "ID phụ huynh không hợp lệ")
+});
+
+export const changePickupStudent = z.object({
+    id: z.number().min(1, "ID học sinh không hợp lệ"),
+    pickupId: z.number().min(1, "ID địa điểm đón không hợp lệ")
+});

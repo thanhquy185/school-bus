@@ -13,4 +13,12 @@ router.post("/:id/avatar",
 
 router.put("/:id", ParentController.update);
 
+/**
+ * @Routers used by parent, verify by JWT
+ */
+router.get("/student", ParentController.getStudents);
+router.get("/pickup", ParentController.getPickups);
+
+router.put("/student/:id/pickup", ParentController.updatePickupStudent);
+
 export default router;

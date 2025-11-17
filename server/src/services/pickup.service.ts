@@ -3,7 +3,6 @@ import { PickupResponse } from "../responses/pickup.response";
 import { createSchema, deleteSchema, getSchema, updateSchema } from "../schemas/pickup.schema"
 import { isCreateRest, isDeleteRest, isGetRest, isPutRest } from "../utils/rest.util";
 
-
 const PickupService = {
     async get(input: any) {
         const data = getSchema.parse(input);
@@ -27,10 +26,16 @@ const PickupService = {
         );
     },
 
-    async getAll() {
+    async getList() {
         const pickups = await prisma.pickups.findMany();
-
-        return isGetRest(pickups);
+        return isGetRest(pickups.map(pickup => ({
+            id: pickup.id,
+            name: pickup.name,
+            category: pickup.category,
+            lat: pickup.lat,
+            lng: pickup.lng,
+            status: pickup.status
+        } as PickupResponse)));
     },
 
     async create(input: any) {
