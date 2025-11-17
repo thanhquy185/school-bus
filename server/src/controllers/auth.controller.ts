@@ -5,6 +5,11 @@ const AuthController = {
     async login(_req: Request, res: Response) {
         const response = await AuthService.login(_req.body);
         res.status(response.statusCode).json(response);
+    },
+
+    async authConfig(_req: Request, res: Response) {
+        const response = await AuthService.authConfig(_req.headers.authorization);
+        res.status(response.statusCode).json(response);
     }
 }
 

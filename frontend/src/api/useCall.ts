@@ -55,30 +55,18 @@ const useCallApi = () => {
     }
   };
 
-  const notify = (restResponse: RestResponse, successMessage?: string) => {
-    if (!restResponse) return;
-    const isSuccess =
-      restResponse.result &&
-      (restResponse.statusCode == 200 || restResponse.statusCode == 201);
-    if (isSuccess) {
-      if (successMessage) {
-        openNotification({
-          type: "success",
-          message: "Thành công",
-          description: successMessage,
-        });
-      }
-    } else {
-      const apiErrorMessage = restResponse.errorMessage;
-      if (apiErrorMessage) {
-        if (Array.isArray(apiErrorMessage)) {
-          apiErrorMessage.forEach((error: string) => {
-            openNotification({
-              type: "warning",
-              message: "Lưu ý",
-              description: error,
-            });
-          });
+    const notify = (restResponse: RestResponse, successMessage?: string) => {
+        if (!restResponse) return;
+        if (successMessage === "") return;
+        const isSuccess = restResponse.result && (restResponse.statusCode == 200 || restResponse.statusCode == 201);
+        if (isSuccess) {
+            if (successMessage) {
+                openNotification({
+                    type: "success",
+                    message: "Thành công",
+                    description: successMessage,
+                });
+            }
         } else {
           openNotification({
             type: "warning",

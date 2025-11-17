@@ -1,33 +1,35 @@
 import { createContext, useContext, useState, useMemo, useEffect } from "react";
 import { jwtDecode } from 'jwt-decode';
 import useCallApi from "../api/useCall";
+import { authConfig } from "../services/auth-service";
 
 type UserAuth = {
   accessToken: string,
-  email: string,
   expiresAt: number,
   issuedAt: number,
   role: string
-};
+}
+
+type CurrentUser = {
+  accessToken: string,
+  expiresAt: number,
+  issuedAt: number
+}
 
 type AuthContext = {
   token: string | null,
-  accountId: number | null,
-  username: string | null,
   role: string | null,
   expiresAt: number | null,
   isAuthenticated: boolean,
   setAuth: (authResponse: UserAuth) => void,
   clearAuth: () => void
-};
+}
 
 const AuthContext = createContext<AuthContext | undefined>(undefined);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [token, setToken] = useState<string>("");
-  const [accountId, setAccountId] = useState<number | null>(null);
-  const [username, setUsername] = useState<string>("");
   const [role, setRole] = useState<string>("");
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
 
@@ -36,28 +38,17 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const authSessionStr = sessionStorage.getItem("CURRENT_USER");
     if (!authSessionStr) return;
-    
-    try {
-      const authSession: UserAuth = JSON.parse(authSessionStr);
-      if (authSession.expiresAt * 1000 > Date.now()) {
-        setToken(authSession.accessToken);
-        setExpiresAt(authSession.expiresAt);
-        
-        try {
-          const payload: any = jwtDecode(authSession.accessToken);
-          setAccountId(payload.id?.toString() || "");
-          setUsername(payload.username || "");
-          setRole(payload.role || "");
-        } catch (decodeError) {
-          console.error("Lỗi decode:", decodeError);
-        }
-      } else {
+    const validToken = async () => {
+      const restResponse = await execute(authConfig());
+      if (!restResponse?.result && restResponse?.statusCode === 401) {
         clearAuth();
+        return;
       }
-    } catch (error) {
-      console.error("Lỗi:", error);
-      clearAuth();
+      const authResponse: UserAuth = restResponse.data;
+      setAuth({ accessToken: authResponse.accessToken, role: authResponse.role, issuedAt: authResponse.issuedAt, expiresAt: authResponse.expiresAt });
     }
+
+    validToken();
   }, []);
 
   useEffect(() => {
@@ -77,19 +68,16 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => window.clearTimeout(timeOut);
   }, [token, expiresAt]);
 
-  // Function clear token
   const clearAuth = () => {
     setToken("");
-    setAccountId(null);
-    setUsername("");
     setRole("");
     setExpiresAt(0);
     sessionStorage.removeItem("CURRENT_USER");
   };
 
-  // Function set variable
   const setAuth = (authResponse: UserAuth) => {
     setToken(authResponse.accessToken);
+    setRole(authResponse.role);
     setExpiresAt(authResponse.expiresAt);
 
     try {
@@ -106,8 +94,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const value = useMemo(() => ({
     token,
-    accountId,
-    username,
     role,
     expiresAt,
     isAuthenticated: !!token,
@@ -131,3 +117,4 @@ const useAuth = () => {
 
 export { AuthProvider, useAuth };
 export type { UserAuth };
+export type { CurrentUser };

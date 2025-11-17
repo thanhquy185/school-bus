@@ -9,11 +9,13 @@ const JWT_EXPIRE_IN = process.env.JWT_EXPIRE_IN || "86400";
  * @param payload - Payload to be signed in the token
  * @returns 
  */
-export const generateToken = (payload: any): { accessToken: string, issuedAt: number, expiresAt: number } => {
+export const generateToken = (payload: any): { accessToken: string, role: string, issuedAt: number, expiresAt: number } => {
     const issuedAt = Math.floor(Date.now() / 1000);
     const expiresAt = issuedAt + parseInt(JWT_EXPIRE_IN);
     return {
         accessToken: jsonwebtoken.sign(payload, SECRET, { expiresIn: parseInt(JWT_EXPIRE_IN) }),
+        role: payload.role,
+
         issuedAt: issuedAt,
         expiresAt: expiresAt
     };

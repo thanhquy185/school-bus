@@ -14,16 +14,12 @@ import { updatePassword } from "../../services/account-service";
 
 // Info Page
 const ParentInfoPage = () => {
-  //
-  const [selectedMenu, setSelectedMenu] = useState<"personal" | "account">(
-    "personal"
-  );
+
+  const [selectedMenu, setSelectedMenu] = useState<"personal" | "account">("personal");
   const handleMenuClick = (e: any) => {
     setSelectedMenu(e.key);
   };
 
-  
-  //
   const PersonalInfo = () => {
     const [form] = Form.useForm();
     const [isEditing, setIsEditing] = useState<boolean>(false);

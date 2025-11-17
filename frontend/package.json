@@ -16,6 +16,7 @@
     "@fortawesome/free-solid-svg-icons": "^7.0.1",
     "@fortawesome/react-fontawesome": "^3.0.2",
     "@mapbox/polyline": "^1.2.1",
+    "@tailwindcss/vite": "^4.1.17",
     "antd": "^5.27.4",
     "axios": "^1.13.1",
     "dayjs": "^1.11.18",
@@ -32,6 +33,7 @@
     "react-router-dom": "^7.9.1",
     "react-spinners": "^0.17.0",
     "sweetalert2": "^11.25.0",
+    "tailwindcss": "^4.1.17",
     "timezone": "^1.0.23",
     "utc": "^0.1.0",
     "zod": "^4.1.12"
