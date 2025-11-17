@@ -1,14 +1,13 @@
 import { useState } from "react";
 import type { RestResponse } from "./api";
 import { useNotification } from "../utils/showNotification";
-import { openConfirmation } from "../utils/showConfirmation";
 
 const useCallApi = () => {
   const { openNotification } = useNotification();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const execute = async (apiCall: Promise<RestResponse>, handleCRUD: boolean) => {
-    // if(handleCRUD) {
+  const execute = async (apiCall: Promise<RestResponse>, _handleCRUD?: boolean) => {
+    // if(_handleCRUD) {
     //     const answer = await openConfirmation({
     //       title: "Bạn chắc chắn thực hiện hành động này ?",
     //       content: "Hành động này không thể hoàn tác !",
@@ -55,26 +54,25 @@ const useCallApi = () => {
     }
   };
 
-    const notify = (restResponse: RestResponse, successMessage?: string) => {
-        if (!restResponse) return;
-        if (successMessage === "") return;
-        const isSuccess = restResponse.result && (restResponse.statusCode == 200 || restResponse.statusCode == 201);
-        if (isSuccess) {
-            if (successMessage) {
-                openNotification({
-                    type: "success",
-                    message: "Thành công",
-                    description: successMessage,
-                });
-            }
-        } else {
-          openNotification({
-            type: "warning",
-            message: "Lưu ý",
-            description: apiErrorMessage,
-          });
-        }
+  const notify = (restResponse: RestResponse, successMessage?: string) => {
+    if (!restResponse) return;
+    if (successMessage === "") return;
+    const isSuccess = restResponse.result && (restResponse.statusCode == 200 || restResponse.statusCode == 201);
+    if (isSuccess) {
+      if (successMessage) {
+        openNotification({
+          type: "success",
+          message: "Thành công",
+          description: successMessage,
+        });
       }
+    } else {
+      const errorMessage = restResponse.errorMessage?.join(", ") || "Có lỗi xảy ra";
+      openNotification({
+        type: "warning",
+        message: "Lưu ý",
+        description: errorMessage,
+      });
     }
   };
 
