@@ -6,8 +6,8 @@ const useCallApi = () => {
   const { openNotification } = useNotification();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const execute = async (apiCall: Promise<RestResponse>, _handleCRUD?: boolean) => {
-    // if(_handleCRUD) {
+  const execute = async (apiCall: Promise<RestResponse>) => {
+    // if(handleCRUD) {
     //     const answer = await openConfirmation({
     //       title: "Bạn chắc chắn thực hiện hành động này ?",
     //       content: "Hành động này không thể hoàn tác !",

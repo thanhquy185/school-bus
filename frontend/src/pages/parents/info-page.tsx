@@ -14,7 +14,7 @@ import useCallApi from "../../api/useCall";
 
 // Info Page
 const ParentInfoPage = () => {
-  const { execute } = useCallApi();
+  const { execute, notify } = useCallApi();
   //
   const [selectedMenu, setSelectedMenu] = useState<"personal" | "account">(
     "personal"
@@ -32,14 +32,12 @@ const ParentInfoPage = () => {
     const { openNotification } = useNotification();
     const auth = useAuth();
 
-    const { execute } = useCallApi();
-
     useEffect(() => {
       form.setFieldsValue({ avatar: imageFile?.name });
     }, [imageFile]);
 
     const handleUpdate = async (values: any) => {
-      //console.log("Submitted values:", values);
+      console.log("Submitted values:", values);
       if (!parentInfo.id) return;
 
       const updateData = {
@@ -49,45 +47,51 @@ const ParentInfoPage = () => {
         address: values.address,
       };
 
-      const response = await execute(updateParent(parentInfo.id, updateData));
+      try {
+        const response = await updateParent(parentInfo.id, updateData);
+        if (response.statusCode === 200) {
+          openNotification({
+            type: "success",
+            message: "Thành công",
+            description: "Cập nhật thông tin phụ huynh thành công!",
+            duration: 2,
+          });
+        }
+      } catch (error) {
+        console.log("Lỗi cập nhật thông tin phụ huynh:", error);
+      }
 
       if (!imageFile) return;
-      
       const formData = new FormData();
       formData.append("avatar", imageFile);
-      const uploadResponse = await execute(uploadParentAvatar(parentInfo.id, formData));
-
-      if (response.statusCode === 200) {
-        openNotification({
-          type: "success",
-          message: "Thành công",
-          description: "Cập nhật thông tin phụ huynh thành công!",
-          duration: 2,
-        });
-      }
+      const upalodResponse = await execute(uploadParentAvatar(parentInfo.id, formData));
+      notify(upalodResponse, "Cập nhật ảnh đại diện thành công!");
 
       setIsEditing(false); // sau khi submit xong quay lại trạng thái disable
     };
 
     const fetchParentInfo = async () => {
-          const response = await execute(getParentByAccount());
-          const data = response.data;
-          setParentInfo(data);
+      if (!auth.accountId) return;
 
-          form.setFieldsValue({
-            fullname: data?.full_name ?? undefined,
-            phone: data?.phone ?? undefined,
-            email: data?.email ?? undefined,
-            address: data?.address ?? undefined,
-          });
-      };
+      const response = await execute(getParentByAccount());
+      const data = response.data;
+      console.log(data)
+      setParentInfo(data);
 
-    useEffect(() => {;
-    }, [auth.accountId, form, execute, getParentByAccount]);
+      form.setFieldsValue({
+        avatar: data?.avatar ?? undefined,
+        fullname: data?.full_name ?? undefined,
+        phone: data?.phone ?? undefined,
+        email: data?.email ?? undefined,
+        address: data?.address ?? undefined,
+      });
+    };
 
     useEffect(() => {
       fetchParentInfo();
     }, []);
+
+    console.log(form.getFieldValue("avatar"))
 
     return (
       <div className="parent-content client">
@@ -104,6 +108,7 @@ const ParentInfoPage = () => {
                 valuePropName="fileList"
               >
                 <CustomUpload
+                  defaultSrc={parentInfo?.avatar ? parentInfo.avatar : undefined}
                   imageFile={imageFile}
                   setImageFile={setImageFile}
                   alt="image-preview"
@@ -132,7 +137,7 @@ const ParentInfoPage = () => {
                 label="Số điện thoại"
                 rules={
                   isEditing
-                    ? 
+                    ?
                     [
                       ruleRequired("Số điện thoại không được để trống !"),
                       {
@@ -143,7 +148,7 @@ const ParentInfoPage = () => {
                         max: 11,
                         message: "Số điện thoại không được vượt quá 11 ký tự!",
                       },
-                      {                        
+                      {
                         pattern: /^[0-9]+$/,
                         message: "Số điện thoại không hợp lệ!"
                       }
@@ -153,12 +158,12 @@ const ParentInfoPage = () => {
               >
                 <Input placeholder="Nhập Số điện thoại" disabled={!isEditing} />
               </Form.Item>
-              <Form.Item 
-                name="email" 
+              <Form.Item
+                name="email"
                 label="Email"
                 rules={
                   isEditing
-                    ? 
+                    ?
                     [
                       ruleRequired("Email không được để trống !"),
                       {
@@ -230,10 +235,10 @@ const ParentInfoPage = () => {
 
       if (values.newPassword.trim() !== values.newPassword2.trim()) {
         openNotification({
-            type: "warning",
-            message: "Cảnh báo",
-            description: "Mật khẩu mới không khớp!",
-            duration: 2,
+          type: "warning",
+          message: "Cảnh báo",
+          description: "Mật khẩu mới không khớp!",
+          duration: 2,
         });
         return;
       }
@@ -309,10 +314,10 @@ const ParentInfoPage = () => {
                   rules={
                     isEditing
                       ? [
-                          ruleRequired(
-                            "Mật khẩu mới lần 2 không được để trống !"
-                          ),
-                        ]
+                        ruleRequired(
+                          "Mật khẩu mới lần 2 không được để trống !"
+                        ),
+                      ]
                       : []
                   }
                 >
