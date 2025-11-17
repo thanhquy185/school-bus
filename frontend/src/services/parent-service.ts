@@ -6,6 +6,12 @@ export const getParents = async (): Promise<RestResponse> => {
     return restResponse;
 }
 
+export const getParentByAccountId = async (accountId: number): Promise<RestResponse> => {
+    const response = await api.get(`/api/parents/account/${accountId}`);
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
 export const createParent = async (params: CreateParams): Promise<RestResponse> => {
     const response = await api.post("/api/parents", params);
     const restResponse: RestResponse = response.data;
