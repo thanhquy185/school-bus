@@ -1,5 +1,13 @@
 import { api, type RestResponse } from "../api/api";
 
+
+// Lấy 1 tuyến đường theo id
+export const getRoute = async (id: number): Promise<RestResponse> => {
+  const response = await api.get(`/api/routes/${id}`);
+  const restResponse: RestResponse = response.data;
+  return restResponse;
+};
+
 // Lấy tất cả tuyến đường
 export const getRoutes = async (): Promise<RestResponse> => {
   const response = await api.get("/api/routes");
@@ -7,9 +15,9 @@ export const getRoutes = async (): Promise<RestResponse> => {
   return restResponse;
 };
 
-// Lấy 1 tuyến đường theo id
-export const getRoute = async (id: number): Promise<RestResponse> => {
-  const response = await api.get(`/api/routes/${id}`);
+// Lấy tất cả tuyến đường đang hoạt động
+export const getRoutesActive = async (): Promise<RestResponse> => {
+  const response = await api.get("/api/routes/active");
   const restResponse: RestResponse = response.data;
   return restResponse;
 };

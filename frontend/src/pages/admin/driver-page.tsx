@@ -430,6 +430,7 @@ const DriverPage = () => {
               address: undefined,
               status: undefined,
             }}
+            autoComplete="off"
             onFinish={handleSubmit}
           >
             <Row className="split-3">
@@ -642,6 +643,7 @@ const DriverPage = () => {
               address: driver.address || undefined,
               status: driver.status || undefined,
             }}
+            autoComplete="off"
             onFinish={handleSubmit}
           >
             <Row className="split-3">

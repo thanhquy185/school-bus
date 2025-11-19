@@ -339,6 +339,23 @@ table td.right {
   width: auto !important;
   margin-left: 2px;
 }
+.leaflet-map .leaflet-tooltip-custom {
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  color: #333;
+  font-size: 1.3rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.leaflet-map .leaflet-tooltip-custom .title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
 
 .modal {
   width: 90% !important;
@@ -1663,6 +1680,7 @@ table td.right {
 }
 .admin-layout__main-filter {
   height: 40px;
+  margin-bottom: 10px;
 }
 .admin-layout__main-filter :is(.ant-input-affix-wrapper,
 .ant-select,
@@ -2505,18 +2523,18 @@ input,
 .ant-form-item {
   position: relative;
 }
-.route-content .ant-form-item :is(.buttons, .buttons button) {
+:is(.schedule-content, .route-content) .ant-form-item :is(.buttons, .buttons button) {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.route-content .ant-form-item .buttons {
+:is(.schedule-content, .route-content) .ant-form-item .buttons {
   position: absolute;
   top: -30px;
   right: 0;
   margin-top: 0;
 }
-.route-content .ant-form-item .buttons button {
+:is(.schedule-content, .route-content) .ant-form-item .buttons button {
   gap: 4px;
   width: 100% !important;
   height: auto !important;
@@ -2535,17 +2553,17 @@ input,
 .ant-drawer .parent-content .ant-form .ant-form-item:nth-of-type(2) {
   margin-top: 114px;
 }
-:is(.route-content, .pickup-content) .ant-form:has(.has-map) #leaflet-map {
+:is(:is(.schedule-content, .route-content), .pickup-content) .ant-form:has(.has-map) #leaflet-map {
   height: 456px !important;
 }
-.route-content .ant-form:has(.has-map.has-select) .select-pickup {
+:is(.schedule-content, .route-content) .ant-form:has(.has-map.has-select) .select-pickup {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-left: 0;
   margin-right: 0;
 }
-.route-content .ant-form:has(.has-map.has-select) .select-pickup :is(.ant-select,
+:is(.schedule-content, .route-content) .ant-form:has(.has-map.has-select) .select-pickup :is(.ant-select,
 .ant-select-selector,
 .ant-select-selection-wrap,
 .ant-select-selection-placeholder,
@@ -2556,16 +2574,176 @@ button) {
   line-height: 32px !important;
   font-size: 1.4rem !important;
 }
-.route-content .ant-form:has(.has-map.has-select) .select-pickup .ant-select {
+:is(.schedule-content, .route-content) .ant-form:has(.has-map.has-select) .select-pickup .ant-select {
   width: calc(80% - 3px);
 }
-.route-content .ant-form:has(.has-map.has-select) .select-pickup button {
+:is(.schedule-content, .route-content) .ant-form:has(.has-map.has-select) .select-pickup button {
   width: calc(20% - 3px);
   font-size: 1.2rem !important;
 }
-.route-content .ant-form:has(.has-map.has-select) #leaflet-map {
+:is(.schedule-content, .route-content) .ant-form:has(.has-map.has-select) #leaflet-map {
   height: 410px !important;
   margin-top: 6px;
+}
+.schedule-content .ant-form .infos {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.schedule-content .ant-form:has(.infos) #leaflet-map {
+  margin-top: 6px;
+}
+.schedule-content .ant-form .infos .info-block {
+  display: flex;
+  width: 50%;
+  height: 90px;
+  background-color: #e8f8fd;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.schedule-content .ant-form .infos .info-block :is(.icon, .avatar) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24%;
+  height: 100%;
+}
+.schedule-content .ant-form .infos .info-block :is(.icon, .avatar) img {
+  position: relative;
+  z-index: 100;
+  width: 40px;
+  height: 40px;
+}
+.schedule-content .ant-form .infos .info-block .info {
+  width: 76%;
+  height: 100%;
+  padding: 14px 10px 14px 0;
+}
+.schedule-content .ant-form .infos .info-block .info p {
+  font-size: 1.4rem;
+}
+.schedule-content .ant-form .infos .info-block .info p span {
+  display: inline-block;
+  width: 26%;
+}
+.schedule-content .ant-form .infos .info-block .info p b {
+  font-weight: 600;
+}
+.schedule-content .ant-form .infos .info-block.driver {
+  background: #fff7e6;
+}
+.schedule-content .ant-form .infos .info-block.driver .avatar img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+.ant-form .cards {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+.ant-form .cards > * {
+  width: 50%;
+}
+.ant-form .cards .card-wrapper {
+  background: #efefef;
+  padding: 10px;
+}
+.ant-form .cards .card {
+  height: 100%;
+  background: #fff;
+  border-radius: 6px;
+}
+.ant-form .cards .card .header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #003366;
+  padding: 6px;
+  border-radius: 4px 4px 0 0;
+}
+.ant-form .cards .card .header div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: #FFB612;
+  padding: 4px;
+}
+.ant-form .cards .card .header img {
+  width: 40px;
+  height: 40px;
+}
+.ant-form .cards .card .header strong {
+  color: #003366;
+  font-size: 2.6rem;
+  font-weight: 700;
+}
+.ant-form .cards .card :is(.body, .footer) {
+  display: flex;
+  gap: 10px;
+  padding: 6px;
+}
+.ant-form .cards .card.front .body .avatar {
+  width: 120px;
+  height: 160px;
+}
+.ant-form .cards .card.front .body .infos {
+  width: calc(100% - 120px - 10px);
+}
+.ant-form .cards .card.front .body .title {
+  color: red;
+  font-size: 2.2rem;
+  font-weight: 500;
+  text-align: center;
+}
+.ant-form .cards .card.front .body .info {
+  font-size: 1.6rem;
+}
+.ant-form .cards .card.front .body .info:not(:first-of-type) {
+  margin-top: 2px;
+}
+.ant-form .cards .card.front .body .info span {
+  display: inline-block;
+  width: 20%;
+  color: blue;
+}
+.ant-form .cards .card.front .body .info b {
+  font-weight: 500;
+}
+.ant-form .cards .card.front .footer {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ant-form .cards .card.front .footer .id {
+  width: 120px;
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-align: center;
+}
+.ant-form .cards .card.front .footer .barcode {
+  width: calc(100% - 120px - 10px);
+  text-align: center;
+}
+.ant-form .cards .card.front .footer .barcode img {
+  width: 88%;
+  height: 40px;
+}
+.ant-form .cards .card.back {
+  background: #003366;
+  padding: 14px;
+}
+.ant-form .cards .card.back div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #FFB612;
+  height: 100%;
+}
+.ant-form .cards .card.back div img {
+  width: 160px;
+  height: 160px;
 }
 @media (max-width: 767.98px) {
   .ant-form > .ant-row:is(.split-2, .split-3) > .ant-col {

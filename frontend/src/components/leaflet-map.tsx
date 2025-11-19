@@ -14,7 +14,9 @@ import type {
   ActivePickupFormatType,
   BusInfoType,
   BusType,
+  PickupType,
   RouteDetailsFormatType,
+  RouteFormatType,
   ScheduleFormatType,
 } from "../common/types";
 import { getLocationInfo } from "../utils/getLocationInfo";
@@ -62,17 +64,19 @@ interface LeafletMapProps {
   enableZoom?: boolean;
   enableSearch?: boolean;
   enableBaseLayers?: boolean;
-  hidden?: boolean,
+  hidden?: boolean;
   lat?: number;
   lng?: number;
   pointType?: string;
-  busInfos?: BusInfoType[];
+  pickups?: PickupType[];
+  routes?: RouteFormatType[];
   routeDetails?: RouteDetailsFormatType[];
   routeDetailsList?: {
     activeId?: number;
     routeDetails: RouteDetailsFormatType[];
     status: string;
   }[];
+  busInfos?: BusInfoType[];
   activePickupsList?: {
     activeId?: number;
     activePickups?: ActivePickupFormatType[];
@@ -152,6 +156,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   lat,
   lng,
   pointType,
+  pickups,
+  routes,
   routeDetails,
   routeDetailsList,
   busInfos,
@@ -163,6 +169,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
 }) => {
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
+  const markersRef = useRef<L.LayerGroup | null>(null);
   const infoBlockRef = useRef<L.Control | null>(null);
   const routeRefs = useRef<L.Polyline[]>([]);
   const busMarkersRef = useRef<Record<number, L.Marker>>({});
@@ -290,6 +297,190 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     }
   }, [lat, lng, pointType]);
 
+  // Danh sách trạm xe buýt khi quản lý
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Khởi tạo group nếu chưa có
+    if (!markersRef.current) {
+      markersRef.current = L.layerGroup().addTo(mapRef.current);
+    }
+
+    // Xóa marker cũ trước khi vẽ lại
+    markersRef.current.clearLayers();
+
+    // Vẽ danh sách trạm
+    pickups?.forEach((p) => {
+      const tooltipContent = `
+    <div class="custom-tooltip">
+      <p class="title">Trạm xe buýt #${p.id}</p>
+      <p>Tên: ${p.name || "-"}</p>
+      <p>Loại: ${p.category}</p>
+      <p>Toạ độ x: ${p.lat || "-"}</p>
+      <p>Toạ độ y: ${p.lng || "-"}</p>
+    </div>
+  `;
+
+      L.marker([p.lat!, p.lng!], {
+        icon: getIconByType(p.category!),
+      })
+        .addTo(markersRef.current!)
+        .bindTooltip(tooltipContent, {
+          permanent: false, // true nếu muốn luôn hiển thị
+          direction: "top",
+          className: "leaflet-tooltip-custom",
+        });
+    });
+
+    // Auto-fit map theo tất cả marker
+    if (pickups && pickups.length > 0) {
+      const bounds = L.latLngBounds(pickups?.map((p) => [p.lat!, p.lng!])!);
+      mapRef.current.fitBounds(bounds);
+    }
+  }, [pickups]);
+
+  // Danh sách tuyến đường khi quản lý
+  useEffect(() => {
+    if (!mapRef.current || !routes) return;
+
+    // Xóa tuyến cũ
+    routeRefs.current.forEach((r) => mapRef.current!.removeLayer(r));
+    routeRefs.current = [];
+
+    // Xóa marker cũ
+    pickupMarkersRef.current.forEach((m) => mapRef.current!.removeLayer(m));
+    pickupMarkersRef.current = [];
+
+    // Xóa infoBlock
+    if (infoBlockRef.current) {
+      mapRef.current!.removeControl(infoBlockRef.current);
+      infoBlockRef.current = null;
+    }
+
+    // -------------------------
+    //  🛣️ Lặp qua từng tuyến RouteFormatType
+    // -------------------------
+    routes.forEach(async (route, index) => {
+      if (!route.routeDetails || route.routeDetails.length === 0) return;
+
+      const sorted = [...route.routeDetails].sort(
+        (a, b) => a.order! - b.order!
+      );
+
+      // Lấy toạ độ [lng, lat] gửi API
+      const coordinates: [number, number][] = sorted.map((item) => [
+        item.pickup!.lng!,
+        item.pickup!.lat!,
+      ]);
+
+      // --------------------------
+      // 🪧 Marker trạm
+      // --------------------------
+      sorted.forEach((item) => {
+        const { lat, lng, name, category } = item.pickup!;
+
+        const m = L.marker([lat!, lng!], {
+          icon: getIconByType(category),
+        }).addTo(mapRef.current!);
+
+        // Tooltip cho marker
+        m.bindTooltip(`<b>${name}</b>`, {
+          permanent: false,
+          direction: "top",
+          className: "leaflet-tooltip-custom",
+        });
+
+        pickupMarkersRef.current.push(m);
+      });
+
+      // --------------------------
+      // 🛣️ Fetch API để vẽ polyline tuyến
+      // --------------------------
+      try {
+        const res = await fetch(
+          "https://api.openrouteservice.org/v2/directions/driving-car/json",
+          {
+            method: "POST",
+            headers: {
+              Authorization: apiKeySelected,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ coordinates }),
+          }
+        );
+
+        const data = await res.json();
+        const decoded = polyline.decode(data.routes[0].geometry);
+
+        // Vẽ polyline
+        const line = L.polyline(decoded, {
+          color: "blue",
+          weight: 4,
+        }).addTo(mapRef.current!);
+
+        // 🎯 Tooltip khi hover vào polyline
+        const tooltipContent = `
+          <p class="title">Tuyến đường #${route.id}</p>
+          <p>Tên: ${route.name}</p>
+          <p>Trạm BĐ: ${route.startPickup}</p>
+          <p>Trạm KT: ${route.endPickup}</p>
+          <p>Quãng đường: ${route.totalDistance?.toFixed(0) ?? "?"} m</p>
+          <p>Thời gian: ${route.totalTime?.toFixed(0) ?? "?"} s</p>
+          <p>Số điểm dừng: ${sorted.length}</p>
+        `;
+
+        line.bindTooltip(tooltipContent, {
+          permanent: false,
+          direction: "top",
+          className: "leaflet-tooltip-custom",
+        });
+
+        routeRefs.current.push(line);
+
+        // --------------------------
+        // 📊 Nếu chỉ có 1 tuyến → hiển thị info block
+        // --------------------------
+        // if (routes.length === 1) {
+        //   const infoBlock = new L.Control({ position: "bottomleft" });
+
+        //   infoBlock.onAdd = () => {
+        //     const div = L.DomUtil.create("div", "info-block in-tag");
+        //     div.innerHTML = `
+        //     <p class="title">${route.name}</p>
+        //     <p class="description">- Quãng đường: <b>${route.totalDistance?.toFixed(
+        //       0
+        //     )} m</b></p>
+        //     <p class="description">- Thời gian: <b>${route.totalTime?.toFixed(
+        //       0
+        //     )} s</b></p>`;
+        //     return div;
+        //   };
+
+        //   infoBlock.addTo(mapRef.current!);
+        //   infoBlockRef.current = infoBlock;
+        // }
+      } catch (err) {
+        console.error("Lỗi khi vẽ tuyến:", err);
+      }
+    });
+
+    // --------------------------
+    // 🎯 Căn giữa map
+    // --------------------------
+    const allPoints = routes.flatMap(
+      (route) =>
+        route.routeDetails?.map(
+          (item) => [item.pickup!.lat!, item.pickup!.lng!] as L.LatLngTuple
+        ) ?? []
+    );
+
+    if (allPoints.length > 0) {
+      const bounds = L.latLngBounds(allPoints);
+      mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [routes]);
+
+  // Tuyến đường khi vận hành
   useEffect(() => {
     if (!mapRef.current || !routeDetails || routeDetails.length === 0) return;
 
@@ -390,6 +581,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
       .catch((err) => console.error(err));
   }, [routeDetails]);
 
+  // Danh sách tuyến đường khi vận hành
   useEffect(() => {
     if (!mapRef.current || !routeDetailsList) return;
 
@@ -514,6 +706,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     }
   }, [routeDetailsList]);
 
+  // Sự kiện khi ấn vào xe buýt
   useEffect(() => {
     if (!mapRef.current || !busInfos?.length) return;
 
@@ -576,7 +769,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
       !busInfos?.length ||
       !routeDetailsList?.length ||
       !activePickupsList?.length
-    ) return
+    )
+      return;
 
     console.log("🚍 simulate bus moving...");
 

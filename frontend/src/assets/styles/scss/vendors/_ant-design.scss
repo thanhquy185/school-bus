@@ -1,4 +1,5 @@
 @use "../abstracts/mixins" as *;
+@use "../abstracts/colors" as *;
 
 .ant-select-dropdown,
 .ant-notification,
@@ -250,20 +251,20 @@
     position: relative;
   }
 
-  .route-content &-item :is(.buttons, .buttons button) {
+  :is(.schedule-content, .route-content) &-item :is(.buttons, .buttons button) {
     display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  .route-content &-item .buttons {
+  :is(.schedule-content, .route-content) &-item .buttons {
     position: absolute;
     top: -30px;
     right: 0;
     margin-top: 0;
   }
 
-  .route-content &-item .buttons button {
+  :is(.schedule-content, .route-content) &-item .buttons button {
     gap: 4px;
     @include size(100% !important, auto !important);
     padding: 4px 10px;
@@ -290,14 +291,18 @@
     margin-top: 114px;
   }
 
-  :is(.route-content, .pickup-content) &:has(.has-map) #leaflet-map {
+  :is(:is(.schedule-content, .route-content), .pickup-content)
+    &:has(.has-map)
+    #leaflet-map {
     height: calc(
       calc($form-item-margin-bottom + $form-label-height) * 4 +
         calc($form-input-height * 5)
     ) !important;
   }
 
-  .route-content &:has(.has-map.has-select) .select-pickup {
+  :is(.schedule-content, .route-content)
+    &:has(.has-map.has-select)
+    .select-pickup {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -305,7 +310,7 @@
     margin-right: 0;
   }
 
-  .route-content
+  :is(.schedule-content, .route-content)
     &:has(.has-map.has-select)
     .select-pickup
     :is(
@@ -322,21 +327,207 @@
     font-size: 1.4rem !important;
   }
 
-  .route-content &:has(.has-map.has-select) .select-pickup .ant-select {
+  :is(.schedule-content, .route-content)
+    &:has(.has-map.has-select)
+    .select-pickup
+    .ant-select {
     width: calc(80% - calc(6px / 2));
   }
 
-  .route-content &:has(.has-map.has-select) .select-pickup button {
+  :is(.schedule-content, .route-content)
+    &:has(.has-map.has-select)
+    .select-pickup
+    button {
     width: calc(20% - calc(6px / 2));
     font-size: 1.2rem !important;
   }
 
-  .route-content &:has(.has-map.has-select) #leaflet-map {
+  :is(.schedule-content, .route-content)
+    &:has(.has-map.has-select)
+    #leaflet-map {
     height: calc(
       calc($form-item-margin-bottom + $form-label-height) * 4 +
         calc($form-input-height * 5) - $form-input-height - 6px
     ) !important;
     margin-top: 6px;
+  }
+
+  .schedule-content & .infos {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .schedule-content &:has(.infos) #leaflet-map {
+    margin-top: 6px;
+  }
+
+  .schedule-content & .infos .info-block {
+    display: flex;
+    @include size(50%, 90px);
+    background-color: #e8f8fd;
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .schedule-content & .infos .info-block :is(.icon, .avatar) {
+    @include flexCenter();
+    @include size(24%, 100%);
+  }
+
+  .schedule-content & .infos .info-block :is(.icon, .avatar) img {
+    position: relative;
+    z-index: 100;
+    @include size(40px);
+  }
+
+  .schedule-content & .infos .info-block .info {
+    @include size(76%, 100%);
+    padding: 14px 10px 14px 0;
+  }
+
+  .schedule-content & .infos .info-block .info p {
+    font-size: 1.4rem;
+  }
+
+  .schedule-content & .infos .info-block .info p span {
+    display: inline-block;
+    width: 26%;
+  }
+
+  .schedule-content & .infos .info-block .info p b {
+    font-weight: 600;
+  }
+
+  .schedule-content & .infos .info-block.driver {
+    background: #fff7e6;
+  }
+
+  .schedule-content & .infos .info-block.driver .avatar img {
+    @include size(50px);
+    border-radius: 50%;
+  }
+
+  & .cards {
+    display: flex;
+    gap: $form-spacing;
+    width: 100%;
+  }
+
+  & .cards > * {
+    width: 50%;
+  }
+
+  & .cards .card-wrapper {
+    background: #efefef;
+    padding: 10px;
+  }
+
+  & .cards .card {
+    height: 100%;
+    background: #fff;
+    border-radius: 6px;
+  }
+
+  & .cards .card .header {
+    @include flexCenter();
+    background: $primary-color;
+    padding: 6px;
+    border-radius: 4px 4px 0 0;
+  }
+
+  & .cards .card .header div {
+    @include flexCenter();
+    gap: 10px;
+    width: 100%;
+    background: $secondary-color;
+    padding: 4px;
+  }
+
+  & .cards .card .header img {
+    @include size(40px);
+  }
+
+  & .cards .card .header strong {
+    color: $primary-color;
+    font-size: 2.6rem;
+    font-weight: 700;
+  }
+
+  & .cards .card :is(.body, .footer) {
+    display: flex;
+    gap: 10px;
+    padding: 6px;
+  }
+
+  & .cards .card.front .body .avatar {
+    @include size(120px, 160px);
+  }
+
+  & .cards .card.front .body .infos {
+    width: calc(100% - 120px - 10px);
+  }
+
+  & .cards .card.front .body .title {
+    color: red;
+    font-size: 2.2rem;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  & .cards .card.front .body .info {
+    font-size: 1.6rem;
+  }
+
+  & .cards .card.front .body .info:not(:first-of-type) {
+    margin-top: 2px;
+  }
+
+  & .cards .card.front .body .info span {
+    display: inline-block;
+    width: 20%;
+    color: blue;
+  }
+
+  & .cards .card.front .body .info b {
+    font-weight: 500;
+  }
+
+  & .cards .card.front .footer {
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  & .cards .card.front .footer .id {
+    width: 120px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  & .cards .card.front .footer .barcode {
+    width: calc(100% - 120px - 10px);
+    text-align: center;
+  }
+
+  & .cards .card.front .footer .barcode img {
+    width: 88%;
+    height: 40px;
+  }
+
+  & .cards .card.back {
+    background: $primary-color;
+    padding: 14px;
+  }
+
+  & .cards .card.back div {
+    @include flexCenter();
+    background: $secondary-color;
+    height: 100%;
+  }
+
+  & .cards .card.back div img {
+    @include size(160px);
   }
 
   // Mobile

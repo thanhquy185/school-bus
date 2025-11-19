@@ -16,6 +16,12 @@ const RouteController = {
         res.status(response.statusCode).json(response);
     },
 
+    async getAllActive(_req: Request, res: Response) {
+        const response = await RouteService.getAllActive();
+
+        res.status(response.statusCode).json(response);
+    },
+
     async create(req: Request, res: Response) {
         const response = await RouteService.create(req.body);
         

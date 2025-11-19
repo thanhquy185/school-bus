@@ -2,8 +2,13 @@ import { Response, Request } from "express";
 import ParentService from '../services/parent.service';
 
 const ParentController = {
-    async getList(_req: Request, res: Response) {
-        const response = await ParentService.getList();
+    async getAll(_req: Request, res: Response) {
+        const response = await ParentService.getAll();
+        res.status(response.statusCode).json(response);
+    },
+    
+    async getAllActive(_req: Request, res: Response) {
+        const response = await ParentService.getAllActive();
         res.status(response.statusCode).json(response);
     },
 

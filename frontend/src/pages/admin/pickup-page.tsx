@@ -43,6 +43,7 @@ import useCallApi from "../../api/useCall";
 import {
   createPickup,
   getPickups,
+  updatePickup,
   updatePickup as updatePickupService,
 } from "../../services/pickup-service";
 
@@ -56,28 +57,9 @@ const PickupPage = () => {
   // Notification
   const { openNotification } = useNotification();
 
-  const { execute } = useCallApi();
+  const { execute, notify } = useCallApi();
 
-  // Cấu hình bảng dữ liệu (sau cập nhật lọc giới tính, phụ huynh, trạm và lớp)
-  const demoData: PickupType[] = [
-    {
-      id: 1,
-      name: "Trường Đại học Sài Gòn",
-      category: "Trường học",
-      lat: 10.75960314081626,
-      lng: 106.68201506137848,
-      status: "Hoạt động",
-    },
-    {
-      id: 2,
-      name: "Trạm Công viên Lê Thị Riêng",
-      category: "Điểm đưa đón",
-      lat: 10.786197005344277,
-      lng: 106.66577696800232,
-      status: "Tạm dừng",
-    },
-  ];
-
+  // Dữ liệu
   const [pickupData, setPickupData] = useState<PickupType[]>([]);
 
   // Truy vấn dữ liệu
@@ -352,37 +334,6 @@ const PickupPage = () => {
       undefined
     );
 
-    const addPickup = async (form: PickupType) => {
-      try {
-        const formatData = {
-          ...form,
-          category: form.category == "Trường học" ? "SCHOOL" : "PICKUP",
-          status: form.status == "Hoạt động" ? "ACTIVE" : "INACTIVE",
-        };
-
-        const response = await execute(createPickup(formatData), true);
-        //console.log(response)
-        if (response!.statusCode == 201) {
-          openNotification({
-            type: "success",
-            message: "Thành công",
-            description: "Thêm trạm xe buýt thành công!",
-            duration: 2,
-          });
-          setCurrentAction("list");
-          getData();
-        }
-      } catch (error) {
-        console.error(error);
-        openNotification({
-          type: "error",
-          message: "Lỗi",
-          description: "thêm trạm xe buýt thất bại!",
-          duration: 2,
-        });
-      }
-    };
-
     const handleSelectedPickup = ({
       lat,
       lng,
@@ -393,6 +344,24 @@ const PickupPage = () => {
       form.setFieldValue("lat", lat);
       form.setFieldValue("lng", lng);
       console.log(info);
+    };
+
+    const handleCreatePickup = async () => {
+      const restResponse = await execute(
+        createPickup({
+          name: form.getFieldValue("name") || undefined,
+          category: form.getFieldValue("category") || undefined,
+          lat: form.getFieldValue("lat") || undefined,
+          lng: form.getFieldValue("lng") || undefined,
+          status: form.getFieldValue("status") || undefined,
+        }),
+        true
+      );
+      notify(restResponse!, "Thêm trạm xe buýt thành công");
+      if (restResponse?.result) {
+        getData();
+        setCurrentAction("list");
+      }
     };
 
     return (
@@ -410,10 +379,7 @@ const PickupPage = () => {
               status: undefined,
             }}
             autoComplete="off"
-            onFinish={() => {
-              addPickup(form.getFieldsValue());
-              console.log("Form values:", form.getFieldsValue());
-            }}
+            onFinish={() => handleCreatePickup()}
           >
             <Row className="split-3">
               <Col>
@@ -441,11 +407,11 @@ const PickupPage = () => {
                         options={[
                           {
                             label: CommonStatusValue.active,
-                            value: CommonStatusValue.active,
+                            value: "ACTIVE",
                           },
                           {
                             label: CommonStatusValue.inactive,
-                            value: CommonStatusValue.inactive,
+                            value: "INACTIVE",
                           },
                         ]}
                       />
@@ -477,14 +443,20 @@ const PickupPage = () => {
                     options={[
                       {
                         label: PointTypeValue.school,
-                        value: PointTypeValue.school,
+                        value: "SCHOOL",
                       },
                       {
                         label: PointTypeValue.pickup,
-                        value: PointTypeValue.pickup,
+                        value: "PICKUP",
                       },
                     ]}
-                    onChange={(val: any) => setCategoryValue(val)}
+                    onChange={(val: any) =>
+                      setCategoryValue(
+                        val === "SCHOOL"
+                          ? PointTypeValue.school
+                          : PointTypeValue.pickup
+                      )
+                    }
                   />
                 </Form.Item>
                 <Form.Item
@@ -564,34 +536,20 @@ const PickupPage = () => {
       form.setFieldValue("lng", lng);
     };
 
-    const updatePickup = async (form: PickupType) => {
-      try {
-        const formatData = {
-          ...form,
-          category: form.category == "Trường học" ? "SCHOOL" : "PICKUP",
-          status: form.status == "Hoạt động" ? "ACTIVE" : "INACTIVE",
-        };
-
-        const response = await execute(updatePickupService(formatData), true);
-        //console.log(response)
-        if (response!.statusCode == 200) {
-          openNotification({
-            type: "success",
-            message: "Thành công",
-            description: "Cập nhật trạm xe buýt thành công!",
-            duration: 2,
-          });
-          setCurrentAction("list");
-          getData();
-        }
-      } catch (error) {
-        console.error(error);
-        openNotification({
-          type: "error",
-          message: "Lỗi",
-          description: "Cập nhật trạm xe buýt thất bại!",
-          duration: 2,
-        });
+    const handleUpdatePickup = async () => {
+      const restResponse = await execute(
+        updatePickup(pickup.id!, {
+          name: form.getFieldValue("name") || undefined,
+          category: form.getFieldValue("category") || undefined,
+          lat: form.getFieldValue("lat") || undefined,
+          lng: form.getFieldValue("lng") || undefined,
+        }),
+        true
+      );
+      notify(restResponse!, "Cập nhật trạm xe buýt thành công");
+      if (restResponse?.result) {
+        getData();
+        setCurrentAction("list");
       }
     };
 
@@ -610,10 +568,7 @@ const PickupPage = () => {
               status: pickup.status || undefined,
             }}
             autoComplete="off"
-            onFinish={() => {
-              updatePickup(form.getFieldsValue());
-              console.log("Form values:", form.getFieldsValue());
-            }}
+            onFinish={() => handleUpdatePickup()}
           >
             <Row className="split-3">
               <Col>
@@ -658,14 +613,20 @@ const PickupPage = () => {
                     options={[
                       {
                         label: PointTypeValue.school,
-                        value: PointTypeValue.school,
+                        value: "SCHOOL",
                       },
                       {
                         label: PointTypeValue.pickup,
-                        value: PointTypeValue.pickup,
+                        value: "PICKUP",
                       },
                     ]}
-                    onChange={(val: any) => setCategoryValue(val)}
+                    onChange={(val: any) =>
+                      setCategoryValue(
+                        val === "SCHOOL"
+                          ? PointTypeValue.school
+                          : PointTypeValue.pickup
+                      )
+                    }
                   />
                 </Form.Item>
                 <Form.Item
@@ -726,33 +687,23 @@ const PickupPage = () => {
     );
   };
   const PickupLock: React.FC<{ pickup: PickupType }> = ({ pickup }) => {
-    const updateStatus = async (form: PickupType) => {
-      try {
-        const response = await execute(updatePickupService(form), true);
-        if (response!.statusCode == 200) {
-          openNotification({
-            type: "success",
-            message: "Thành công",
-            description:
-              form.status == "INACTIVE"
-                ? "Khóa trạm xe buýt thành công!"
-                : "Mở khóa trạm xe buýt thành công!",
-            duration: 1.5,
-          });
-          setCurrentAction("list");
-          getData();
-        }
-      } catch (error) {
-        console.error(error);
-        openNotification({
-          type: "error",
-          message: "Lỗi",
-          description:
-            form.status == "INACTIVE"
-              ? "Khóa trạm xe buýt thất bại!"
-              : "Mở khóa trạm xe buýt thất bại!",
-          duration: 1.5,
-        });
+    const handleLockPickup = async () => {
+      const restResponse = await execute(
+        updatePickup(pickup.id!, {
+          status:
+            pickup.status === CommonStatusValue.active ? "INACTIVE" : "ACTIVE",
+        }),
+        true
+      );
+      notify(
+        restResponse!,
+        pickup.status === CommonStatusValue.active
+          ? "Khoá trạm xe buýt thành công"
+          : "Mở khoá trạm xe buýt thành công"
+      );
+      if (restResponse?.result) {
+        getData();
+        setCurrentAction("list");
       }
     };
 
@@ -760,7 +711,7 @@ const PickupPage = () => {
       <>
         <Alert
           message={
-            "Trạm Xe buýt: " +
+            "Trạm xe buýt: " +
             "#" +
             pickup?.id +
             " - " +
@@ -790,16 +741,7 @@ const PickupPage = () => {
             <Button
               color="danger"
               variant="solid"
-              onClick={() => {
-                const newPickup = {
-                  ...pickup,
-                  status: pickup.status == "Hoạt động" ? "INACTIVE" : "ACTIVE",
-                  category:
-                    pickup.category == "Trường học" ? "SCHOOL" : "PICKUP",
-                };
-
-                updateStatus(newPickup);
-              }}
+              onClick={() => handleLockPickup()}
             >
               Xác nhận
             </Button>
@@ -951,10 +893,6 @@ const PickupPage = () => {
     }
   }, [currentAction]);
 
-  useEffect(() => {
-    console.log(filteredPickupList);
-  }, [filteredPickupList]);
-
   return (
     <div className="admin-layout__main-content">
       {/* Breadcrumb */}
@@ -1015,11 +953,18 @@ const PickupPage = () => {
                 </Button>
               </div>
             </div>
+            <LeafletMap
+              id="map-pickups "
+              type="detail"
+              pickups={filteredPickupList?.filter(
+                (pickup) => pickup.status === CommonStatusValue.active
+              )}
+            />
             <CustomTableActions<PickupType>
               columns={columns}
               data={filteredPickupList || []}
               rowKey={(record) => String(record?.id)}
-              // loading={isLoading}
+              // loading={loading}
               defaultPageSize={10}
               className="admin-layout__main-table table-data pickups"
             />

@@ -8,6 +8,14 @@
   "inform": "Inform",
   "inform-manager": "Inform Manager",
   "inform-info": "Inform Info",
+  "schedule": "Schedule",
+  "schedule-manager": "Schedule Manager",
+  "schedule-list": "Schedule List",
+  "schedule-detail": "Detail Schedule",
+  "schedule-create": "Create Schedule",
+  "schedule-update": "Update Schedule",
+  "schedule-lock": "Lock Schedule",
+  "schedule-unlock": "Unlock Schedule",
   "route": "Route",
   "route-manager": "Route Manager",
   "route-list": "Route List",
@@ -57,5 +65,6 @@
   "student-create": "Create Student",
   "student-update": "Update Student",
   "student-lock": "Lock Student",
-  "student-unlock": "Unlock Student"
+  "student-unlock": "Unlock Student",
+  "student-card": "Card Student"
 }

@@ -6,6 +6,7 @@ import AuthMiddleware from './middlewares/auth.middleware';
 
 import AuthRouter from './routes/auth.route';
 import AccountRouter from './routes/account.route';
+import ScheduleRouter from './routes/schedule.route';
 import RouteRouter from './routes/route.route';
 import PickupRouter from './routes/pickup.route';
 import BusRouter from './routes/bus.route';
@@ -26,7 +27,7 @@ app.use(express.json());
 app.use("/auth", AuthRouter);
 // app.use("/api/accounts", AuthMiddleware(["ADMIN"]).authenticate, AccountRouter);
 app.use("/api/accounts", AccountRouter);
-
+app.use("/api/schedules", ScheduleRouter);
 app.use("/api/buses", BusRouter);
 app.use("/api/routes", RouteRouter);
 app.use("/api/pickups", PickupRouter);

@@ -258,8 +258,6 @@ const ParentPage = () => {
     return matchesFull_name && matchesStatus;
   });
 
-
-
   const ParentDetail: React.FC<{ parent: ParentFormatType }> = ({ parent }) => {
     const [form] = Form.useForm<ParentNotFormatType>();
 
@@ -393,6 +391,7 @@ const ParentPage = () => {
               address: undefined,
               status: undefined,
             }}
+            autoComplete="off"
             onFinish={handleSubmit}
           >
             <Row className="split-3">
@@ -543,6 +542,7 @@ const ParentPage = () => {
               address: parent.address || undefined,
               status: parent.status || undefined,
             }}
+            autoComplete="off"
             onFinish={handleSubmitUpdate}
           >
             <Row className="split-3">

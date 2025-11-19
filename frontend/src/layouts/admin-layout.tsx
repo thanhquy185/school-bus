@@ -20,6 +20,7 @@ import {
   faMapLocationDot,
   faLocationDot,
   faMessage,
+  faCalendarDays,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
@@ -46,38 +47,44 @@ const CustomItemValue = {
     link: "/admin/informs",
     icon: <FontAwesomeIcon icon={faMessage} />,
   },
-  route: {
+  schedule: {
     key: "3",
+    value: "schedule",
+    link: "/admin/schedules",
+    icon: <FontAwesomeIcon icon={faCalendarDays} />,
+  },
+  route: {
+    key: "4",
     value: "route",
     link: "/admin/routes",
     icon: <FontAwesomeIcon icon={faRoad} />,
   },
   pickup: {
-    key: "4",
+    key: "5",
     value: "pickup",
     link: "/admin/pickups",
     icon: <FontAwesomeIcon icon={faLocationDot} />,
   },
   bus: {
-    key: "5",
+    key: "6",
     value: "bus",
     link: "/admin/buses",
     icon: <FontAwesomeIcon icon={faBus} />,
   },
   driver: {
-    key: "6",
+    key: "7",
     value: "driver",
     link: "/admin/drivers",
     icon: <FontAwesomeIcon icon={faChalkboardUser} />,
   },
   parent: {
-    key: "7",
+    key: "8",
     value: "parent",
     link: "/admin/parents",
     icon: <FontAwesomeIcon icon={faPeopleRoof} />,
   },
   student: {
-    key: "8",
+    key: "9",
     value: "student",
     link: "/admin/students",
     icon: <FontAwesomeIcon icon={faUserGraduate} />,
@@ -150,6 +157,15 @@ const AdminLayout: React.FC = () => {
       ),
     },
     {
+      key: CustomItemValue.schedule.key,
+      icon: CustomItemValue.schedule.icon,
+      label: (
+        <Link to={CustomItemValue.schedule.link}>
+          {t(CustomItemValue.schedule.value)}
+        </Link>
+      ),
+    },
+    {
       key: CustomItemValue.route.key,
       icon: CustomItemValue.route.icon,
       label: (
@@ -204,7 +220,9 @@ const AdminLayout: React.FC = () => {
       ),
     },
   ];
-  const [selectedItem, setSelectedItem] = useState<CustomItemType>(menuItems[0] as CustomItemType);
+  const [selectedItem, setSelectedItem] = useState<CustomItemType>(
+    menuItems[0] as CustomItemType
+  );
   useEffect(() => {
     const pathname = location.pathname;
     if (pathname === "/admin/parents") {
@@ -214,6 +232,10 @@ const AdminLayout: React.FC = () => {
     } else if (pathname === "/admin/informs") {
       setSelectedItem(
         menuItems[Number(CustomItemValue.inform.key) - 1] as CustomItemType
+      );
+    } else if (pathname === "/admin/schedules") {
+      setSelectedItem(
+        menuItems[Number(CustomItemValue.schedule.key) - 1] as CustomItemType
       );
     } else if (pathname === "/admin/routes") {
       setSelectedItem(
@@ -237,7 +259,6 @@ const AdminLayout: React.FC = () => {
       );
     }
   }, [location.pathname]);
-
   useEffect(() => {
     setSelectedItem(menuItems[Number(selectedItem.key) - 1] as CustomItemType);
   }, [localStorage.getItem("lang")]);

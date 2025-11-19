@@ -5,7 +5,7 @@ import { isCreateRest, isGetRest, isPutRest } from "../utils/rest.util";
 import FirebaseService from "./firebase.service";
 
 const StudentService = {
-    async getList() {
+    async getAll() {
         const students = await prisma.students.findMany({
             include: {
                 parent: true,
@@ -36,10 +36,45 @@ const StudentService = {
         } as StudentResponse)));
     },
 
+    async getAllStudying() {
+        const students = await prisma.students.findMany({
+            include: {
+                parent: true,
+                class: true,
+                pickup: true
+            },
+            where: {
+                status: "STUDYING",
+            }
+        });
+        return isGetRest(students.map(student => ({
+            id: student.id,
+            avatar: student.avatar,
+            full_name: student.full_name,
+            birth_date: student.birth_date,
+            gender: student.gender,
+            address: student.address,
+            status: student.status,
+            parent: {
+                id: student.parent.id,
+                full_name: student.parent.full_name
+            },
+            class: {
+                id: student.class.id,
+                name: student.class.name
+            },
+            pickup: {
+                id: student.pickup.id,
+                name: student.pickup.name
+            }
+        } as StudentResponse)));
+    },
+
     async create(input: any) {
         const data = createSchema.parse(input);
         const student = await prisma.students.create({
             data: {
+                id: data.id,
                 full_name: data.fullName,
                 birth_date: data.birthDate,
                 gender: data.gender,
@@ -86,7 +121,7 @@ const StudentService = {
         } as StudentResponse);
     },
 
-    async uploadAvatar(id: number, file: Express.Multer.File) {
+    async uploadAvatar(id: string, file: Express.Multer.File) {
         const avatarUrl = await FirebaseService.uploadStudentImage(file as unknown as File);
         await prisma.students.update({
             where: { id },

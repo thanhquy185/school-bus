@@ -1,19 +1,23 @@
 import prisma from "../configs/prisma.config";
 import { DriverResponse } from "../responses/driver.response";
-import { createSchema, updateSchema } from "../schemas/driver.schema"
+import { createSchema, updateSchema } from "../schemas/driver.schema";
 import { hashPassword } from "../utils/bcypt.util";
-import { isCreateRest, isPutRest } from "../utils/rest.util";
+import { isCreateRest, isGetRest, isPutRest } from "../utils/rest.util";
 import AccountService from "./account.service";
 import FirebaseService from "./firebase.service";
 
 const DriverService = {
-    async getList() {
-        const drivers = await prisma.drivers.findMany({
-            include: {
-                account: true
-            }
-        });
-        return isCreateRest(drivers.map(driver => ({
+  async getAll() {
+    const drivers = await prisma.drivers.findMany({
+      include: {
+        account: true,
+      },
+    });
+
+    return isGetRest(
+      drivers.map(
+        (driver) =>
+          ({
             id: driver.id,
             avatar: driver.avatar,
             full_name: driver.full_name,
@@ -24,39 +28,28 @@ const DriverService = {
             address: driver.address,
             status: driver.account.status,
             account_id: driver.account.id,
-            username: driver.account.username
-        } as DriverResponse)));
-    },
+            username: driver.account.username,
+          } as DriverResponse)
+      )
+    );
+  },
 
-    async create(input: any) {
-        const data = createSchema.parse(input);
-        const account = await prisma.accounts.create({
-            data: {
-                username: data.username,
-                password: await hashPassword(data.password),
-                role: "DRIVER",
-                status: data.status
-            }
-        });
+  async getAllActive() {
+    const drivers = await prisma.drivers.findMany({
+      include: {
+        account: true,
+      },
+      where: {
+        account: {
+          status: "ACTIVE",
+        },
+      },
+    });
 
-        const driver = await prisma.drivers.create({
-            data: {
-                full_name: data.fullName,
-                birth_date: data.birthDate,
-                gender: data.gender,
-                phone: data.phone,
-                email: data.email,
-                address: data.address,
-                account: {
-                    connect: { id: account.id }
-                }
-            },
-            include: {
-                account: true
-            }
-        });
-
-        return isCreateRest({
+    return isGetRest(
+      drivers.map(
+        (driver) =>
+          ({
             id: driver.id,
             avatar: driver.avatar,
             full_name: driver.full_name,
@@ -67,77 +60,146 @@ const DriverService = {
             address: driver.address,
             status: driver.account.status,
             account_id: driver.account.id,
-            username: driver.account.username
-        } as DriverResponse);
-    },
+            username: driver.account.username,
+          } as DriverResponse)
+      )
+    );
+  },
 
-    async uploadAvatar(id: number, file: Express.Multer.File) {
-        const avatarUrl = await FirebaseService.uploadDriverImage(file as unknown as File);
-        await prisma.drivers.update({
-            where: { id },
-            data: { avatar: avatarUrl }
-        });
+  async create(input: any) {
+    const data = createSchema.parse(input);
 
-        return isCreateRest({ id, avatar: avatarUrl });
-    },
+    const account = await prisma.accounts.create({
+      data: {
+        username: data.username,
+        password: await hashPassword(data.password),
+        role: "DRIVER",
+        status: data.status,
+      },
+    });
 
-    async update(input: any) {
-        const data = updateSchema.parse(input);
-        const updateData: any = {};
+    const driver = await prisma.drivers.create({
+      data: {
+        full_name: data.fullName,
+        birth_date: data.birthDate,
+        gender: data.gender,
+        phone: data.phone,
+        email: data.email ?? null,
+        address: data.address ?? null,
+        account: {
+          connect: { id: account.id },
+        },
+      },
+      include: {
+        account: true,
+      },
+    });
 
-        if (data.fullName) {
-            updateData.full_name = data.fullName;
-        }
-        if (data.birthDate) {
-            updateData.birth_date = data.birthDate;
-        }
-        if (data.gender) {
-            updateData.gender = data.gender;
-        };
-        if (data.phone) {
-            updateData.phone = data.phone;
-        }
-        if (data.email) {
-            updateData.email = data.email;
-        }
-        if (data.address) {
-            updateData.address = data.address;
-        }
+    return isCreateRest({
+      id: driver.id,
+      avatar: driver.avatar,
+      full_name: driver.full_name,
+      birth_date: driver.birth_date,
+      gender: driver.gender,
+      phone: driver.phone,
+      email: driver.email,
+      address: driver.address,
+      status: driver.account.status,
+      account_id: driver.account.id,
+      username: driver.account.username,
+    } as DriverResponse);
+  },
 
-        const driver = await prisma.drivers.update(
-            {
-                where: {
-                    id: data.id
-                },
-                data: updateData,
-                include: {
-                    account: true
-                },
-            }
+  async uploadAvatar(id: number, file: Express.Multer.File) {
+    const avatarUrl = await FirebaseService.uploadDriverImage(
+      file as unknown as File
+    );
+    await prisma.drivers.update({
+      where: { id },
+      data: { avatar: avatarUrl },
+    });
+
+    return isCreateRest({ id, avatar: avatarUrl });
+  },
+
+  async update(input: any) {
+    const data = updateSchema.parse(input);
+
+    const driverSelected = await prisma.drivers.findUnique({
+      where: {
+        id: data.id,
+      },
+    });
+    if (!driverSelected) {
+      throw new Error("Tài xế không tồn tại !");
+    }
+    if (data.status === "INACTIVE") {
+      const activeSchedule = await prisma.schedules.findFirst({
+        where: {
+          driver_id: data.id,
+          status: "ACTIVE",
+        },
+      });
+
+      if (activeSchedule) {
+        throw new Error(
+          `Không thể khoá tài xế này vì có lịch làm việc #${activeSchedule.id} hoạt động đang sử dụng !`
         );
+      }
+    }
 
-        if (driver.account_id && (data.password || data.status)) {
-            await AccountService.update({
-                id: driver.account_id,
-                password: data.password,
-                status: data.status,
-            });
-        }
+    const updateData: any = {};
+    if (data.fullName) {
+      updateData.full_name = data.fullName;
+    }
+    if (data.birthDate) {
+      updateData.birth_date = data.birthDate;
+    }
+    if (data.gender) {
+      updateData.gender = data.gender;
+    }
+    if (data.phone) {
+      updateData.phone = data.phone;
+    }
+    if (data.email) {
+      updateData.email = data.email;
+    }
+    if (data.address) {
+      updateData.address = data.address;
+    }
 
-        return isPutRest({
-            id: driver.id,
-            avatar: driver.avatar,
-            full_name: driver.full_name,
-            birth_date: driver.birth_date,
-            gender: driver.gender,
-            phone: driver.phone,
-            email: driver.email,
-            address: driver.address,
-            status: driver.account.status,
-            account_id: driver.account.id,
-            username: driver.account.username
-        } as DriverResponse);
-    },
-}
+    const driverUpdate = await prisma.drivers.update({
+      where: {
+        id: data.id,
+      },
+      data: updateData,
+      include: {
+        account: true,
+      },
+    });
+
+    if (driverUpdate.account_id && (data.password || data.status)) {
+      await AccountService.update({
+        id: driverUpdate.account_id,
+        password: data.password,
+        status: data.status,
+      });
+    }
+
+    return isPutRest({
+      id: driverUpdate.id,
+      avatar: driverUpdate.avatar,
+      full_name: driverUpdate.full_name,
+      birth_date: driverUpdate.birth_date,
+      gender: driverUpdate.gender,
+      phone: driverUpdate.phone,
+      email: driverUpdate.email,
+      address: driverUpdate.address,
+      status: driverUpdate.account.status,
+      account_id: driverUpdate.account.id,
+      username: driverUpdate.account.username,
+    } as DriverResponse);
+  },
+};
 
 export default DriverService;

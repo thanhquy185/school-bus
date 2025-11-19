@@ -2,8 +2,13 @@ import { Request, Response } from "express";
 import StudentService from "../services/student.service";
 
 const StudentController = {
-    async getList(_req: Request, res: Response) {
-        const response = await StudentService.getList();
+    async getAll(_req: Request, res: Response) {
+        const response = await StudentService.getAll();
+        res.status(response.statusCode).json(response);
+    },
+
+    async getAllStudying(_req: Request, res: Response) {
+        const response = await StudentService.getAllStudying();
         res.status(response.statusCode).json(response);
     },
 
@@ -14,14 +19,14 @@ const StudentController = {
 
     async uploadAvatar(_req: Request, res: Response) {
         const response = await StudentService.uploadAvatar(
-            Number(_req.params.id),
+            _req.params.id,
             _req.file!
         );
         res.status(response.statusCode).json(response);
     },
 
     async update(_req: Request, res: Response) {
-        const response = await StudentService.update({ id: Number(_req.params.id), ..._req.body });
+        const response = await StudentService.update({ id: _req.params.id, ..._req.body });
         res.status(response.statusCode).json(response);
     }
 }

@@ -4,7 +4,9 @@ import UploadMiddleware from "../middlewares/upfile.middware";
 
 
 const route = Router();
-route.get("", DriverController.getList);
+
+route.get("/active", DriverController.getAllActive);
+route.get("", DriverController.getAll);
 route.post("", DriverController.create);
 route.post(
     "/:id/avatar",

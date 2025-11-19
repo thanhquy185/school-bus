@@ -1,23 +1,54 @@
 import { api, type RestResponse } from "../api/api";
-import type { PickupType } from "../common/types";
 
-
-export const getPickups = async () => {
-    const response = await api.get("/api/pickups");
-    const data: RestResponse = response.data;
-    return data;
+// Lấy 1 trạm theo id
+export const getPickup = async (id: number): Promise<RestResponse> => {
+  const response = await api.get(`/api/pickups/${id}`);
+  return response.data;
 };
 
-export const updatePickup = async (form: PickupType) => {
-    const response = await api.put(`/api/pickups/${form.id}`, form);
-    const data: RestResponse = response.data;
-
-    return data;
+// Lấy tất cả trạm
+export const getPickups = async (): Promise<RestResponse> => {
+  const response = await api.get("/api/pickups");
+  return response.data;
 };
 
-export const createPickup = async (form: PickupType) => {
-    const response = await api.post("/api/pickups", form);
-    const data: RestResponse = response.data;
+// Lấy tất cả trạm ACTIVE
+export const getPickupsActive = async (): Promise<RestResponse> => {
+  const response = await api.get("/api/pickups/active");
+  return response.data;
+};
 
-    return data;
+// Tạo trạm mới
+export const createPickup = async (params: CreateParams): Promise<RestResponse> => {
+  const response = await api.post("/api/pickups", params);
+  return response.data;
+};
+
+// Cập nhật trạm theo id
+export const updatePickup = async (id: number, params: UpdateParams): Promise<RestResponse> => {
+  const response = await api.put(`/api/pickups/${id}`, params);
+  return response.data;
+};
+
+// Xóa trạm
+export const deletePickup = async (id: number): Promise<RestResponse> => {
+  const response = await api.delete(`/api/pickups/${id}`);
+  return response.data;
+};
+
+// Types
+export type CreateParams = {
+  name: string;
+  category: string;
+  lat: number;
+  lng: number;
+  status: "ACTIVE" | "INACTIVE";
+};
+
+export type UpdateParams = {
+  name?: string;
+  category?: string;
+  lat?: number;
+  lng?: number;
+  status?: "ACTIVE" | "INACTIVE";
 };

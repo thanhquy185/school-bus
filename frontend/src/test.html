@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR / Barcode Scanner</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f6f6f6;
+    }
+    #reader {
+      width: 300px;
+      margin-bottom: 20px;
+    }
+    .result-box {
+      padding: 10px;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.15);
+      width: 350px;
+    }
+  </style>
+</head>
+<body>
+  <h2>QR / Barcode Scanner</h2>
+
+  <div id="reader"></div>
+  <div class="result-box">
+    <strong>Kết quả:</strong>
+    <div id="result">Chưa có dữ liệu...</div>
+  </div>
+
+  <!-- Thư viện html5-qrcode -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  <script>
+    const resultBox = document.getElementById('result');
+
+    function onScanSuccess(decodedText, decodedResult) {
+      resultBox.innerText = decodedText;
+      console.log("Scanned result:", decodedText);
+    }
+
+    function onScanError(errorMessage) {
+      console.warn(errorMessage);
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+
+    Html5Qrcode.getCameras().then((devices) => {
+      if (devices && devices.length) {
+        html5QrCode.start(
+          devices[0].id,
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 50 }
+          },
+          onScanSuccess,
+          onScanError
+        );
+      }
+    }).catch(err => console.error(err));
+  </script>
+</body>
+</html>

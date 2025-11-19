@@ -10,7 +10,7 @@ export const ruleRequired = (message?: string) => {
 export const ruleLicensePlate = (message?: string) => {
   return {
     pattern: /^\d{2}[A-Z][-\s]?(?:\d{3}\.?\d{2}|\d{5})$/i,
-    message: message! ? message : "Biển số xe không hợp lệ !",
+    message: message! ? message : "Số đăng ký xe không hợp lệ !",
   };
 };
 

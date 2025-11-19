@@ -8,6 +8,14 @@
   "inform": "Thông báo",
   "inform-manager": "Quản lý thông báo",
   "inform-info": "Thông tin thông báo",
+  "schedule": "Lịch làm việc",
+  "schedule-manager": "Quản lý thông tin lịch làm việc",
+  "schedule-list": "Danh sách lịch làm việc",
+  "schedule-detail": "Chi tiết lịch làm việc",
+  "schedule-create": "Thêm lịch làm việc",
+  "schedule-update": "Cập nhật lịch làm việc",
+  "schedule-lock": "Khoá lịch làm việc",
+  "schedule-unlock": "Mở khoá lịch làm việc",
   "route": "Tuyến đường",
   "route-manager": "Quản lý thông tin tuyến đường",
   "route-list": "Danh sách tuyến đường",
@@ -57,5 +65,6 @@
   "student-create": "Thêm học sinh",
   "student-update": "Cập nhật học sinh",
   "student-lock": "Khoá học sinh",
-  "student-unlock": "Mở khoá học sinh"
+  "student-unlock": "Mở khoá học sinh",
+  "student-card": "Thẻ điểm danh học sinh"
 }

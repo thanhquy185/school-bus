@@ -2,8 +2,13 @@ import { Request, Response } from "express";
 import DriverService from "../services/driver.service";
 
 const DriverController = {
-    async getList(_req: Request, res: Response) {
-        const response = await DriverService.getList();
+    async getAll(_req: Request, res: Response) {
+        const response = await DriverService.getAll();
+        return res.json(response);
+    },
+
+    async getAllActive(_req: Request, res: Response) {
+        const response = await DriverService.getAllActive();
         return res.json(response);
     },
 

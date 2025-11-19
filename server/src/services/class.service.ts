@@ -3,12 +3,9 @@ import { createSchema } from "../schemas/class.schema";
 import { isGetRest } from "../utils/rest.util";
 
 const ClassService = {
-    async getList() {
+    async getAll() {
         const classes = await prisma.classes.findMany();
-        return isGetRest(classes.map(cls => ({
-            id: cls.id,
-            name: cls.name
-        })));
+        return isGetRest(classes);
     },
     async create(input: any) {
         const data = createSchema.parse(input);

@@ -2,7 +2,12 @@ import { api, type RestResponse } from "../api/api";
 
 export const getBuses = async (): Promise<RestResponse> => {
     const response = await api.get("/api/buses");
-    console.log(response)
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
+export const getBusesActive = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/buses/active");
     const restResponse: RestResponse = response.data;
     return restResponse;
 }
@@ -20,13 +25,13 @@ export const updateBus = async (id: number, params: UpdateParams): Promise<RestR
 }
 
 type CreateParams = {
-    licensePlate: string,
+    license_plate: string,
     capacity: number,
     status: string
 }
 
 type UpdateParams = {
-    licensePlate?: string,
+    license_plate?: string,
     capacity?: number,
     status?: string
 }

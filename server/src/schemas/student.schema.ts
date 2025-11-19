@@ -1,6 +1,7 @@
 import z from "zod";
 
 export const createSchema = z.object({
+    id: z.string().min(1, "Mã học sinh không được để trống"),
     fullName: z.string().min(1, "Họ và tên không được để trống"),
     birthDate: z.string().min(1, "Ngày sinh không được để trống"),
     gender: z.enum(["MALE", "FEMALE"], "Giới tính không hợp lệ"),
@@ -14,7 +15,7 @@ export const createSchema = z.object({
 });
 
 export const updateSchema = z.object({
-    id: z.number().min(1, "ID học sinh không hợp lệ"),
+    id: z.string().min(1, "Mã học sinh không hợp lệ"),
     fullName: z.string().min(1, "Họ và tên không được để trống").optional(),
     birthDate: z.string().min(1, "Ngày sinh không được để trống").optional(),
     gender: z.enum(["MALE", "FEMALE"], "Giới tính không hợp lệ").optional(),

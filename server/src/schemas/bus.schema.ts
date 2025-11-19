@@ -1,7 +1,7 @@
 import zod from "zod";
 
 export const createSchema = zod.object({
-    licensePlate: zod
+    license_plate: zod
         .string()
         .nonempty("Biển số xe không được để trống")
         .min(5, "Biển số xe không ít hơn 5 kí tự")
@@ -18,7 +18,7 @@ export const createSchema = zod.object({
 
 export const updateSchema = zod.object({
     id: zod.number().min(1, "Yêu cầu mã xe buýt hợp lệ"),
-    licensePlate: zod
+    license_plate: zod
         .string()
         .nonempty("Biển số xe không được để trống")
         .min(5, "Biển số xe không ít hơn 5 kí tự")

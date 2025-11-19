@@ -15,6 +15,7 @@ import LoginPage from "../pages/public/login-page";
 import ErrorPage from "../pages/public/error-page";
 import UnauthorizedPage from "../pages/public/unauthorized-page";
 import ParentJourneyPage from "../pages/parents/journey-page";
+import SchedulePage from "../pages/admin/schedule-page";
 
 // Router giúp chuyển hướng trang
 export const getRouter = async (): Promise<
@@ -37,6 +38,10 @@ export const getRouter = async (): Promise<
         {
           path: "routes",
           element: <RoutePage />,
+        },
+        {
+          path: "schedules",
+          element: <SchedulePage />,
         },
         {
           path: "pickups",

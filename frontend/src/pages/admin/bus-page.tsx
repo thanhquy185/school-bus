@@ -60,11 +60,11 @@ const BusPage = () => {
     undefined
   );
   const filteredBusList = buses.filter((bus) => {
-    const matchesLicensePlate = bus.licensePlate
+    const matchesLicense_plate = bus.license_plate
       ?.toLowerCase()
       .includes(searchText.toLowerCase());
     const matchesStatus = statusFilter ? bus.status === statusFilter : true;
-    return matchesLicensePlate && matchesStatus;
+    return matchesLicense_plate && matchesStatus;
   });
 
   const getStatusLabel = (status: string) => {
@@ -91,10 +91,10 @@ const BusPage = () => {
     },
     {
       title: "Số đăng ký xe",
-      dataIndex: "licensePlate",
-      key: "licensePlate",
+      dataIndex: "license_plate",
+      key: "license_plate",
       width: "35%",
-      sorter: (a, b) => a?.licensePlate!.localeCompare(b?.licensePlate!),
+      sorter: (a, b) => a?.license_plate!.localeCompare(b?.license_plate!),
     },
     {
       title: "Số chỗ ngồi",
@@ -182,13 +182,13 @@ const BusPage = () => {
 
   const defaultLabels = {
     id: "Mã xe buýt",
-    licensePlate: "Số đăng ký xe",
+    license_plate: "Số đăng ký xe",
     capacity: "Số chỗ ngồi",
     status: "Trạng thái",
   };
   const defaultInputs = {
     id: "Được xác định sau khi xác nhận thêm !",
-    licensePlate: "Nhập Số đăng ký xe",
+    license_plate: "Nhập Số đăng ký xe",
     capacity: "Nhập Số chỗ ngồi",
     status: "Chọn Trạng thái",
   };
@@ -204,7 +204,7 @@ const BusPage = () => {
             layout="vertical"
             initialValues={{
               id: bus.id || undefined,
-              licensePlate: bus.licensePlate || undefined,
+              license_plate: bus.license_plate || undefined,
               capacity: bus.capacity || undefined,
               status: getStatusLabel(bus.status ?? "") || undefined,
             }}
@@ -223,8 +223,8 @@ const BusPage = () => {
                   <Select disabled />
                 </Form.Item>
                 <Form.Item
-                  name="licensePlate"
-                  label={defaultLabels.licensePlate}
+                  name="license_plate"
+                  label={defaultLabels.license_plate}
                 >
                   <Input disabled />
                 </Form.Item>
@@ -249,7 +249,7 @@ const BusPage = () => {
     const handleSubmitCreateForm = async () => {
       const restResponse = await execute(
         createBus({
-          licensePlate: form.getFieldValue("licensePlate")?.trim(),
+          license_plate: form.getFieldValue("license_plate")?.trim(),
           capacity: Number(form.getFieldValue("capacity")),
           status: form.getFieldValue("status"),
         }),
@@ -269,7 +269,7 @@ const BusPage = () => {
             form={form}
             layout="vertical"
             initialValues={{
-              licensePlate: undefined,
+              license_plate: undefined,
               capacity: undefined,
               status: undefined,
             }}
@@ -299,17 +299,17 @@ const BusPage = () => {
                   />
                 </Form.Item>
                 <Form.Item
-                  name="licensePlate"
-                  htmlFor="create-licensePlate"
-                  label={defaultLabels.licensePlate}
+                  name="license_plate"
+                  htmlFor="create-license_plate"
+                  label={defaultLabels.license_plate}
                   rules={[
                     ruleRequired("Số đăng ký xe không được để trống !"),
                     ruleLicensePlate(),
                   ]}
                 >
                   <Input
-                    id="create-licensePlate"
-                    placeholder={defaultInputs.licensePlate}
+                    id="create-license_plate"
+                    placeholder={defaultInputs.license_plate}
                   />
                 </Form.Item>
                 <Form.Item
@@ -347,7 +347,7 @@ const BusPage = () => {
     const handleSubmitUpdateForm = async () => {
       const restResponse = await execute(
         updateBus(bus.id!, {
-          licensePlate: form.getFieldValue("licensePlate")?.trim(),
+          license_plate: form.getFieldValue("license_plate")?.trim(),
           capacity: Number(form.getFieldValue("capacity")),
           status: form.getFieldValue("status"),
         }),
@@ -368,7 +368,7 @@ const BusPage = () => {
             layout="vertical"
             initialValues={{
               id: bus.id || undefined,
-              licensePlate: bus.licensePlate || undefined,
+              license_plate: bus.license_plate || undefined,
               capacity: bus.capacity || undefined,
               status: bus.status || undefined,
             }}
@@ -391,17 +391,17 @@ const BusPage = () => {
                   <Select disabled options={statusOptions} />
                 </Form.Item>
                 <Form.Item
-                  name="licensePlate"
-                  htmlFor="create-licensePlate"
-                  label={defaultLabels.licensePlate}
+                  name="license_plate"
+                  htmlFor="create-license_plate"
+                  label={defaultLabels.license_plate}
                   rules={[
                     ruleRequired("Số đăng ký xe không được để trống !"),
                     ruleLicensePlate(),
                   ]}
                 >
                   <Input
-                    id="create-licensePlate"
-                    placeholder={defaultInputs.licensePlate}
+                    id="create-license_plate"
+                    placeholder={defaultInputs.license_plate}
                   />
                 </Form.Item>
                 <Form.Item
@@ -464,7 +464,7 @@ const BusPage = () => {
             "#" +
             bus?.id +
             " - " +
-            bus?.licensePlate +
+            bus?.license_plate +
             " - số chỗ: " +
             bus?.capacity
           }

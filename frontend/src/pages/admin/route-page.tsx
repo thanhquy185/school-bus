@@ -47,7 +47,7 @@ import LeafletMap, {
 import CustomTableActions from "../../components/table-actions";
 import { useNotification } from "../../utils/showNotification";
 import { getItemById } from "../../utils/getItemEvents";
-import { getPickups } from "../../services/pickup-service";
+import { getPickupsActive } from "../../services/pickup-service";
 import useCallApi from "../../api/useCall";
 import {
   createRoute,
@@ -173,7 +173,7 @@ const RoutePage = () => {
   // Truy vấn dữ liệu
   const getPickupData = async () => {
     try {
-      const response = await execute(getPickups(), false);
+      const response = await execute(getPickupsActive(), false);
 
       if (response && response.result) {
         if (Array.isArray(response.data)) {
@@ -258,6 +258,136 @@ const RoutePage = () => {
     t("route-list")
   );
   const [currentCardContent, setCurrentCardContent] = useState<string>("list");
+
+  // Effect cập nhật Card Content
+  useEffect(() => {
+    if (currentAction === "list") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faUserGraduate} />
+              &nbsp;{t("route-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("route-list")}
+            </span>
+          ),
+        },
+      ]);
+      setCurrentCardTitle(t("route-list"));
+      setCurrentCardContent("list");
+    } else if (currentAction === "detail") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faUserGraduate} />
+              &nbsp;{t("route-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("route-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("route-detail")}</span> },
+      ]);
+      setCurrentCardTitle(t("route-detail"));
+      setCurrentCardContent("detail");
+    } else if (currentAction === "create") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faUserGraduate} />
+              &nbsp;{t("route-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("route-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("route-create")}</span> },
+      ]);
+      setCurrentCardTitle(t("route-create"));
+      setCurrentCardContent("create");
+    } else if (currentAction === "update") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faUserGraduate} />
+              &nbsp;{t("route-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("route-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("route-update")}</span> },
+      ]);
+      setCurrentCardTitle(t("route-update"));
+      setCurrentCardContent("update");
+    } else if (currentAction === "lock") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faUserGraduate} />
+              &nbsp;{t("route-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("route-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("route-lock")}</span> },
+      ]);
+      setCurrentCardTitle(t("route-lock"));
+      setCurrentCardContent("lock");
+    } else if (currentAction === "unlock") {
+      setCurrentBreadcrumbItems([
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              <FontAwesomeIcon icon={faUserGraduate} />
+              &nbsp;{t("route-manager")}
+            </span>
+          ),
+        },
+        {
+          title: (
+            <span onClick={() => setCurrentAction("list")}>
+              {t("route-list")}
+            </span>
+          ),
+        },
+        { title: <span>{t("route-unlock")}</span> },
+      ]);
+      setCurrentCardTitle(t("route-unlock"));
+      setCurrentCardContent("unlock");
+    }
+  }, [currentAction]);
 
   // Route Actions
   const defaultLabels = {
@@ -1312,136 +1442,6 @@ const RoutePage = () => {
     ),
   };
 
-  // Effect cập nhật Card Content
-  useEffect(() => {
-    if (currentAction === "list") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
-              &nbsp;{t("route-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("route-list")}
-            </span>
-          ),
-        },
-      ]);
-      setCurrentCardTitle(t("route-list"));
-      setCurrentCardContent("list");
-    } else if (currentAction === "detail") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
-              &nbsp;{t("route-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("route-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("route-detail")}</span> },
-      ]);
-      setCurrentCardTitle(t("route-detail"));
-      setCurrentCardContent("detail");
-    } else if (currentAction === "create") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
-              &nbsp;{t("route-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("route-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("route-create")}</span> },
-      ]);
-      setCurrentCardTitle(t("route-create"));
-      setCurrentCardContent("create");
-    } else if (currentAction === "update") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
-              &nbsp;{t("route-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("route-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("route-update")}</span> },
-      ]);
-      setCurrentCardTitle(t("route-update"));
-      setCurrentCardContent("update");
-    } else if (currentAction === "lock") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
-              &nbsp;{t("route-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("route-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("route-lock")}</span> },
-      ]);
-      setCurrentCardTitle(t("route-lock"));
-      setCurrentCardContent("lock");
-    } else if (currentAction === "unlock") {
-      setCurrentBreadcrumbItems([
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              <FontAwesomeIcon icon={faUserGraduate} />
-              &nbsp;{t("route-manager")}
-            </span>
-          ),
-        },
-        {
-          title: (
-            <span onClick={() => setCurrentAction("list")}>
-              {t("route-list")}
-            </span>
-          ),
-        },
-        { title: <span>{t("route-unlock")}</span> },
-      ]);
-      setCurrentCardTitle(t("route-unlock"));
-      setCurrentCardContent("unlock");
-    }
-  }, [currentAction]);
-
   return (
     <div className="admin-layout__main-content">
       {/* Breadcrumb */}
@@ -1502,6 +1502,13 @@ const RoutePage = () => {
                 </Button>
               </div>
             </div>
+            <LeafletMap
+              id="map-routes"
+              type="detail"
+              routes={filteredRouteList?.filter(
+                (route) => route.status === CommonStatusValue.active
+              )}
+            />
             <CustomTableActions<RouteFormatType>
               columns={columns}
               data={filteredRouteList || []}

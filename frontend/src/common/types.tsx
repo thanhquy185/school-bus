@@ -110,6 +110,9 @@ export interface ScheduleNotFormatType {
   driverId?: number;
   startDate?: string;
   endDate?: string;
+  startTime?: string;
+  endTime?: string;
+  status?: string;
 }
 export interface ScheduleFormatType {
   id?: number;
@@ -118,6 +121,10 @@ export interface ScheduleFormatType {
   driver?: DriverFormatType;
   startDate?: string;
   endDate?: string;
+  startTime?: string;
+  endTime?: string;
+  status?: string;
+
 }
 // <==================          ======================>
 
@@ -173,7 +180,7 @@ export interface PickupType {
 // Kiểu dữ liệu xe buýt
 export interface BusType {
   id?: number;
-  licensePlate?: string;
+  license_plate?: string;
   capacity?: number;
   status?: string;
 }
@@ -251,7 +258,7 @@ export interface StudentNotFormatType {
 }
 // - Đã format
 export interface StudentFormatType {
-  id?: number;
+  id?: string;
   avatar?: string;
   full_name?: string;
   birth_date?: string;

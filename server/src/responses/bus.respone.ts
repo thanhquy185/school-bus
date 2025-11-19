@@ -1,6 +1,6 @@
 export type BusResponse = {
     id: number,
-    licensePlate: string,
+    license_plate: string,
     capacity: number,
     status: string
 }

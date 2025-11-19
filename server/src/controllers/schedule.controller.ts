@@ -1,9 +1,9 @@
 import { Response, Request } from "express";
-import PickupService from '../services/pickup.service';
+import ScheduleService from '../services/schedule.service';
 
-const PickupController = {
+const ScheduleController = {
     async get(req: Request, res: Response) {
-        const response = await PickupService.get(
+        const response = await ScheduleService.get(
             { 
                 id: Number(req.params.id) 
             }
@@ -13,25 +13,25 @@ const PickupController = {
     },
 
     async getAll(_req: Request, res: Response) {
-        const response = await PickupService.getAll();
+        const response = await ScheduleService.getAll();
 
         res.status(response.statusCode).json(response);
     },
 
     async getAllActive(_req: Request, res: Response) {
-        const response = await PickupService.getAllActive();
+        const response = await ScheduleService.getAllActive();
 
         res.status(response.statusCode).json(response);
     },
 
     async create(req: Request, res: Response) {
-        const response = await PickupService.create(req.body);
+        const response = await ScheduleService.create(req.body);
 
         res.status(response.statusCode).json(response);
     },
 
     async update(req: Request, res: Response) {
-        const response = await PickupService.update(
+        const response = await ScheduleService.update(
             {
                 id: Number(req.params.id),
                 ...req.body
@@ -43,7 +43,7 @@ const PickupController = {
     },
 
     async delete(req: Request, res: Response) {
-        const response = await PickupService.delete(
+        const response = await ScheduleService.delete(
             {
                 id: req.params.id
             }
@@ -53,4 +53,4 @@ const PickupController = {
     }
 }
 
-export default PickupController
+export default ScheduleController

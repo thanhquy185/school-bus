@@ -6,6 +6,12 @@ export const getParents = async (): Promise<RestResponse> => {
     return restResponse;
 }
 
+export const getParentsActive = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/parents/active");
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
 export const createParent = async (params: CreateParams): Promise<RestResponse> => {
     const response = await api.post("/api/parents", params);
     const restResponse: RestResponse = response.data;
@@ -39,7 +45,6 @@ type UpdateParams = {
     phone?: string,
     email?: string,
     address?: string,
-
     password?: string,
     status?: string
 }
