@@ -1,10 +1,13 @@
+import { get } from "http";
 import prisma from "../configs/prisma.config";
 import { DriverResponse } from "../responses/driver.response";
 import { createSchema, updateSchema } from "../schemas/driver.schema"
 import { hashPassword } from "../utils/bcypt.util";
-import { isCreateRest, isPutRest } from "../utils/rest.util";
+import { isCreateRest, isGetRest, isPutRest } from "../utils/rest.util";
 import AccountService from "./account.service";
 import FirebaseService from "./firebase.service";
+import { AuthenticationPayload } from "../middlewares/auth.middleware";
+import { verifyToken } from "../utils/jwt.util";
 
 const DriverService = {
     async getList() {
@@ -26,6 +29,41 @@ const DriverService = {
             account_id: driver.account.id,
             username: driver.account.username
         } as DriverResponse)));
+    },
+
+    async getByAccount(authorization: string) {
+        const payload: AuthenticationPayload = await verifyToken(authorization);
+
+        const driver = await prisma.drivers.findUnique(
+            {
+                where: {
+                    account_id: payload.id
+                },
+
+                include: {
+                    account: {
+                        select: {
+                            username: true
+                        }
+                    }
+                }
+            }
+        );
+
+        return isGetRest(
+            {
+                id: driver.id,
+                avatar: driver.avatar,
+                full_name: driver.full_name,
+                birth_date: driver.birth_date,
+                gender: driver.gender,
+                phone: driver.phone,
+                email: driver.email,
+                address: driver.address,
+                account_id: driver.account_id,
+                username: driver.account.username
+            }
+        );
     },
 
     async create(input: any) {

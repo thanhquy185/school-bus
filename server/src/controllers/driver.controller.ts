@@ -7,6 +7,11 @@ const DriverController = {
         return res.json(response);
     },
 
+    async getByAccount(_req: Request, res: Response) {
+        const respone = await DriverService.getByAccount(_req.headers.authorization);
+        return res.json(respone);
+    },
+
     async create(_req: Request, res: Response) {
         const response = await DriverService.create(_req.body);
         return res.json(response);

@@ -6,6 +6,13 @@ export const getDrivers = async (): Promise<RestResponse> => {
     return restResponse;
 }
 
+export const getByAccount = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/drivers/account");
+    const restResponse: RestResponse = response.data;
+
+    return restResponse;
+}
+
 export const createDriver = async (params: CreateParams): Promise<RestResponse> => {
     const response = await api.post("/api/drivers", params);
     const restResponse: RestResponse = response.data;
