@@ -25,6 +25,11 @@ const ParentController = {
     async uploadAvatar(_req: Request, res: Response) {
         const response = await ParentService.uploadAvatar(Number(_req.params.id), _req.file!);
         res.status(response.statusCode).json(response);
+    },
+
+    async getStudents(_req: Request, res: Response) {
+        const response = await ParentService.getStudents(_req.headers.authorization);
+        res.status(response.statusCode).json(response);
     }
 }
 

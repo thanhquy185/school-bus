@@ -397,7 +397,6 @@ const StudentPage = () => {
     const handleSubmit = async () => {
       const createResponse = await execute(
         createStudent({
-          id: form.getFieldValue("id"),
           fullName: form.getFieldValue("full_name"),
           birthDate: formatByString(form.getFieldValue("birth_date")),
           gender: form.getFieldValue("gender"),
@@ -478,9 +477,9 @@ const StudentPage = () => {
                   name="id"
                   htmlFor="create-id"
                   label={defaultLabels.id}
-                  rules={[ruleRequired("Mã học sinh không được để trống !")]}
+                  // rules={[ruleRequired("Mã học sinh không được để trống !")]}
                 >
-                  <Input id="create-id" placeholder={defaultInputs.id} />
+                  <Input id="create-id" placeholder={defaultInputs.id} disabled={true} />
                 </Form.Item>
                 <Form.Item
                   name="parentId"

@@ -31,7 +31,6 @@ export const updateStudent = async (id: string, params: UpdateParams): Promise<R
 }
 
 type CreateParams = {
-    id: string,
     fullName: string,
     birthDate: string,
     gender: string,

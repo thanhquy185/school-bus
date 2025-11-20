@@ -27,6 +27,13 @@ api.interceptors.response.use(
 );
 
 api.interceptors.request.use((config) => {
+  const CURRENT_USER = sessionStorage.getItem("CURRENT_USER");
+  console.log("CURRENT_USER", CURRENT_USER);
+  if (CURRENT_USER) {
+    console.log("Adding Authorization header");
+    const user = JSON.parse(CURRENT_USER);
+    config.headers.Authorization = `Bearer ${user.accessToken}`;
+  }
   return config;
 });
 

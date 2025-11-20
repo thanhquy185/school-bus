@@ -30,6 +30,12 @@ export const updateParent = async (id: number, params: UpdateParams): Promise<Re
     return restResponse;
 }
 
+export const getStudents = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/parents/students");
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
 type CreateParams = {
     fullName: string,
     phone: string,

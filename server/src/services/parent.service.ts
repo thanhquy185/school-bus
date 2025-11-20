@@ -15,6 +15,8 @@ import {
 import AccountService from "./account.service";
 import { hashPassword } from "../utils/bcypt.util";
 import FirebaseService from "./firebase.service";
+import { verifyToken } from "../utils/jwt.util";
+import { StudentResponse } from "../responses/student.response";
 
 const ParentService = {
   async get(input: any) {
@@ -192,6 +194,50 @@ const ParentService = {
 
     return isPutRest({ id, avatar: avatarUrl });
   },
+
+  async getStudents(authentication: string) {
+    console.log("Authentication Token:", authentication);
+    const payload: any = await verifyToken(authentication);
+    console.log("Payload:", payload);
+    const parent = await prisma.parents.findUnique({
+      where: { account_id: payload.id },
+    });
+    if (!parent) {
+      throw new Error("Không tìm thấy phụ huynh nào!");
+    }
+    const students = await prisma.students.findMany({
+      where: { parent_id: parent.id },
+      include: {
+        parent: true,
+        class: true,
+        pickup: true,
+      },
+    });
+
+    return isGetRest(
+      students.map((student) => ({
+        id: student.id,
+            avatar: student.avatar,
+            full_name: student.full_name,
+            birth_date: student.birth_date,
+            gender: student.gender,
+            address: student.address,
+            status: student.status,
+            parent: {
+                id: student.parent.id,
+                full_name: student.parent.full_name
+            },
+            class: {
+                id: student.class.id,
+                name: student.class.name
+            },
+            pickup: {
+                id: student.pickup.id,
+                name: student.pickup.name
+            }
+      } as StudentResponse))
+    );
+  }
 };
 
 export default ParentService;

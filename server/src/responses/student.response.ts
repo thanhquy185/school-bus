@@ -1,5 +1,5 @@
 type StudentResponse = {
-    id: string,
+    id: number,
     avatar: string,
     full_name: string,
     birth_date: string,

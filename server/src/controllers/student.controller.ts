@@ -19,7 +19,7 @@ const StudentController = {
 
     async uploadAvatar(_req: Request, res: Response) {
         const response = await StudentService.uploadAvatar(
-            _req.params.id,
+            Number(_req.params.id),
             _req.file!
         );
         res.status(response.statusCode).json(response);

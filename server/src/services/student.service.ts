@@ -74,7 +74,6 @@ const StudentService = {
         const data = createSchema.parse(input);
         const student = await prisma.students.create({
             data: {
-                id: data.id,
                 full_name: data.fullName,
                 birth_date: data.birthDate,
                 gender: data.gender,
@@ -121,7 +120,7 @@ const StudentService = {
         } as StudentResponse);
     },
 
-    async uploadAvatar(id: string, file: Express.Multer.File) {
+    async uploadAvatar(id: number, file: Express.Multer.File) {
         const avatarUrl = await FirebaseService.uploadStudentImage(file as unknown as File);
         await prisma.students.update({
             where: { id },

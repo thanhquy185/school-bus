@@ -26,6 +26,8 @@ export const generateToken = (payload: any): { accessToken: string, issuedAt: nu
  */
 export const verifyToken = (token: string): any => {
     try {
+        token = token.replace("Bearer ", "").trim();
+        console.log("Verifying token:", token);
         return jsonwebtoken.verify(token, SECRET);
     } catch (error) {
         throw new Error("Invalid token");

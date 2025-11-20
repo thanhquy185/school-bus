@@ -13,5 +13,6 @@ router.post("/:id/avatar",
 );
 
 router.put("/:id", ParentController.update);
+router.get("/students", ParentController.getStudents);
 
 export default router;
