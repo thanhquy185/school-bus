@@ -90,7 +90,7 @@ const ParentJourneyPage = () => {
                       <span>
                         <InfoCircleOutlined />
                       </span>
-                      <span>Thông tin tuyến</span>
+                      <span>Tuyến đường</span>
                     </>
                   }
                   key="2"

@@ -2128,9 +2128,25 @@ button) {
   height: 620px;
   background: red;
 }
+.client-layout__journey .tabs-wrapper .notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.client-layout__journey .tabs-wrapper .notification-actions button {
+  width: 20%;
+  height: 60px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
 .client-layout__journey .tabs-wrapper .notification-tags-wrapper {
   overflow: auto;
   height: 620px;
+  margin-top: 10px;
+}
+.client-layout__journey .tabs-wrapper:has(.notification-actions) .notification-tags-wrapper {
+  height: 550px;
 }
 .client-layout__journey .tabs-wrapper .notification-tags {
   display: flex;
@@ -2156,11 +2172,142 @@ button) {
   font-size: 1.6rem;
   margin-top: 6px;
 }
-.client-layout__journey .students-wrapper {
+.client-layout__journey :is(.journey-info-wrapper, .students-wrapper) {
   width: calc(30% - 10px);
   padding: 10px;
   border: 1px solid #eee;
-  border-radius: 6px;
+  border-radius: 12px;
+}
+.client-layout__journey .journey-info-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.client-layout__journey .journey-info-wrapper .top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.client-layout__journey .journey-info-wrapper .top-grid .driver-section,
+.client-layout__journey .journey-info-wrapper .top-grid .date-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 16px;
+  background-color: #f0f8ff;
+  border-radius: 12px;
+}
+.client-layout__journey .journey-info-wrapper .top-grid .driver-name {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+.client-layout__journey .journey-info-wrapper .top-grid .driver-role {
+  font-size: 1.3rem;
+  color: #666;
+}
+.client-layout__journey .journey-info-wrapper .top-grid .date-section {
+  text-align: center;
+}
+.client-layout__journey .journey-info-wrapper .top-grid .date-section .date-card {
+  width: 100%;
+}
+.client-layout__journey .journey-info-wrapper .top-grid .date-section .date-card .date-main {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #1677ff;
+}
+.client-layout__journey .journey-info-wrapper .top-grid .date-section .date-card .date-sub {
+  font-size: 1.3rem;
+  margin: 4px 0 0 0;
+  color: #666;
+}
+.client-layout__journey .journey-info-wrapper .top-grid .date-section .date-card .date-time {
+  margin-top: 6px;
+  color: #000;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+.client-layout__journey .journey-info-wrapper :is(.bus-section, .route-section) {
+  padding: 16px;
+  background: #f0f8ff;
+  border-radius: 12px;
+  border: 1px solid #eef3ff;
+}
+.client-layout__journey .journey-info-wrapper :is(.bus-header, .route-header) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.client-layout__journey .journey-info-wrapper :is(.bus-header, .route-header) .sub-title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.client-layout__journey .journey-info-wrapper :is(.bus-header, .route-header) :is(.bus-badge, .route-badge) {
+  background: rgba(22, 119, 255, 0.0823529412);
+  color: #1677ff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.client-layout__journey .journey-info-wrapper :is(.bus-grid, .route-grid) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+  margin-bottom: 16px;
+}
+.client-layout__journey .journey-info-wrapper :is(.bus-grid, .route-grid) .item .label {
+  display: block;
+  font-size: 1.2rem;
+  color: #666;
+}
+.client-layout__journey .journey-info-wrapper :is(.bus-grid, .route-grid) .item .value {
+  margin: 2px 0 0 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #000;
+}
+.client-layout__journey .journey-info-wrapper .progress-wrapper {
+  margin-top: 10px;
+}
+.client-layout__journey .journey-info-wrapper .progress-wrapper .progress-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.client-layout__journey .journey-info-wrapper .progress-wrapper .progress-top .percent {
+  color: #1677ff;
+}
+.client-layout__journey .journey-info-wrapper .progress-wrapper .progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #f1f1f1;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.client-layout__journey .journey-info-wrapper .progress-wrapper .progress-bar .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1677ff, #00c2ff);
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+.client-layout__journey .journey-info-wrapper .actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+.client-layout__journey .journey-info-wrapper .actions button {
+  width: 100%;
+}
+.client-layout__journey .journey-info-wrapper .actions.active button {
+  width: calc(50% - 5px);
 }
 .client-layout__journey .students-wrapper .ant-list {
   border-radius: 6px;

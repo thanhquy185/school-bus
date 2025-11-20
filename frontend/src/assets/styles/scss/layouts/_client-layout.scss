@@ -259,9 +259,29 @@
     background: red;
   }
 
+  &__journey .tabs-wrapper .notification-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  &__journey .tabs-wrapper .notification-actions button {
+    @include size(calc(100% / 5), 60px);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
   &__journey .tabs-wrapper .notification-tags-wrapper {
     overflow: auto;
     height: $parent-block-height;
+    margin-top: 10px;
+  }
+
+  &__journey
+    .tabs-wrapper:has(.notification-actions)
+    .notification-tags-wrapper {
+    height: calc($parent-block-height - 60px - 10px);
   }
 
   &__journey .tabs-wrapper .notification-tags {
@@ -292,11 +312,164 @@
     margin-top: 6px;
   }
 
-  &__journey .students-wrapper {
+  &__journey :is(.journey-info-wrapper, .students-wrapper) {
     width: calc(30% - calc($vertical-padding / 2));
     padding: 10px;
     border: 1px solid #eee;
-    border-radius: 6px;
+    border-radius: 12px;
+  }
+
+  &__journey .journey-info-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .top-grid .driver-section,
+    .top-grid .date-section {
+      @include flexCenter();
+      flex-direction: column;
+      padding: 16px;
+      background-color: #f0f8ff;
+      border-radius: 12px;
+    }
+
+    .top-grid .driver-name {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .top-grid .driver-role {
+      font-size: 1.3rem;
+      color: #666;
+    }
+
+    .top-grid .date-section {
+      text-align: center;
+
+      .date-card {
+        width: 100%;
+
+        .date-main {
+          font-size: 2rem;
+          font-weight: 700;
+          margin: 0;
+          color: #1677ff;
+        }
+
+        .date-sub {
+          font-size: 1.3rem;
+          margin: 4px 0 0 0;
+          color: #666;
+        }
+
+        .date-time {
+          margin-top: 6px;
+          color: #000;
+          font-size: 1.4rem;
+          font-weight: 600;
+        }
+      }
+    }
+
+    :is(.bus-section, .route-section) {
+      padding: 16px;
+      background: #f0f8ff;
+      border-radius: 12px;
+      border: 1px solid #eef3ff;
+    }
+
+    :is(.bus-header, .route-header) {
+      @include flex(space-between, center);
+      margin-bottom: 14px;
+
+      .sub-title {
+        margin: 0;
+        font-size: 1.6rem;
+        font-weight: 700;
+      }
+
+      :is(.bus-badge, .route-badge) {
+        background: #1677ff15;
+        color: #1677ff;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+    }
+
+    :is(.bus-grid, .route-grid) {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 20px;
+      margin-bottom: 16px;
+
+      .item {
+        .label {
+          display: block;
+          font-size: 1.2rem;
+          color: #666;
+        }
+        .value {
+          margin: 2px 0 0 0;
+          font-size: 1.4rem;
+          font-weight: 600;
+          color: #000;
+        }
+      }
+    }
+
+    .progress-wrapper {
+      margin-top: 10px;
+
+      .progress-top {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        font-size: 1.3rem;
+        font-weight: 600;
+
+        .percent {
+          color: #1677ff;
+        }
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 10px;
+        background: #f1f1f1;
+        border-radius: 10px;
+        overflow: hidden;
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #1677ff, #00c2ff);
+          border-radius: 10px;
+          transition: width 0.4s ease;
+        }
+      }
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .actions button {
+      width: 100%;
+    }
+
+    .actions.active button {
+      width: calc(50% - 5px);
+    }
   }
 
   &__journey .students-wrapper .ant-list {
@@ -329,7 +502,7 @@
   &__journey .students-wrapper .ant-list-item-meta-title {
     font-size: 1.6rem !important;
     font-weight: 600;
-     transition: color 0.2s ease-in-out;
+    transition: color 0.2s ease-in-out;
   }
 
   &__journey .students-wrapper .ant-list-item.active .ant-list-item-meta-title {
@@ -377,7 +550,6 @@
     &__info > * {
       width: 100%;
     }
-    
 
     .parent .client-layout__students .ant-list-item {
       flex-direction: column;

@@ -25,9 +25,7 @@ import { useNotification } from "../../utils/showNotification";
 import { updatePassword } from "../../services/account-service";
 import useCallApi from "../../api/useCall";
 import type { DriverFormatType } from "../../common/types";
-import { CommonGenderValue } from "../../common/values";
 import dayjs from "dayjs";
-import { da } from "zod/locales";
 
 // Info Page
 const DriverInfoPage = () => {

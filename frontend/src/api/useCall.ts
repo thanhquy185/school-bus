@@ -1,21 +1,23 @@
 import { useState } from "react";
 import type { RestResponse } from "./api";
 import { useNotification } from "../utils/showNotification";
-import { openConfirmation } from "../utils/showConfirmation";
+import { useConfirmation } from "../utils/showConfirmation";
 
 const useCallApi = () => {
   const { openNotification } = useNotification();
+  const { openConfirmation } = useConfirmation();
+  
   const [loading, setLoading] = useState<boolean>(false);
 
   const execute = async (apiCall: Promise<RestResponse>, handleCRUD: boolean) => {
-    // if(handleCRUD) {
-    //     const answer = await openConfirmation({
-    //       title: "Bạn chắc chắn thực hiện hành động này ?",
-    //       content: "Hành động này không thể hoàn tác !",
-    //     });
-    //     if (!answer) return;
-    //     setLoading(true)
-    // }
+    if(handleCRUD) {
+        const answer = await openConfirmation({
+          title: "Bạn chắc chắn thực hiện hành động này ?",
+          content: "Hành động này không thể hoàn tác !",
+        });
+        if (!answer) return;
+        setLoading(true)
+    }
     
     try {
       const restResponse = await apiCall;

@@ -31,9 +31,9 @@ export const ActiveStatusValue = {
 // Trạng thái vận hành xe buýt - học sinh
 export const ActiveStudentStatusValue = {
   pending: "Đang chờ xác nhận",
+  absent: "Đã nghỉ học",
   leave: "Đã nghỉ phép",
-  canceled: "Đã nghỉ học",
-  confirmed: "Đã điểm danh"
+  checked: "Đã điểm danh"
 }
 
 // Trạng thái vận hành xe buýt - trạm xe buýt
