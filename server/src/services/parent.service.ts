@@ -15,6 +15,9 @@ import {
 import AccountService from "./account.service";
 import { hashPassword } from "../utils/bcypt.util";
 import FirebaseService from "./firebase.service";
+import { AuthenticationPayload } from "../middlewares/auth.middleware";
+import { verifyToken } from "../utils/jwt.util";
+import { StudentResponse } from "../responses/student.response";
 
 const ParentService = {
   async get(input: any) {
@@ -84,67 +87,16 @@ const ParentService = {
     );
   },
 
-  async update(input: any) {
-    const data = updateSchema.parse(input);
-
-    const parentSelected = await prisma.parents.findUnique({
-      where: {
-        id: data.id,
-      },
+  async uploadAvatar(id: number, file: Express.Multer.File) {
+    const avatarUrl = await FirebaseService.uploadParentImage(
+      file as unknown as File
+    );
+    await prisma.parents.update({
+      where: { id },
+      data: { avatar: avatarUrl },
     });
-    if (!parentSelected) {
-      throw new Error("Phụ huynh không tồn tại !");
-    }
-    if (data.status === "INACTIVE") {
-      const activeSchedule = await prisma.students.findFirst({
-        where: {
-          parent_id: data.id,
-          status: "STUDYING",
-        },
-      });
 
-      if (activeSchedule) {
-        throw new Error(
-          "Không thể khoá phụ huynh này vì có học sinh còn đi học đang sử dụng !"
-        );
-      }
-    }
-
-    const updateData: any = {};
-    if (data.fullName) {
-      updateData.full_name = data.fullName;
-    }
-    if (data.email) {
-      updateData.email = data.email;
-    }
-    if (data.address) {
-      updateData.address = data.address;
-    }
-    if (data.phone) {
-      updateData.phone = data.phone;
-    }
-
-    const parent = await prisma.parents.update({
-      where: {
-        id: data.id,
-      },
-      data: updateData,
-    });
-    if (parent.account_id && (data.password || data.status)) {
-      await AccountService.update({
-        id: parent.account_id,
-        password: data.password,
-        status: data.status,
-      });
-    }
-
-    return isPutRest({
-      id: parent.id,
-      full_name: parent.full_name,
-      email: parent.email,
-      address: parent.address,
-      phone: parent.phone,
-    });
+    return isPutRest({ id, avatar: avatarUrl });
   },
 
   async create(input: any, file?: Express.Multer.File) {
@@ -175,22 +127,158 @@ const ParentService = {
       id: parent.id,
       full_name: parent.full_name,
       phone: parent.phone,
-      email: parent.email,
-      address: parent.address,
+      email: parent.email ?? null,
+      address: parent.address ?? null,
       account_id: parent.account_id,
     } as ParentResponse);
   },
 
-  async uploadAvatar(id: number, file: Express.Multer.File) {
-    const avatarUrl = await FirebaseService.uploadParentImage(
-      file as unknown as File
-    );
-    await prisma.parents.update({
-      where: { id },
-      data: { avatar: avatarUrl },
+  async update(input: any) {
+    const data = updateSchema.parse(input);
+
+    const parentSelected = await prisma.parents.findUnique({
+      where: {
+        id: data.id,
+      },
+    });
+    if (!parentSelected) {
+      throw new Error("Phụ huynh không tồn tại !");
+    }
+    if (data.status === "INACTIVE") {
+      const activeSchedule = await prisma.students.findFirst({
+        where: {
+          parent_id: data.id,
+          status: "STUDYING",
+        },
+      });
+
+      if (activeSchedule) {
+        throw new Error(
+          "Không thể khoá phụ huynh này vì có học sinh còn đi học đang sử dụng !"
+        );
+      }
+    }
+
+    const updateData: any = {};
+    if (data.fullName) {
+      updateData.full_name = data.fullName;
+    }
+    if (data.email || data.email === "") {
+      updateData.email = data.email;
+    }
+    if (data.address || data.address === "") {
+      updateData.address = data.address;
+    }
+    if (data.phone) {
+      updateData.phone = data.phone;
+    }
+
+    const parent = await prisma.parents.update({
+      where: {
+        id: data.id,
+      },
+      data: updateData,
+    });
+    if (parent.account_id && (data.password || data.status)) {
+      await AccountService.update({
+        id: parent.account_id,
+        password: data.password,
+        status: data.status,
+      });
+    }
+
+    return isPutRest({
+      id: parent.id,
+      full_name: parent.full_name,
+      email: parent.email ?? null,
+      address: parent.address ?? null,
+      phone: parent.phone,
+    });
+  },
+
+  async getInfo(authentication: string) {
+    const payload: AuthenticationPayload = await verifyToken(authentication);
+
+    const parent = await prisma.parents.findUnique({
+      where: {
+        account_id: payload.id,
+      },
+      include: {
+        account: {
+          select: {
+            username: true,
+            status: true,
+          },
+        },
+      },
     });
 
-    return isPutRest({ id, avatar: avatarUrl });
+    return isGetRest({
+      avatar: parent.avatar,
+      username: parent.account.username,
+      id: parent.id,
+      full_name: parent.full_name,
+      phone: parent.phone,
+      email: parent.email,
+      address: parent.address,
+      account_id: parent.account_id,
+      status: parent.account.status,
+    } as ParentResponse);
+  },
+
+  async getStudents(authentication: string) {
+    const payload: AuthenticationPayload = await verifyToken(authentication);
+
+    const account = await prisma.accounts.findUnique({
+      where: {
+        username: payload.username,
+      },
+      include: {
+        parents: {
+          include: {
+            students: {
+              include: {
+                parent: true,
+                class: true,
+                pickup: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return isGetRest(
+      account.parents.students
+        .filter((student) => student.status === "STUDYING")
+        .map(
+          (student) =>
+            ({
+              id: student.id,
+              avatar: student.avatar,
+              full_name: student.full_name,
+              birth_date: student.birth_date,
+              gender: student.gender,
+              address: student.address,
+              status: student.status,
+              parent: {
+                id: student.parent.id,
+                full_name: student.parent.full_name,
+              },
+              class: {
+                id: student.class.id,
+                name: student.class.name,
+              },
+              pickup: {
+                id: student.pickup.id,
+                name: student.pickup.name,
+                category: student.pickup.category,
+                lat: student.pickup.lat,
+                lng: student.pickup.lng,
+              },
+            } as StudentResponse)
+        )
+    );
   },
 };
 

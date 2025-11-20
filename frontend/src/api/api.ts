@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { CurrentUser } from "../contexts/authContext";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -27,6 +28,12 @@ api.interceptors.response.use(
 );
 
 api.interceptors.request.use((config) => {
+  const sessionUser = sessionStorage.getItem("CURRENT_USER");
+  if (sessionUser) {
+    const currentUser: CurrentUser = JSON.parse(sessionUser);
+    config.headers.Authorization = `Bearer ${currentUser.accessToken}`;
+  }
+
   return config;
 });
 

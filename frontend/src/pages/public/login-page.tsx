@@ -14,12 +14,18 @@ const LoginPage = () => {
   const auth = useAuth();
 
   const handleLogin = async () => {
-    const restResponse = await execute(login(form.getFieldValue("username"), form.getFieldValue("password")));
+    const restResponse = await execute(
+      login(form.getFieldValue("username"), form.getFieldValue("password")),
+      false
+    );
     notify(restResponse, "Đăng nhập thành công");
     if (restResponse?.result) {
       auth.setAuth(restResponse.data);
+      window.location.href = `/${(
+        restResponse.data.role as string
+      ).toLowerCase()}`;
     }
-  }
+  };
 
   return (
     <>

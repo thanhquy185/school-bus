@@ -16,7 +16,10 @@ type StudentResponse = {
     },
     pickup: {
         id: number,
-        name: string
+        name: string,
+        category: string,
+        lat: number,
+        lng: number
     }
 }
 

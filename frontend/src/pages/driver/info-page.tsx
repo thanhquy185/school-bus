@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
-import { Card, Form, Input, Button, Menu, Row, Col } from "antd";
+import {
+  Card,
+  Form,
+  Input,
+  Button,
+  Menu,
+  Row,
+  Col,
+  DatePicker,
+  Select,
+} from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import CustomUpload from "../../components/upload";
 import type { RcFile } from "antd/es/upload";
@@ -8,16 +18,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import {
   getInfo,
-  updateParent,
-  uploadParentAvatar,
-} from "../../services/parent-service";
+  updateDriver,
+  uploadDriverAvatar,
+} from "../../services/driver-service";
 import { useNotification } from "../../utils/showNotification";
 import { updatePassword } from "../../services/account-service";
 import useCallApi from "../../api/useCall";
-import type { ParentFormatType } from "../../common/types";
+import type { DriverFormatType } from "../../common/types";
+import { CommonGenderValue } from "../../common/values";
+import dayjs from "dayjs";
+import { da } from "zod/locales";
 
 // Info Page
-const ParentInfoPage = () => {
+const DriverInfoPage = () => {
   const { openNotification } = useNotification();
   const { execute, notify } = useCallApi();
 
@@ -29,15 +42,15 @@ const ParentInfoPage = () => {
     setSelectedMenu(e.key);
   };
 
-  // Truy vấn thông tin phụ huynh (cá nhân và tài khoản)
-  const [parentInfo, setParentInfo] = useState<ParentFormatType>();
-  const getParentInfo = async () => {
+  // Truy vấn thông tin tài xế (cá nhân và tài khoản)
+  const [driverInfo, setDriverInfo] = useState<DriverFormatType>();
+  const getDriverInfo = async () => {
     const response = await execute(getInfo(), false);
     const data = response.data;
-    setParentInfo(data);
+    setDriverInfo(data);
   };
   useEffect(() => {
-    getParentInfo();
+    getDriverInfo();
   }, []);
 
   const PersonalInfo = () => {
@@ -48,24 +61,26 @@ const ParentInfoPage = () => {
       form.setFieldsValue({ avatar: imageFile?.name });
     }, [imageFile]);
 
-    const handleUpdate = async (values: any) => {
-      if (!parentInfo?.id) return;
+    const handleUpdate = async () => {
+      if (!driverInfo?.id) return;
 
       const updateData = {
-        fullName: values.fullname,
-        phone: values.phone,
-        email: values.email,
-        address: values.address,
+        fullName: form.getFieldValue("fullname"),
+        birthDate: form.getFieldValue("birthday"),
+        gender: form.getFieldValue("gender"),
+        phone: form.getFieldValue("phone"),
+        email: form.getFieldValue("email"),
+        address: form.getFieldValue("address"),
       };
 
       try {
-        // Cập nhật thông tin phụ huynh
-        const response = await updateParent(parentInfo.id, updateData);
+        // Cập nhật thông tin tài xế
+        const response = await updateDriver(driverInfo.id, updateData);
         if (response.statusCode === 200) {
           openNotification({
             type: "success",
             message: "Thành công",
-            description: "Cập nhật thông tin phụ huynh thành công!",
+            description: "Cập nhật thông tin tài xế thành công!",
             duration: 2,
           });
 
@@ -74,31 +89,35 @@ const ParentInfoPage = () => {
             const formData = new FormData();
             formData.append("avatar", imageFile);
             const uploadResponse = await execute(
-              uploadParentAvatar(parentInfo.id, formData),
+              uploadDriverAvatar(driverInfo.id, formData),
               false
             );
             notify(uploadResponse, "Cập nhật ảnh đại diện thành công!");
           }
 
           // Load lại thông tin và tắt chế độ edit
-          getParentInfo();
+          getDriverInfo();
           setIsEditing(false);
         }
       } catch (error) {
-        console.log("Lỗi cập nhật thông tin phụ huynh:", error);
+        console.log("Lỗi cập nhật thông tin tài xế:", error);
       }
     };
 
     return (
-      <div className="parent-content client">
+      <div className="driver-content client">
         <Form
           form={form}
           layout="vertical"
           initialValues={{
-            fullname: parentInfo?.full_name || undefined,
-            phone: parentInfo?.phone || undefined,
-            email: parentInfo?.email || undefined,
-            address: parentInfo?.address || undefined,
+            fullname: driverInfo?.full_name || undefined,
+            birthday: driverInfo?.birth_date
+              ? dayjs(driverInfo?.birth_date)
+              : undefined,
+            gender: driverInfo?.gender || undefined,
+            phone: driverInfo?.phone || undefined,
+            email: driverInfo?.email || undefined,
+            address: driverInfo?.address || undefined,
           }}
           autoComplete="off"
           onFinish={handleUpdate}
@@ -112,13 +131,13 @@ const ParentInfoPage = () => {
               >
                 <CustomUpload
                   defaultSrc={
-                    parentInfo?.avatar ? parentInfo.avatar : undefined
+                    driverInfo?.avatar ? driverInfo.avatar : undefined
                   }
                   imageFile={imageFile}
                   setImageFile={setImageFile}
                   alt="image-preview"
                   imageClassName="image-preview"
-                  imageCategoryName="parents"
+                  imageCategoryName="Drivers"
                   uploadClassName="image-uploader"
                   labelButton="Tải ảnh lên"
                   disabled={!isEditing} // khóa/mở khi chỉnh sửa
@@ -137,27 +156,71 @@ const ParentInfoPage = () => {
               >
                 <Input placeholder="Nhập Họ và tên" disabled={!isEditing} />
               </Form.Item>
-              <Form.Item
-                name="phone"
-                label="Số điện thoại"
-                rules={
-                  isEditing
-                    ? [
-                        ruleRequired("Số điện thoại không được để trống !"),
-                        rulePhone(),
-                      ]
-                    : []
-                }
-              >
-                <Input placeholder="Nhập Số điện thoại" disabled={!isEditing} />
-              </Form.Item>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={isEditing ? [ruleEmail()] : []}
-              >
-                <Input placeholder="Nhập Email" disabled={!isEditing} />
-              </Form.Item>
+              <Row className="split-2">
+                <Col>
+                  <Form.Item
+                    name="birthday"
+                    label="Ngày sinh"
+                    rules={
+                      isEditing ? [ruleRequired("Cần chọn Ngày sinh !")] : []
+                    }
+                  >
+                    <DatePicker
+                      allowClear
+                      format="DD/MM/YYYY"
+                      disabled={!isEditing}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col>
+                  <Form.Item
+                    name="gender"
+                    label="Giới tính"
+                    rules={
+                      isEditing ? [ruleRequired("Cần chọn Giới tính !")] : []
+                    }
+                  >
+                    <Select
+                      allowClear
+                      disabled={!isEditing}
+                      options={[
+                        { label: "Nam", value: "MALE" },
+                        { label: "Nữ", value: "FEMALE" },
+                      ]}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row className="split-2">
+                <Col>
+                  <Form.Item
+                    name="phone"
+                    label="Số điện thoại"
+                    rules={
+                      isEditing
+                        ? [
+                            ruleRequired("Số điện thoại không được để trống !"),
+                            rulePhone(),
+                          ]
+                        : []
+                    }
+                  >
+                    <Input
+                      placeholder="Nhập Số điện thoại"
+                      disabled={!isEditing}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col>
+                  <Form.Item
+                    name="email"
+                    label="Email"
+                    rules={isEditing ? [ruleEmail()] : []}
+                  >
+                    <Input placeholder="Nhập Email" disabled={!isEditing} />
+                  </Form.Item>
+                </Col>
+              </Row>
               <Form.Item name="address" label="Địa chỉ">
                 <Input placeholder="Nhập Địa chỉ" disabled={!isEditing} />
               </Form.Item>
@@ -202,8 +265,6 @@ const ParentInfoPage = () => {
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
     const handleUpdate = async (values: any) => {
-      console.log("Submitted values:", values);
-
       if (values.newPassword.trim() !== values.newPassword2.trim()) {
         openNotification({
           type: "warning",
@@ -216,7 +277,7 @@ const ParentInfoPage = () => {
 
       try {
         const response = await updatePassword(
-          parentInfo?.account_id!,
+          driverInfo?.account_id!,
           values.newPassword
         );
         if (response.statusCode === 400) {
@@ -228,7 +289,7 @@ const ParentInfoPage = () => {
           });
         } else if (response.statusCode === 200) {
           setIsEditing(false);
-          getParentInfo();
+          getDriverInfo();
           openNotification({
             type: "success",
             message: "Thành công",
@@ -242,12 +303,12 @@ const ParentInfoPage = () => {
     };
 
     return (
-      <div className="parent-content client-account">
+      <div className="driver-content client-account">
         <Form
           form={form}
           layout="vertical"
           initialValues={{
-            username: parentInfo?.username,
+            username: driverInfo?.username,
             password: "Mật khẩu đã được mã hoá !",
           }}
           autoComplete="off"
@@ -339,7 +400,7 @@ const ParentInfoPage = () => {
   };
 
   return (
-    <div className="client-layout__main parent">
+    <div className="client-layout__main Driver">
       <h2 className="client-layout__title">
         <span>
           <FontAwesomeIcon icon={faUser} />
@@ -384,4 +445,4 @@ const ParentInfoPage = () => {
   );
 };
 
-export default ParentInfoPage;
+export default DriverInfoPage;

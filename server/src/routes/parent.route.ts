@@ -11,7 +11,8 @@ router.post("/:id/avatar",
   UploadMiddleware.single("avatar"), 
   ParentController.uploadAvatar
 );
-
 router.put("/:id", ParentController.update);
+router.get("/info", ParentController.getInfo);
+router.get("/students", ParentController.getStudents);
 
 export default router;

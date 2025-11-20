@@ -12,20 +12,32 @@ export const getParentsActive = async (): Promise<RestResponse> => {
     return restResponse;
 }
 
-export const createParent = async (params: CreateParams): Promise<RestResponse> => {
-    const response = await api.post("/api/parents", params);
-    const restResponse: RestResponse = response.data;
-    return restResponse;
-}
-
 export const uploadParentAvatar = async (id: number, params: FormData): Promise<RestResponse> => {
     const response = await api.post(`/api/parents/${id}/avatar`, params);
     const restResponse: RestResponse = response.data;
     return restResponse;
 }
 
+export const createParent = async (params: CreateParams): Promise<RestResponse> => {
+    const response = await api.post("/api/parents", params);
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
 export const updateParent = async (id: number, params: UpdateParams): Promise<RestResponse> => {
     const response = await api.put(`/api/parents/${id}`, params);
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
+export const getInfo = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/parents/info");
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
+export const getStudents = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/parents/students");
     const restResponse: RestResponse = response.data;
     return restResponse;
 }

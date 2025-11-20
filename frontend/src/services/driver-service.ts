@@ -30,6 +30,12 @@ export const uploadDriverAvatar = async (id: number, params: FormData): Promise<
     return restResponse;
 }
 
+export const getInfo = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/drivers/info");
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
 type CreateParams = {
     fullName: string,
     birthDate: string,
@@ -50,7 +56,6 @@ type UpdateParams = {
     address?: string,
     phone?: string,
     email?: string,
-
     password?: string,
     status?: string
 }

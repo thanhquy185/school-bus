@@ -264,7 +264,7 @@ const DriverPage = () => {
   });
   const DriverDetail: React.FC<{ driver: DriverFormatType }> = ({ driver }) => {
     const [form] = Form.useForm<DriverNotFormatType>();
-    console.log("Driver Detail:", driver);
+
     return (
       <>
         <div className="driver-content detail">

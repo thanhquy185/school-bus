@@ -13,6 +13,7 @@ type CustomUploadProps = {
   uploadClassName?: string;
   labelButton?: string;
   disabled?: boolean;
+  buttonHidden?: boolean;
 };
 
 const CustomUpload: React.FC<CustomUploadProps> = ({
@@ -26,6 +27,7 @@ const CustomUpload: React.FC<CustomUploadProps> = ({
   uploadClassName,
   labelButton = "Tải hình ảnh",
   disabled = false,
+  buttonHidden = false,
 }) => {
   const beforeUpload = async (file: RcFile) => {
     const isImage = file.type.startsWith("image/");
@@ -46,28 +48,33 @@ const CustomUpload: React.FC<CustomUploadProps> = ({
 
   return (
     <>
-    <Image
-      src={
-        imageFile
-          ? URL.createObjectURL(imageFile) // file upload mới
-          : defaultSrc && defaultSrc.startsWith("http")
-          ? defaultSrc // avatar cũ full URL
-          : defaultSrc
-          ? `/src/assets/images/${imageCategoryName}/${defaultSrc}` // tên file local
-          : "/src/assets/images/others/no-image.png" // placeholder
-      }
-      alt={alt}
-      className={imageClassName}
-    />
+      <Image
+        src={
+          imageFile
+            ? URL.createObjectURL(imageFile) // file upload mới
+            : defaultSrc && defaultSrc.startsWith("http")
+            ? defaultSrc // avatar cũ full URL
+            : defaultSrc
+            ? `/src/assets/images/${imageCategoryName}/${defaultSrc}` // tên file local
+            : "/src/assets/images/others/no-image.png" // placeholder
+        }
+        alt={alt}
+        className={imageClassName}
+      />
 
       <Upload
         accept="image/*"
         showUploadList={false}
         beforeUpload={beforeUpload}
         id={htmlFor}
-        className={uploadClassName}
+        className={uploadClassName} 
       >
-        <Button icon={<UploadOutlined />} id="image-button" disabled={disabled}>
+        <Button
+          icon={<UploadOutlined />}
+          id="image-button"
+          disabled={disabled}
+          style={{ display: buttonHidden ? "none" : "block" }}
+        >
           {labelButton}
         </Button>
       </Upload>

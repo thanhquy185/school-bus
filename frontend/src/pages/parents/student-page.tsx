@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   List,
   Avatar,
@@ -8,123 +8,59 @@ import {
   Drawer,
   Form,
   Input,
-  Select,
 } from "antd";
 import {
-  EditOutlined,
   EyeOutlined,
   EnvironmentOutlined,
 } from "@ant-design/icons";
-import type { PickupType, StudentFormatType } from "../../common/types";
-import { ruleRequired } from "../../common/rules";
-import type { RcFile } from "antd/es/upload";
+import type { StudentFormatType } from "../../common/types";
 import CustomUpload from "../../components/upload";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import LeafletMap from "../../components/leaflet-map";
-import { getItemById } from "../../utils/getItemEvents";
+import { getStudents } from "../../services/parent-service";
+import useCallApi from "../../api/useCall";
+import {
+  CommonGenderValue,
+  PointTypeValue,
+  StudentStatusValue,
+} from "../../common/values";
 
-type DrawerMode = "view" | "edit" | "pickup" | null;
+type DrawerMode = "view" | "pickup" | null;
 
 const ParentStudentPage = () => {
-  const pickupData: PickupType[] = [
-    {
-      id: 1,
-      name: "Trường Đại học Sài Gòn",
-      category: "Trường học",
-      lat: 10.75960314081626,
-      lng: 106.68201506137848,
-      status: "Hoạt động",
-    },
-    {
-      id: 2,
-      name: "Trạm Công viên Lê Thị Riêng",
-      category: "Điểm đưa đón",
-      lat: 10.786197005344277,
-      lng: 106.66577696800232,
-      status: "Tạm dừng",
-    },
-    {
-      id: 3,
-      name: "Trạm Ngã 3 Tô Hiến Thành",
-      category: "Điểm đưa đón",
-      lat: 10.782542301538852,
-      lng: 106.67269945487907,
-      status: "Hoạt động",
-    },
-    {
-      id: 4,
-      name: "Trạm Vòng xoay Dân Chủ",
-      category: "Điểm đưa đón",
-      lat: 10.778231651587179,
-      lng: 106.68071896686253,
-      status: "Hoạt động",
-    },
-    {
-      id: 5,
-      name: "Trạm Nhà hát Hoà Bình",
-      category: "Điểm đưa đón",
-      lat: 10.771691782379415,
-      lng: 106.67420637069971,
-      status: "Hoạt động",
-    },
-    {
-      id: 6,
-      name: "Trạm Vòng xoay Lý Thái Tổ",
-      category: "Điểm đưa đón",
-      lat: 10.767212337954136,
-      lng: 106.67562797183044,
-      status: "Hoạt động",
-    },
-    {
-      id: 7,
-      name: "Trạm Vòng xoay Cộng Hoà",
-      category: "Điểm đưa đón",
-      lat: 10.764561529473132,
-      lng: 106.6818913125902,
-      status: "Hoạt động",
-    },
-  ];
-  const students: StudentFormatType[] = [
-    {
-      id: "1",
-      pickup: {
-        id: 5,
-        name: "Trạm Nhà hát Hoà Bình",
-        category: "Điểm đưa đón",
-        lat: 10.771691782379415,
-        lng: 106.67420637069971,
-        status: "Hoạt động",
-      },
-      class: {
-        id: 1,
-        name: "Lớp 10A1",
-      },
-      avatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=1",
-      fullname: "Nguyễn Văn A",
-      birthday: "2014-05-12",
-      gender: "Nam",
-    },
-    {
-      id: "2",
-      pickup: {
-        id: 3,
-        name: "Trạm Ngã 3 Tô Hiến Thành",
-        category: "Điểm đưa đón",
-        lat: 10.782542301538852,
-        lng: 106.67269945487907,
-        status: "Hoạt động",
-      },
-      class: {
-        id: 2,
-        name: "Lớp 10A2",
-      },
-      avatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=2",
-      fullname: "Trần Thị B",
-      birthday: "2015-02-20",
-      gender: "Nữ",
-    },
-  ];
+  const { execute, notify, loading } = useCallApi();
+
+  // Dữ liệu
+  const [students, setStudents] = useState<StudentFormatType[]>([]);
+  const getStudentsByParent = async () => {
+    const restResponse = await execute(getStudents(), false);
+    if (restResponse?.result) {
+      setStudents(
+        restResponse.data?.map((student: StudentFormatType) => ({
+          ...student,
+          gender:
+            student?.gender === "MALE"
+              ? CommonGenderValue.male
+              : CommonGenderValue.female,
+          status:
+            student?.status === "STUDYING"
+              ? StudentStatusValue.studying
+              : StudentStatusValue.dropped_out,
+          pickup: {
+            ...student.pickup,
+            category:
+              student.pickup?.category === "SCHOOL"
+                ? PointTypeValue.school
+                : PointTypeValue.pickup,
+          },
+        }))
+      );
+    }
+  };
+  useEffect(() => {
+    getStudentsByParent();
+  }, []);
 
   // Drawer
   const [openDrawer, setOpenDrawer] = useState<boolean>(false);
@@ -145,30 +81,13 @@ const ParentStudentPage = () => {
   // Tạo tiêu đề động cho Drawer
   const drawerTitle =
     drawerMode === "view"
-      ? `Chi tiết thông tin ${selectedStudent?.fullname}`
-      : drawerMode === "edit"
-      ? `Cập nhật thông tin ${selectedStudent?.fullname}`
+      ? `Thông tin cá nhân ${selectedStudent?.full_name}`
       : drawerMode === "pickup"
-      ? `Cập nhật trạm xe buýt ${selectedStudent?.fullname}`
+      ? `Thông tin trạm xe buýt ${selectedStudent?.full_name}`
       : "";
 
   // Form
   const [form] = Form.useForm<StudentFormatType>();
-  const [imageFile, setImageFile] = useState<RcFile>();
-  const [pickupValue, setPickupValue] = useState<PickupType>();
-  useEffect(() => {
-    form.setFieldValue("avatar", imageFile?.name);
-  }, [imageFile]);
-  useEffect(() => {
-    form.setFieldValue("id", selectedStudent?.id || undefined);
-    form.setFieldValue("pickup", selectedStudent?.pickup?.id || undefined);
-    form.setFieldValue("class", selectedStudent?.class?.id || undefined);
-    form.setFieldValue("avatar", selectedStudent?.avatar || undefined);
-    form.setFieldValue("fullname", selectedStudent?.fullname || undefined);
-    form.setFieldValue("birthday", selectedStudent?.birthday || undefined);
-    form.setFieldValue("gender", selectedStudent?.gender || undefined);
-    setPickupValue(selectedStudent?.pickup);
-  }, [selectedStudent]);
 
   return (
     <div className="client-layout__main parent">
@@ -178,7 +97,7 @@ const ParentStudentPage = () => {
           <strong>Học sinh</strong>
         </span>
       </h2>
-      <Card title="Danh sách học sinh" className="client-layout__students">
+      <Card title="Thông tin học sinh" className="client-layout__students">
         <List
           itemLayout="horizontal"
           dataSource={students}
@@ -193,15 +112,7 @@ const ParentStudentPage = () => {
                   icon={<EyeOutlined />}
                   onClick={() => openDrawerWithMode("view", student)}
                 >
-                  Chi tiết thông tin
-                </Button>,
-                <Button
-                  variant="solid"
-                  color="orange"
-                  icon={<EditOutlined />}
-                  onClick={() => openDrawerWithMode("edit", student)}
-                >
-                  Cập nhật thông tin
+                  Thông tin cá nhân
                 </Button>,
                 <Button
                   variant="solid"
@@ -209,13 +120,13 @@ const ParentStudentPage = () => {
                   icon={<EnvironmentOutlined />}
                   onClick={() => openDrawerWithMode("pickup", student)}
                 >
-                  Cập nhật trạm xe buýt
+                  Thông tin trạm xe buýt
                 </Button>,
               ]}
             >
               <List.Item.Meta
                 avatar={<Avatar src={student.avatar} size={50} />}
-                title={<strong>{student.fullname}</strong>}
+                title={<strong>{student.full_name}</strong>}
                 description={
                   <>
                     <div>
@@ -247,53 +158,45 @@ const ParentStudentPage = () => {
           <Form
             form={form}
             layout="vertical"
-            initialValues={{ pickup: selectedStudent?.pickup?.id }}
-            onFinish={() => {}}
+            initialValues={{
+              name: selectedStudent?.pickup?.name,
+              category: selectedStudent?.pickup?.category,
+              lat: selectedStudent?.pickup?.lat,
+              lng: selectedStudent?.pickup?.lng,
+            }}
+            disabled={true}
           >
-            <Form.Item>
+            <Form.Item className="margin-bottom-0">
               <LeafletMap
-                id={"map-" + pickupValue?.id}
-                pointType={pickupValue?.category}
-                lat={pickupValue?.lat}
-                lng={pickupValue?.lng}
+                id={"map-" + selectedStudent?.pickup?.id}
+                pointType={selectedStudent?.pickup?.category}
+                lat={selectedStudent?.pickup?.lat}
+                lng={selectedStudent?.pickup?.lng}
                 type="detail"
               />
             </Form.Item>
             <Form.Item
-              name="pickup"
-              htmlFor="pickup"
-              label="Trạm xe buýt"
-              rules={[ruleRequired("Trạm xe buýt không được để trống !")]}
+              name="name"
+              htmlFor="name"
+              label="Tên trạm"
+              style={{ marginTop: 16 }}
             >
-              <Select
-                allowClear
-                showSearch
-                id="pickup"
-                placeholder="Chọn Trạm xe buýt"
-                options={pickupData?.map((pickup) => ({
-                  label:
-                    "#" +
-                    pickup?.id +
-                    " - " +
-                    pickup?.name +
-                    " - " +
-                    pickup?.category,
-                  value: pickup?.id,
-                }))}
-                onChange={(val: number) =>
-                  setPickupValue(getItemById(pickupData, val))
-                }
-              />
+              <Input id="name" />
             </Form.Item>
-            {/* <Form.Item label="Ghi chú" name="note">
-              <Input.TextArea placeholder="Ghi chú thêm..." />
+            {/* <Form.Item name="category" htmlFor="category" label="Loại trạm">
+              <Input id="category" />
+            </Form.Item>
+            <Form.Item name="lat" htmlFor="lat" label="Toạ độ x">
+              <Input id="lat" />
+            </Form.Item>
+            <Form.Item
+              name="lng"
+              htmlFor="lng"
+              label="Toạ độ y"
+              className="margin-bottom-0"
+            >
+              <Input id="lng" />
             </Form.Item> */}
-            <div className="buttons">
-              <Button type="primary" htmlType="submit">
-                Lưu thay đổi
-              </Button>
-              <Button onClick={handleCloseDrawer}>Hủy</Button>
-            </div>
           </Form>
         ) : (
           selectedStudent && (
@@ -301,7 +204,13 @@ const ParentStudentPage = () => {
               <Form
                 form={form}
                 layout="vertical"
-                onFinish={() => {}}
+                initialValues={{
+                  id: selectedStudent?.id,
+                  full_name: selectedStudent?.full_name,
+                  birth_date: selectedStudent?.birth_date,
+                  gender: selectedStudent?.gender,
+                  class: selectedStudent?.class?.name,
+                }}
                 disabled={drawerMode === "view"}
               >
                 <Form.Item
@@ -309,106 +218,43 @@ const ParentStudentPage = () => {
                   htmlFor="avatar"
                   label="Ảnh đại diện"
                   valuePropName="fileList"
-                  rules={
-                    drawerMode === "edit"
-                      ? [ruleRequired("Ảnh đại diện không được để trống !")]
-                      : []
-                  }
                 >
                   <CustomUpload
-                    // defaultSrc={
-                    //   selectedStudent?.avatar
-                    //     ? selectedStudent?.avatar
-                    //     : "no-image.png"
-                    // }
-                    imageFile={imageFile}
-                    setImageFile={setImageFile}
+                    defaultSrc={
+                      selectedStudent?.avatar
+                        ? selectedStudent?.avatar
+                        : "no-image.png"
+                    }
                     alt="image-preview"
                     htmlFor="avatar"
                     imageClassName="image-preview"
                     imageCategoryName="students"
                     uploadClassName="image-uploader"
-                    labelButton="Tải ảnh lên"
+                    labelButton="Không thể cập nhật ảnh"
                     disabled={drawerMode === "view"}
+                    buttonHidden={true}
                   />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
+                  name="full_name"
                   htmlFor="fullname"
                   label="Họ và tên"
-                  rules={
-                    drawerMode === "edit"
-                      ? [ruleRequired("Họ và tên không được để trống !")]
-                      : []
-                  }
                 >
-                  <Input id="fullname" placeholder="Nhập Họ và tên" />
+                  <Input id="fullname" />
                 </Form.Item>
                 <Form.Item
-                  name="birthday"
+                  name="birth_date"
                   htmlFor="birthday"
                   label="Ngày sinh"
-                  rules={
-                    drawerMode === "edit"
-                      ? [ruleRequired("Ngày sinh không được để trống")]
-                      : []
-                  }
                 >
-                  <Input id="birthday" placeholder="YYYY-MM-DD" />
+                  <Input id="birthday" />
                 </Form.Item>
-                <Form.Item
-                  name="gender"
-                  htmlFor="gender"
-                  label="Giới tính"
-                  rules={
-                    drawerMode === "edit"
-                      ? [ruleRequired("Giới tính không được để trống")]
-                      : []
-                  }
-                >
-                  <Select
-                    id="gender"
-                    placeholder="Chọn Giới tính"
-                    options={[
-                      { value: "Nam", label: "Nam" },
-                      { value: "Nữ", label: "Nữ" },
-                    ]}
-                  />
+                <Form.Item name="gender" htmlFor="gender" label="Giới tính">
+                  <Input id="gender" />
                 </Form.Item>
-                <Form.Item
-                  name="class"
-                  htmlFor="class"
-                  label="Lớp"
-                  rules={
-                    drawerMode === "edit"
-                      ? [ruleRequired("Lớp không được để trống !")]
-                      : []
-                  }
-                >
-                  <Select
-                    allowClear
-                    id="class"
-                    options={[
-                      {
-                        label: "#1 - Lớp 10A1",
-                        value: 1,
-                      },
-                      {
-                        label: "#2 - Lớp 10A2",
-                        value: 2,
-                      },
-                    ]}
-                    placeholder="Chọn Lớp"
-                  />
+                <Form.Item name="class" htmlFor="class" label="Lớp">
+                  <Input allowClear id="class" />
                 </Form.Item>
-                {drawerMode === "edit" && (
-                  <div className="buttons">
-                    <Button type="primary" htmlType="submit">
-                      Lưu thay đổi
-                    </Button>
-                    <Button onClick={handleCloseDrawer}>Hủy</Button>
-                  </div>
-                )}
               </Form>
             </div>
           )

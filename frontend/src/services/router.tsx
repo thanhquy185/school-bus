@@ -16,6 +16,9 @@ import ErrorPage from "../pages/public/error-page";
 import UnauthorizedPage from "../pages/public/unauthorized-page";
 import ParentJourneyPage from "../pages/parents/journey-page";
 import SchedulePage from "../pages/admin/schedule-page";
+import DriverJourneyPage from "../pages/driver/journey-page";
+import DriverInfoPage from "../pages/driver/info-page";
+import DriverSchedulePage from "../pages/driver/schedule-page";
 
 // Router giúp chuyển hướng trang
 export const getRouter = async (): Promise<
@@ -69,7 +72,20 @@ export const getRouter = async (): Promise<
       path: "/driver",
       element: <ClientLayout role="driver" />,
       errorElement: <ErrorPage />,
-      children: [],
+      children: [
+        {
+          path: "journey",
+          element: <DriverJourneyPage />,
+        },
+        {
+          path: "schedule",
+          element: <DriverSchedulePage />,
+        },
+        {
+          path: "info",
+          element: <DriverInfoPage />,
+        },
+      ],
     },
     {
       path: "/parent",
@@ -81,12 +97,12 @@ export const getRouter = async (): Promise<
           element: <ParentJourneyPage />,
         },
         {
-          path: "info",
-          element: <ParentInfoPage />,
-        },
-        {
           path: "student",
           element: <ParentStudentPage />,
+        },
+        {
+          path: "info",
+          element: <ParentInfoPage />,
         },
       ],
     },

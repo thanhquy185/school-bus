@@ -43,7 +43,7 @@ const BusPage = () => {
   const { execute, notify, loading } = useCallApi();
   const { t } = useTranslation();
 
-  const [buses, setBuses] = useState<any[]>([]);
+  const [buses, setBuses] = useState<BusType[]>([]);
 
   const handleGetData = async () => {
     const restResponse = await execute(getBuses(), false);

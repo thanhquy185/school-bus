@@ -3,6 +3,14 @@ import { RestResponse } from "../responses/rest.response";
 import { FORBIDDEN, FORBIDDEN_MESSAGE, UNAUTHORIZED, UNAUTHORIZED_MESSAGE } from "../configs/respose.config";
 import { verifyToken } from "../utils/jwt.util";
 
+export type AuthenticationPayload = {
+    id: number, 
+    username: string, 
+    role: string, 
+    iat: number, 
+    exp: number
+}
+
 const AuthMiddleware = (roles: string[]) => {
     return {
         async authenticate(_req: Request, res: Response, next: NextFunction) {
@@ -19,7 +27,7 @@ const AuthMiddleware = (roles: string[]) => {
                     res.status(response.statusCode).json(response);
                 } else {
                     const token = bearerToken.split(" ")[1];
-                    const payload: { id: number, username: string, role: string, iat: number, exp: number } = await verifyToken(token);
+                    const payload: AuthenticationPayload = await verifyToken(token);
                     if (!roles.includes(payload.role)) {
                         const response = {
                             statusCode: FORBIDDEN,

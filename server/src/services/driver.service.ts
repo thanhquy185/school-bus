@@ -1,12 +1,45 @@
 import prisma from "../configs/prisma.config";
+import { AuthenticationPayload } from "../middlewares/auth.middleware";
 import { DriverResponse } from "../responses/driver.response";
 import { createSchema, updateSchema } from "../schemas/driver.schema";
 import { hashPassword } from "../utils/bcypt.util";
+import { verifyToken } from "../utils/jwt.util";
 import { isCreateRest, isGetRest, isPutRest } from "../utils/rest.util";
 import AccountService from "./account.service";
 import FirebaseService from "./firebase.service";
 
 const DriverService = {
+  async getByAccount(authorization: string) {
+    const payload: AuthenticationPayload = await verifyToken(authorization);
+
+    const driver = await prisma.drivers.findUnique({
+      where: {
+        account_id: payload.id,
+      },
+
+      include: {
+        account: {
+          select: {
+            username: true,
+          },
+        },
+      },
+    });
+
+    return isGetRest({
+      id: driver.id,
+      avatar: driver.avatar,
+      full_name: driver.full_name,
+      birth_date: driver.birth_date,
+      gender: driver.gender,
+      phone: driver.phone,
+      email: driver.email,
+      address: driver.address,
+      account_id: driver.account_id,
+      username: driver.account.username,
+    });
+  },
+
   async getAll() {
     const drivers = await prisma.drivers.findMany({
       include: {
@@ -66,6 +99,18 @@ const DriverService = {
     );
   },
 
+  async uploadAvatar(id: number, file: Express.Multer.File) {
+    const avatarUrl = await FirebaseService.uploadDriverImage(
+      file as unknown as File
+    );
+    await prisma.drivers.update({
+      where: { id },
+      data: { avatar: avatarUrl },
+    });
+
+    return isCreateRest({ id, avatar: avatarUrl });
+  },
+
   async create(input: any) {
     const data = createSchema.parse(input);
 
@@ -108,18 +153,6 @@ const DriverService = {
       account_id: driver.account.id,
       username: driver.account.username,
     } as DriverResponse);
-  },
-
-  async uploadAvatar(id: number, file: Express.Multer.File) {
-    const avatarUrl = await FirebaseService.uploadDriverImage(
-      file as unknown as File
-    );
-    await prisma.drivers.update({
-      where: { id },
-      data: { avatar: avatarUrl },
-    });
-
-    return isCreateRest({ id, avatar: avatarUrl });
   },
 
   async update(input: any) {
@@ -198,6 +231,38 @@ const DriverService = {
       status: driverUpdate.account.status,
       account_id: driverUpdate.account.id,
       username: driverUpdate.account.username,
+    } as DriverResponse);
+  },
+
+  async getInfo(authentication: string) {
+    const payload: AuthenticationPayload = await verifyToken(authentication);
+
+    const driver = await prisma.drivers.findUnique({
+      where: {
+        account_id: payload.id,
+      },
+      include: {
+        account: {
+          select: {
+            username: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    return isGetRest({
+      avatar: driver.avatar,
+      username: driver.account.username,
+      id: driver.id,
+      full_name: driver.full_name,
+      birth_date: driver.birth_date,
+      gender: driver.gender,
+      phone: driver.phone,
+      email: driver.email,
+      address: driver.address,
+      account_id: driver.account_id,
+      status: driver.account.status,
     } as DriverResponse);
   },
 };

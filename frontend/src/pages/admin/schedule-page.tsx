@@ -11,13 +11,12 @@ import {
   Col,
   Row,
   Alert,
-  InputNumber,
   List,
   Avatar,
   DatePicker,
   TimePicker,
 } from "antd";
-import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faInfoCircle,
@@ -28,7 +27,6 @@ import {
   faPenToSquare,
   faPlus,
   faUserGraduate,
-  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import type { ColumnsType } from "antd/es/table";
 import type {
@@ -38,26 +36,17 @@ import type {
 import { ruleRequired } from "../../common/rules";
 import { CommonStatusValue, PointTypeValue } from "../../common/values";
 import type {
-  ScheduleNotFormatType,
   ScheduleFormatType,
   PickupType,
   RouteFormatType,
   BusType,
   DriverFormatType,
 } from "../../common/types";
-import LeafletMap, {
-  type HandleGetRouteInfoProps,
-} from "../../components/leaflet-map";
+import LeafletMap from "../../components/leaflet-map";
 import CustomTableActions from "../../components/table-actions";
-import { useNotification } from "../../utils/showNotification";
-import { getItemById } from "../../utils/getItemEvents";
-import { getPickups } from "../../services/pickup-service";
 import useCallApi from "../../api/useCall";
 import {
-  createRoute,
-  getRoutes,
   getRoutesActive,
-  updateRoute,
 } from "../../services/route-service";
 import {
   createSchedule,
@@ -223,8 +212,6 @@ const SchedulePage = () => {
               status: bus.status == "ACTIVE" ? "Hoạt động" : "Tạm dừng",
             }))
           );
-
-          console.log(routes);
         }
       }
     } catch (error) {
@@ -243,8 +230,6 @@ const SchedulePage = () => {
               status: driver.status == "ACTIVE" ? "Hoạt động" : "Tạm dừng",
             }))
           );
-
-          console.log(routes);
         }
       }
     } catch (error) {

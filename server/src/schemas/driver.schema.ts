@@ -5,10 +5,10 @@ export const createSchema = z.object({
   birthDate: z.string().min(1, "Ngày sinh không được để trống"),
   gender: z.enum(["MALE", "FEMALE"], "Giới tính không hợp lệ"),
   phone: z.string().min(1, "Số điện thoại không được để trống"),
-  email: z.string().email("Email không hợp lệ").optional(),
+  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   address: z.string().optional(),
-  username: z.string().min(4, "Tên đăng nhập phải có ít nhất 4 ký tự"),
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  username: z.string().min(8, "Tên đăng nhập phải có ít nhất 8 ký tự"),
+  password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
   status: z.enum(["ACTIVE", "INACTIVE"], "Trạng thái không hợp lệ"),
 });
 
@@ -18,11 +18,11 @@ export const updateSchema = z.object({
   birthDate: z.string().optional(),
   gender: z.enum(["MALE", "FEMALE"]).optional(),
   phone: z.string().optional(),
-  email: z.string().email("Email không hợp lệ").optional(),
+  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   address: z.string().optional(),
   password: z
     .string()
-    .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+    .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
     .optional()
     .describe("Mật khẩu mới"),
   status: z

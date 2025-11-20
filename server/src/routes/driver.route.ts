@@ -13,7 +13,7 @@ route.post(
     UploadMiddleware.single("avatar"),
     DriverController.uploadAvatar
 );
-
 route.put("/:id", DriverController.update);
+route.get("/info", DriverController.getInfo);
 
 export default route;

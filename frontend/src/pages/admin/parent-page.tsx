@@ -771,7 +771,6 @@ const ParentPage = () => {
     ),
   };
 
-
   // Effect cập nhật Card Content
   useEffect(() => {
     if (currentAction === "list") {

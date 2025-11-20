@@ -1,9 +1,14 @@
 import { createContext, useContext, useState, useMemo, useEffect } from "react";
 import useCallApi from "../api/useCall";
+import { authConfig } from "../services/auth-service";
 
-type UserAuth = {
+export type CurrentUser = {
   accessToken: string,
-  email: string,
+  expiresAt: number,
+  issuedAt: number
+}
+export type UserAuth = {
+  accessToken: string,
   expiresAt: number,
   issuedAt: number,
   role: string
@@ -30,23 +35,21 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { execute } = useCallApi();
 
-//   useEffect(() => {
-//     const authSessionStr = sessionStorage.getItem("CURRENT_USER");
-//     if (!authSessionStr) return;
-//     const authSession: UserAuth = JSON.parse(authSessionStr);
+  useEffect(() => {
+    const authSessionStr = sessionStorage.getItem("CURRENT_USER");
+    if (!authSessionStr) return;
+    const validToken = async () => {
+      const restResponse = await execute(authConfig(), false);
+      if (!restResponse?.result && restResponse?.statusCode === 401) {
+        clearAuth();
+        return;
+      }
+      const authResponse: UserAuth = restResponse.data;
+      setAuth({ accessToken: authResponse.accessToken, role: authResponse.role, issuedAt: authResponse.issuedAt, expiresAt: authResponse.expiresAt });
+    }
 
-//     const validToken = async () => {
-//       const restResponse = await execute(valid());
-//       if (!restResponse?.result && restResponse?.statusCode === 401) {
-//         clearAuth();
-//         return;
-//       }
-//       const authResponse: AuthResponse = restResponse.data;
-//       setAuth({ ...authSession, email: authResponse.email, role: authResponse.role, issuedAt: authResponse.issuedAt, expiresAt: authResponse.expiresAt });
-//     }
-
-//     validToken();
-//   }, []);
+    validToken();
+  }, []);
 
   useEffect(() => {
     if (!token || !expiresAt) return;
@@ -77,7 +80,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Function set variable
   const setAuth = (authResponse: UserAuth) => {
     setToken(authResponse.accessToken);
-    setEmail(authResponse.email);
     setRole(authResponse.role);
     setExpiresAt(authResponse.expiresAt);
     sessionStorage.setItem("CURRENT_USER", JSON.stringify(authResponse));
@@ -108,4 +110,3 @@ const useAuth = () => {
 };
 
 export { AuthProvider, useAuth };
-export type { UserAuth };
