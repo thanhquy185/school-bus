@@ -58,7 +58,7 @@ export type HandleSelectedBusProps = {
 interface LeafletMapProps {
   id?: string;
   height?: number | string;
-  type?: "select" | "detail";
+   type?: "select" | "detail" | "create" | "update";
   defaultCenter?: [number, number];
   defaultZoom?: number;
   enableZoom?: boolean;
@@ -100,6 +100,8 @@ interface LeafletMapProps {
     info,
   }: HandleSelectedPickupProps) => void;
   handleSelectedBus?: ({ activeId }: HandleSelectedBusProps) => void;
+  onMarkerClick?: (pickup: PickupType) => void;
+    draggableMarkers?: boolean;
 }
 
 // Api (sử dụng như nào phải ghi chú á, chứ không lúc demo api cũng hết lượt là về luôn...)
