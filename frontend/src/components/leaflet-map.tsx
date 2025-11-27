@@ -31,8 +31,8 @@ export interface BusSimulationState {
 
 export type HandleGetBusInfoProps = {
   active_id?: number;
-  busLat?: number;
-  busLng?: number;
+  bus_lat?: number;
+  bus_lng?: number;
   busSpeed?: number;
 };
 
@@ -58,7 +58,7 @@ export type HandleSelectedBusProps = {
 interface LeafletMapProps {
   id?: string;
   height?: number | string;
-  type?: "select" | "detail";
+  type?: "select" | "detail" | "create" | "update";
   defaultCenter?: [number, number];
   defaultZoom?: number;
   enableZoom?: boolean;
@@ -83,8 +83,8 @@ interface LeafletMapProps {
   }[];
   handleGetBusInfo?: ({
     active_id,
-    busLat,
-    busLng,
+    bus_lat,
+    bus_lng,
     busSpeed,
   }: HandleGetBusInfoProps) => void;
   handleGetRouteInfo?: ({
@@ -100,6 +100,8 @@ interface LeafletMapProps {
     info,
   }: HandleSelectedPickupProps) => void;
   handleSelectedBus?: ({ active_id }: HandleSelectedBusProps) => void;
+  onMarkerClick?: (pickup: PickupType) => void;
+  draggableMarkers?: boolean;
 }
 
 // Api (sử dụng như nào phải ghi chú á, chứ không lúc demo api cũng hết lượt là về luôn...)
@@ -650,11 +652,11 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         const decoded = polyline.decode(route.geometry);
 
         const routeColor =
-          routeItem.status === ActiveStatusValue.success
+          routeItem.status === "SUCCESS"
             ? "purple"
-            : routeItem.status === ActiveStatusValue.running
+            : routeItem.status === "DRIVING"
             ? "green"
-            : routeItem.status === ActiveStatusValue.incident
+            : routeItem.status === "CANCELED"
             ? "red"
             : "gray";
 
@@ -712,13 +714,13 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
 
     busInfos.forEach((busInfo) => {
       if (!busInfo) return;
-      const { active_id, busLat, busLng } = busInfo;
-      if (!active_id || busLat == null || busLng == null) return;
+      const { active_id, bus_lat, bus_lng } = busInfo;
+      if (!active_id || bus_lat == null || bus_lng == null) return;
 
       // ✅ Ưu tiên vị trí mới nhất trong simulation nếu có
       const simState = busSimulationState.current[active_id];
-      const lat = simState?.lat ?? busLat;
-      const lng = simState?.lng ?? busLng;
+      const lat = simState?.lat ?? bus_lat;
+      const lng = simState?.lng ?? bus_lng;
 
       let busMarker = busMarkersRef.current[active_id];
       if (!busMarker) {
@@ -800,15 +802,15 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
 
         return {
           active_id: route.active_id,
-          busLat: busInfo.busLat,
-          busLng: busInfo.busLng,
+          bus_lat: busInfo.bus_lat,
+          bus_lng: busInfo.bus_lng,
           routeDetails: detailedRoute,
         };
       })
       ?.filter(Boolean);
 
     mergedList?.forEach((mergedBus) => {
-      const { active_id, busLat, busLng, routeDetails } = mergedBus!;
+      const { active_id, bus_lat, bus_lng, routeDetails } = mergedBus!;
       if (!active_id || !routeDetails?.length) return;
 
       // Đọc trạng thái cũ nếu có
@@ -850,8 +852,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
           // ✅ Cập nhật lại vị trí thực tế
           handleGetBusInfo?.({
             active_id,
-            busLat: lat,
-            busLng: lng,
+            bus_lat: lat,
+            bus_lng: lng,
           });
 
           // 🔸 Lưu lại trạng thái hiện tại

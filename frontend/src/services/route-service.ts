@@ -56,7 +56,7 @@ export type CreateParams = {
   total_distance: number;
   total_time: number;
   status: "ACTIVE" | "INACTIVE";
-  routePickups: PickupItem[];
+  route_pickups: PickupItem[];
 };
 
 export type UpdateParams = {
@@ -66,5 +66,5 @@ export type UpdateParams = {
   total_distance?: number;
   total_time?: number;
   status?: "ACTIVE" | "INACTIVE";
-  routePickups?: PickupItem[];
+  route_pickups?: PickupItem[];
 };
