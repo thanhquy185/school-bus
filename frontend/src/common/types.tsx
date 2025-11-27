@@ -17,87 +17,92 @@ export interface ClassType {
 // <========== NHÓM BÀN VỚI NHAU RỒI SỬA LẠI, CHỨ KHÔNG PHẢI LÀM THEO KIỂU NÀY ===========>
 // Kiểu dữ liệu thông tin xe vận hành
 export interface BusInfoType {
-  activeId?: number;
-  busLat?: number;
-  busLng?: number;
-  busSpeed?: number;
+  active_id?: number;
+  bus_lat?: number;
+  bus_lng?: number;
+  bus_speed?: number;
 }
 
 // Kiểu dữ liệu vận hành xe
 // - Chưa format
 export interface ActiveNotFormatType {
   id?: number;
-  scheduleId?: number;
-  createTime?: string;
-  startTime?: string;
-  endTime?: string;
-  busLat?: number;
-  busLng?: number;
-  busSpeed?: number;
+  schedule_id?: number;
+  start_at?: string;
+  end_at?: string;
+  bus_lat?: number;
+  bus_lng?: number;
+  bus_speed?: number;
   status?: string;
-  activePickups?: ActivePickupNotFormatType[];
-  activeStudents?: ActiveStudentNotFormatType[]; 
+  active_pickups?: ActivePickupNotFormatType[];
+  active_students?: ActiveStudentNotFormatType[]; 
+  informs?: InformNotFormatType[];
 }
 // - Đã format
 export interface ActiveFormatType {
   id?: number;
   schedule?: ScheduleFormatType;
-  createTime?: string;
-  startTime?: string;
-  endTime?: string;
-  busLat?: number;
-  busLng?: number;
-  busSpeed?: number;
+  start_at?: string;
+  end_at?: string;
+  bus_lat?: number;
+  bus_lng?: number;
+  bus_speed?: number;
+  bus_status?: string;
   status?: string;
-  activePickups?: ActivePickupFormatType[];
-  activeStudents?: ActiveStudentFormatType[]; 
+  active_pickups?: ActivePickupFormatType[];
+  active_students?: ActiveStudentFormatType[]; 
+  informs?: InformFormatType[];
+  current_active_student?: ActiveStudentFormatType;
 }
 // Kiểu dữ liệu vận hành xe - trạm xe buýt
 // - Chưa format
 export interface ActivePickupNotFormatType {
-  activeId?: number;
-  pickupId?: number;
-  time?: string;
+  active_id?: number;
+  pickup_id?: number;
+  order?: number;
+  at?: string;
   status?: string;
 }
 // - Đã format
 export interface ActivePickupFormatType {
   pickup?: PickupType;
-  time?: string;
+  order?: number;
+  at?: string;
   status?: string;
 }
 // Kiểu dữ liệu vận hành xe - học sinh
 // - Chưa format
 export interface ActiveStudentNotFormatType {
-  activeId?: number;
+  active_id?: number;
   studentId?: number;
-  time?: string;
+  at?: string;
   status?: string;
 }
 // - Đã format
 export interface ActiveStudentFormatType {
   student?: StudentFormatType;
-  time?: string;
+  at?: string;
   status?: string;
 }
 // Kiểu dữ liệu thông báo
 // - Chưa format
 export interface InformNotFormatType {
   id?: number;
-  userId?: number;
-  activeId?: number;
-  time?: string;
-  type?: string;
+  active_id?: number;
+  at?: string;
+  type?: "INFO" | "SUCCESS" | "WARNING" | "ERROR";
   message?: string;
   description?: string;
 }
 // - Đã format
-export interface InformNotFormatType {
+export interface InformFormatType {
   id?: number;
-  user?: UserType;
   active?: ActiveFormatType;
-  time?: string;
-  type?: string;
+  route?: RouteFormatType;
+  bus?: BusType;
+  driver?: DriverFormatType;
+  at?: string;
+  type?: "INFO" | "SUCCESS" | "WARNING" | "ERROR";
   message?: string;
   description?: string;
 }
@@ -105,25 +110,28 @@ export interface InformNotFormatType {
 // - Chưa format
 export interface ScheduleNotFormatType {
   id?: number;
-  routeId?: number;
-  busId?: number;
-  driverId?: number;
-  startDate?: string;
-  endDate?: string;
-  startTime?: string;
-  endTime?: string;
+  route_id?: number;
+  bus_id?: number;
+  driver_id?: number;
+  start_date?: string;
+  end_date?: string;
+  start_time?: string;
+  end_time?: string;
   status?: string;
+  actives?: ActiveNotFormatType[];
 }
 export interface ScheduleFormatType {
   id?: number;
   route?: RouteFormatType;
   bus?: BusType;
   driver?: DriverFormatType;
-  startDate?: string;
-  endDate?: string;
-  startTime?: string;
-  endTime?: string;
+  start_date?: string;
+  end_date?: string;
+  start_time?: string;
+  end_time?: string;
+  days_of_week?: string;
   status?: string;
+  actives?: ActiveFormatType[];
 
 }
 // <==================          ======================>
@@ -133,10 +141,10 @@ export interface ScheduleFormatType {
 export interface RouteNotFormatType {
   id?: number;
   name?: string;
-  startPickup?: string;
-  endPickup?: string;
-  totalDistance?: number;
-  totalTime?: number;
+  start_pickup?: string;
+  end_pickup?: string;
+  total_distance?: number;
+  total_time?: number;
   status?: string;
   routeDetails?: RouteDetailsNotFormatType[];
 }
@@ -144,19 +152,20 @@ export interface RouteNotFormatType {
 export interface RouteFormatType {
   id?: number;
   name?: string;
-  startPickup?: string;
-  endPickup?: string;
-  totalDistance?: number;
-  totalTime?: number;
+  start_pickup?: string;
+  end_pickup?: string;
+  total_distance?: number;
+  total_time?: number;
   status?: string;
   routeDetails?: RouteDetailsFormatType[];
+  routePickups?: RouteDetailsFormatType[];
 }
 
 // Kiểu dữ liệu chi tiết tuyến đường
 // - Chưa format
 export interface RouteDetailsNotFormatType {
-  routeId?: number;
-  pickupId?: number;
+  route_id?: number;
+  pickup_id?: number;
   order?: number;
 }
 // - Đã format
@@ -192,7 +201,7 @@ export interface DriverNotFormatType {
   username?: string;
   password?: string;
   avatar?: string;
-  fullname?: string;
+  full_name?: string;
   birthday?: string;
   gender?: string;
   phone?: string;
@@ -223,7 +232,7 @@ export interface ParentNotFormatType {
   username?: string;
   password?: string;
   avatar?: string;
-  fullname?: string;
+  full_name?: string;
   phone?: string;
   email?: string;
   address?: string;
@@ -245,11 +254,12 @@ export interface ParentFormatType {
 // Kiểu dữ liệu học sinh
 // - Chưa format
 export interface StudentNotFormatType {
-  id?: string;
-  parentId?: number;
-  pickupId?: number;
-  classId?: number;
+  id?: number;
+  parent_id?: number;
+  pickup_id?: number;
+  class_id?: number;
   avatar?: string;
+  card_id?: string;
   full_name?: string;
   birth_date?: string;
   gender?: string;
@@ -258,8 +268,9 @@ export interface StudentNotFormatType {
 }
 // - Đã format
 export interface StudentFormatType {
-  id?: string;
+  id?: number;
   avatar?: string;
+  card_id?: string;
   full_name?: string;
   birth_date?: string;
   gender?: string;

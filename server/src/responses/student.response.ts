@@ -1,26 +1,19 @@
+import { ClassResponse } from "./class.response";
+import { ParentResponse } from "./parent.response";
+import { PickupResponse } from "./pickup.response";
+
 type StudentResponse = {
-    id: string,
-    avatar: string,
-    full_name: string,
-    birth_date: string,
-    gender: string,
-    address: string,
-    status: string,
-    parent: {
-        id: number,
-        full_name: string
-    },
-    class: {
-        id: number,
-        name: string
-    },
-    pickup: {
-        id: number,
-        name: string,
-        category: string,
-        lat: number,
-        lng: number
-    }
+    id: number,
+    parent?: ParentResponse,
+    class?: ClassResponse,
+    pickup?: PickupResponse
+    avatar?: string,
+    card_id?: string,
+    full_name?: string,
+    birth_date?: string,
+    gender?: string,
+    address?: string,
+    status?: "STUDYING" | "DROPPED_OUT",
 }
 
 export type { StudentResponse };

@@ -31,7 +31,7 @@ type DrawerMode = "view" | "pickup" | null;
 const ParentStudentPage = () => {
   const { execute, notify, loading } = useCallApi();
 
-  // Dữ liệu
+  // Dữ liệu học sinh mà phụ huynh có quản lý
   const [students, setStudents] = useState<StudentFormatType[]>([]);
   const getStudentsByParent = async () => {
     const restResponse = await execute(getStudents(), false);
@@ -237,10 +237,10 @@ const ParentStudentPage = () => {
                 </Form.Item>
                 <Form.Item
                   name="full_name"
-                  htmlFor="fullname"
+                  htmlFor="full_name"
                   label="Họ và tên"
                 >
-                  <Input id="fullname" />
+                  <Input id="full_name" />
                 </Form.Item>
                 <Form.Item
                   name="birth_date"

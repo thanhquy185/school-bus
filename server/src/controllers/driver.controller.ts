@@ -27,10 +27,26 @@ const DriverController = {
         return res.json(response);
     },
     
+    async getActive(_req: Request, res: Response) {
+        const response = await DriverService.getActive(_req.headers.authorization);
+        res.status(response.statusCode).json(response);
+    },
+
+     async getActiveForSchedule(_req: Request, res: Response) {
+        const response = await DriverService.getActiveForSchedule(_req.headers.authorization);
+        res.status(response.statusCode).json(response);
+    },
+    
+    async getSchedules(_req: Request, res: Response) {
+        const response = await DriverService.getSchedules(_req.headers.authorization);
+        res.status(response.statusCode).json(response);
+    },
+    
     async getInfo(_req: Request, res: Response) {
         const response = await DriverService.getInfo(_req.headers.authorization);
         res.status(response.statusCode).json(response);
     },
+
 }
 
 export default DriverController;

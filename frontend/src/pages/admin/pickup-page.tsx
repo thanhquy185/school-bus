@@ -54,9 +54,6 @@ const PickupPage = () => {
   // Language
   const { t } = useTranslation();
 
-  // Notification
-  const { openNotification } = useNotification();
-
   const { execute, notify } = useCallApi();
 
   // Dữ liệu
@@ -343,7 +340,6 @@ const PickupPage = () => {
       setLngValue(lng!);
       form.setFieldValue("lat", lat);
       form.setFieldValue("lng", lng);
-      console.log(info);
     };
 
     const handleCreatePickup = async () => {
@@ -711,7 +707,7 @@ const PickupPage = () => {
       <>
         <Alert
           message={
-            "Trạm xe buýt: " +
+            "trạm xe buýt: " +
             "#" +
             pickup?.id +
             " - " +

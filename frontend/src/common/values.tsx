@@ -23,8 +23,8 @@ export const BusStatusValue = {
 // Trạng thái vận hành xe buýt
 export const ActiveStatusValue = {
   pending: "Đang chờ vận hành",
-  incident: "Đang có sự cố",
-  running: "Đang chạy xe",
+  canceled: "Đã huỷ chuyến",
+  active: "Đang chạy xe",
   success: "Đã hoàn thành"
 }
 
@@ -39,8 +39,8 @@ export const ActiveStudentStatusValue = {
 // Trạng thái vận hành xe buýt - trạm xe buýt
 export const ActivePickupStatusValue = {
   pending: "Đang chờ xác nhận",
-  driving: "Đang đến trạm",
   canceled: "Đã huỷ trạm",
+  driving: "Đang đến trạm",
   confirmed: "Đã đến trạm",
 }
 

@@ -44,12 +44,12 @@ INSERT INTO classes (name) VALUES
 INSERT INTO pickups (name, category, lat, lng, status) VALUES
 ('Trường THCS Nguyễn Du', 'SCHOOL', 10.7769, 106.7009, 'ACTIVE'),
 ('Trường THCS Lê Lợi', 'SCHOOL', 10.7760, 106.7010, 'ACTIVE'),
-('Điểm đón Công viên 23/9', 'PICKUP', 10.7650, 106.6820, 'ACTIVE'),
-('Điểm đón Nhà Văn Hóa', 'PICKUP', 10.7800, 106.6900, 'ACTIVE'),
-('Điểm đón Bến Thành', 'PICKUP', 10.7720, 106.6980, 'ACTIVE'),
-('Điểm đón Chợ Lớn', 'PICKUP', 10.7540, 106.6350, 'ACTIVE'),
-('Điểm đón Công viên Gia Định', 'PICKUP', 10.8160, 106.6780, 'ACTIVE'),
-('Điểm đón Sân bay Tân Sơn Nhất', 'PICKUP', 10.8180, 106.6518, 'ACTIVE'),
+('trạm xe buýt Công viên 23/9', 'PICKUP', 10.7650, 106.6820, 'ACTIVE'),
+('trạm xe buýt Nhà Văn Hóa', 'PICKUP', 10.7800, 106.6900, 'ACTIVE'),
+('trạm xe buýt Bến Thành', 'PICKUP', 10.7720, 106.6980, 'ACTIVE'),
+('trạm xe buýt Chợ Lớn', 'PICKUP', 10.7540, 106.6350, 'ACTIVE'),
+('trạm xe buýt Công viên Gia Định', 'PICKUP', 10.8160, 106.6780, 'ACTIVE'),
+('trạm xe buýt Sân bay Tân Sơn Nhất', 'PICKUP', 10.8180, 106.6518, 'ACTIVE'),
 ('Trường THCS Trần Hưng Đạo', 'SCHOOL', 10.7750, 106.6980, 'ACTIVE'),
-('Điểm đón Nhà thiếu nhi', 'PICKUP', 10.7805, 106.7005, 'ACTIVE');
+('trạm xe buýt Nhà thiếu nhi', 'PICKUP', 10.7805, 106.7005, 'ACTIVE');
 

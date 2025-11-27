@@ -200,13 +200,12 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ role }) => {
                 : "🇺🇸 English"}
             </Button>
           </Dropdown>
-          <button className="client-layout__logout">
-            {!isDesktop ? (
-              <FontAwesomeIcon icon={faPowerOff} />
-            ) : (
-              <span>Đăng xuất</span>
-            )}
-          </button>
+          <Button
+            className="client-layout__logout"
+            icon={<FontAwesomeIcon icon={faPowerOff} />}
+          >
+            {isDesktop && <span>Đăng xuất</span>}
+          </Button>
         </div>
       </Header>
       {/* Drawer cho mobile */}

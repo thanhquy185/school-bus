@@ -309,6 +309,86 @@ table td.right {
   }
 }
 
+.inform {
+  padding: 14px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+.inform .ant-alert-message:has(button) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.inform .ant-alert-message:has(button) button {
+  font-size: 1.6rem;
+}
+.inform .ant-alert-message .title, .inform .ant-alert-description .info .header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 2rem;
+  font-weight: 600;
+}
+.inform.ant-alert-info :is(.title, .description) {
+  color: #1677ff;
+}
+.inform.ant-alert-success :is(.title, .description) {
+  color: #389e0d;
+}
+.inform.ant-alert-warning :is(.title, .description) {
+  color: #d46b08;
+}
+.inform.ant-alert-error :is(.title, .description) {
+  color: #cf1322;
+}
+.inform .ant-alert-message .title img {
+  width: 24px;
+  height: 24px;
+}
+.inform .ant-alert-description .description {
+  font-size: 1.8rem;
+  margin-top: 6px;
+}
+.inform .ant-alert-description .info {
+  background: #fff;
+  padding: 14px;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.09);
+}
+.inform .ant-alert-description .row {
+  display: flex;
+  gap: 14px;
+  margin: 16px 0 14px;
+}
+.inform .ant-alert-description .row .info {
+  width: calc(33.3333333333% - 9.3333333333px);
+}
+.inform .ant-alert-description .info .header img {
+  width: 20px;
+  height: 20px;
+}
+.inform .ant-alert-description .info .header h4 {
+  color: #000;
+  font-size: 1.6rem;
+}
+.inform .ant-alert-description .info p {
+  margin-top: 6px;
+  font-size: 1.5rem;
+}
+.inform .ant-alert-description .info p.current-location {
+  display: flex;
+  align-items: center;
+  font-size: 1.4rem;
+}
+.inform .ant-alert-description .info p.current-location img {
+  width: 16px;
+  height: 16px;
+}
+.inform .ant-alert-description .info p.current-location b {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
 .leaflet-map .leaflet-control-container > * {
   z-index: 999;
 }
@@ -2124,53 +2204,144 @@ button) {
 .client-layout__journey .tabs-wrapper .leaflet-map {
   height: 620px !important;
 }
-.client-layout__journey .tabs-wrapper .route-infos {
+.client-layout__journey .tabs-wrapper .pickup-infos {
   height: 620px;
-  background: red;
 }
-.client-layout__journey .tabs-wrapper .notification-actions {
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) :is(.header, .header .statistics) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 80px;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header {
+  margin: 0 0 14px;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header :is(.summary, .statistic) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 30%;
+  height: 100%;
+  background: #f0f8ff;
+  border-radius: 6px;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .statistics {
+  gap: 6px;
+  width: calc(70% - 120px);
+}
+.client-layout__journey .tabs-wrapper .pickup-infos .header .summary {
+  width: 35%;
+}
+.client-layout__journey .tabs-wrapper .pickup-infos .header .statistics {
+  width: 65%;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .statistic {
+  width: calc(25% - 4.5px);
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header :is(.summary, .statistic) p {
+  font-size: 1.2rem;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header :is(.summary, .statistic) strong {
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .summary strong {
+  color: #1677ff;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .statistic.gray, .client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.gray {
+  background: #fafafa;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .statistic.gray strong, .client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.gray .title button {
+  color: #676767;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .statistic.green, .client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.green {
+  background: #f6ffed;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .statistic.green strong, .client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.green .title button {
+  color: #389e0d;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .statistic.orange, .client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.orange {
+  background: #fff7e6;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .statistic.orange strong, .client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.orange .title button {
+  color: #d46b08;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .statistic.red, .client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.red {
+  background: #fff1f0;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .header .statistic.red strong, .client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.red .title button {
+  color: #cf1322;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item {
+  padding: 12px;
+  border: 1px solid transparent;
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.gray {
+  border-color: #d9d9d9;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.green {
+  border-color: #b7eb8f;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.orange {
+  border-color: #ffe58f;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item.red {
+  border-color: #ffccc7;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item .title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item .title {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item .title button {
+  position: absolute;
+  right: 12px;
+  font-size: 1.4rem;
+  height: auto;
+}
+.client-layout__journey .tabs-wrapper :is(.pickup-infos, .student-infos) .ant-list-item-meta-description p {
+  color: #777;
+  font-size: 1.4rem;
+}
+.client-layout__journey .tabs-wrapper .student-infos .header button {
+  display: flex;
+  flex-direction: column;
+  width: 120px;
+  height: 100%;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+.client-layout__journey .tabs-wrapper .inform-actions {
   display: flex;
   align-items: center;
   gap: 6px;
   width: 100%;
 }
-.client-layout__journey .tabs-wrapper .notification-actions button {
+.client-layout__journey .tabs-wrapper .inform-actions button {
   width: 20%;
   height: 60px;
   font-size: 1.5rem;
   font-weight: 600;
 }
-.client-layout__journey .tabs-wrapper .notification-tags-wrapper {
+.client-layout__journey .tabs-wrapper .inform-tags-wrapper {
   overflow: auto;
   height: 620px;
   margin-top: 10px;
 }
-.client-layout__journey .tabs-wrapper:has(.notification-actions) .notification-tags-wrapper {
+.client-layout__journey .tabs-wrapper:has(.inform-actions) .inform-tags-wrapper {
   height: 550px;
 }
-.client-layout__journey .tabs-wrapper .notification-tags {
+.client-layout__journey .tabs-wrapper .inform-tags {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-.client-layout__journey .tabs-wrapper .notification-tag {
-  width: 100%;
-  padding: 16px;
-}
-.client-layout__journey .tabs-wrapper .notification-tag .title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 1.8rem;
-  font-weight: 600;
-}
-.client-layout__journey .tabs-wrapper .notification-tag .title img {
-  width: 20px;
-  height: 20px;
-}
-.client-layout__journey .tabs-wrapper .notification-tag .description {
-  font-size: 1.6rem;
-  margin-top: 6px;
 }
 .client-layout__journey :is(.journey-info-wrapper, .students-wrapper) {
   width: calc(30% - 10px);
@@ -2186,7 +2357,7 @@ button) {
 .client-layout__journey .journey-info-wrapper .top-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 10px;
 }
 .client-layout__journey .journey-info-wrapper .top-grid .driver-section,
 .client-layout__journey .journey-info-wrapper .top-grid .date-section {
@@ -2305,12 +2476,17 @@ button) {
 }
 .client-layout__journey .journey-info-wrapper .actions button {
   width: 100%;
+  font-size: 1.4rem;
+  font-weight: 600;
 }
-.client-layout__journey .journey-info-wrapper .actions.active button {
-  width: calc(50% - 5px);
+.client-layout__journey .students-wrapper .ant-tag {
+  width: 100%;
+  padding: 16px;
+  font-size: 2rem;
 }
 .client-layout__journey .students-wrapper .ant-list {
   border-radius: 6px;
+  margin-top: 10px;
 }
 .client-layout__journey .students-wrapper .ant-list-item {
   padding: 10px;
@@ -2322,7 +2498,7 @@ button) {
   background: #f5f5f5;
 }
 .client-layout__journey .students-wrapper .ant-list-item.active {
-  background: #ffe08a;
+  background: #f0f8ff;
 }
 .client-layout__journey .students-wrapper .ant-list-item-meta-avatar :is(.ant-avatar, img) {
   width: 36px;
@@ -2338,6 +2514,81 @@ button) {
 }
 .client-layout__journey .students-wrapper .ant-list-item-meta-description p {
   font-size: 1.4rem !important;
+}
+.client-layout__journey .big-inform {
+  text-align: center;
+  padding: 24px;
+}
+.client-layout__journey .big-inform img {
+  width: 200px;
+  height: 200px;
+  margin-bottom: 12px;
+}
+.client-layout__journey .big-inform h3 {
+  margin-bottom: 6px;
+  font-size: 3rem;
+  font-weight: 600;
+}
+.client-layout__journey .big-inform p {
+  color: #666;
+  font-size: 2.2rem;
+}
+.client-layout__journey .tabs-wrapper .journey-infos {
+  background: #f7f7f7;
+  padding: 10px;
+  border-radius: 4px;
+}
+.client-layout__journey .tabs-wrapper .journey-infos .row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+}
+.client-layout__journey .tabs-wrapper .journey-infos .row .info.driver {
+  width: calc(60% - 5px);
+}
+.client-layout__journey .tabs-wrapper .journey-infos .row .info.bus {
+  width: calc(40% - 5px);
+}
+.client-layout__journey .tabs-wrapper .journey-infos .info {
+  background: #fff;
+  padding: 14px;
+  border-radius: 8px;
+}
+.client-layout__journey .tabs-wrapper .journey-infos .info .header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #efefef;
+  margin-bottom: 12px;
+}
+.client-layout__journey .tabs-wrapper .journey-infos .info .title {
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+.client-layout__journey .tabs-wrapper .journey-infos .info .icon {
+  width: 22px;
+  height: 22px;
+}
+.client-layout__journey .tabs-wrapper .journey-infos .info .avatar {
+  width: 100px;
+  height: 120px;
+  border: 1px solid #dedede;
+  border-radius: 2px;
+}
+.client-layout__journey .tabs-wrapper .journey-infos .info .description {
+  margin-top: 4px;
+  color: #676767;
+  font-size: 1.6rem;
+}
+.client-layout__journey .tabs-wrapper .journey-infos .info .description b {
+  color: #000;
+  font-weight: 500;
+}
+.client-layout__main .ant-card .ant-alert-info.driver-schedule-alert {
+  background: #fafafa;
+  border-color: #d9d9d9;
 }
 @media (max-width: 991.98px) {
   .client-layout__actions {
@@ -2933,6 +3184,34 @@ button) {
 }
 .admin-layout__main-content .ant-alert-action button {
   font-weight: 700;
+}
+
+.ant-modal {
+  top: 0;
+  padding: 0;
+}
+.ant-modal-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.ant-modal.inform-modal .ant-modal-title {
+  font-size: 2.2rem;
+}
+.ant-modal.inform-modal .ant-modal-title p.red {
+  color: #f5222d;
+}
+.ant-modal.inform-modal .ant-modal-title p.orange {
+  color: #fa8c16;
+}
+.ant-modal.inform-modal .ant-modal-title p.blue {
+  color: #1677ff;
+}
+.ant-modal.inform-modal .ant-modal-title p.purple {
+  color: #722ed1;
+}
+.ant-modal.inform-modal .ant-form {
+  margin-top: 20px;
 }
 
 /*# sourceMappingURL=main.css.map */

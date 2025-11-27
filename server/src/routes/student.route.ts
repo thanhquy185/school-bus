@@ -4,7 +4,7 @@ import UploadMiddleware from "../middlewares/upfile.middware";
 
 const router = Router();
 
-router.get("/studying", StudentController.getAllStudying);
+router.get("/all-studying", StudentController.getAllStudying);
 router.get("", StudentController.getAll);
 
 router.post("", StudentController.create);

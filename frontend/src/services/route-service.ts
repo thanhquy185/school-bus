@@ -17,7 +17,7 @@ export const getRoutes = async (): Promise<RestResponse> => {
 
 // Lấy tất cả tuyến đường đang hoạt động
 export const getRoutesActive = async (): Promise<RestResponse> => {
-  const response = await api.get("/api/routes/active");
+  const response = await api.get("/api/routes/all-active");
   const restResponse: RestResponse = response.data;
   return restResponse;
 };
@@ -45,26 +45,26 @@ export const deleteRoute = async (id: number): Promise<RestResponse> => {
 
 
 export type PickupItem = {
-  pickupId: number;
+  pickup_id: number;
   order: number;
 };
 
 export type CreateParams = {
   name: string;
-  startPickup: string;
-  endPickup: string;
-  totalDistance: number;
-  totalTime: number;
+  start_pickup: string;
+  end_pickup: string;
+  total_distance: number;
+  total_time: number;
   status: "ACTIVE" | "INACTIVE";
-  pickups: PickupItem[];
+  routePickups: PickupItem[];
 };
 
 export type UpdateParams = {
   name?: string;
-  startPickup?: string;
-  endPickup?: string;
-  totalDistance?: number;
-  totalTime?: number;
+  start_pickup?: string;
+  end_pickup?: string;
+  total_distance?: number;
+  total_time?: number;
   status?: "ACTIVE" | "INACTIVE";
-  pickups?: PickupItem[];
+  routePickups?: PickupItem[];
 };

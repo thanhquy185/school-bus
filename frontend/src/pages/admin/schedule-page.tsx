@@ -45,9 +45,7 @@ import type {
 import LeafletMap from "../../components/leaflet-map";
 import CustomTableActions from "../../components/table-actions";
 import useCallApi from "../../api/useCall";
-import {
-  getRoutesActive,
-} from "../../services/route-service";
+import { getRoutesActive } from "../../services/route-service";
 import {
   createSchedule,
   getSchedules,
@@ -87,14 +85,14 @@ const SchedulePage = () => {
       key: "date",
       width: "16%",
       render: (record: ScheduleFormatType) =>
-        record.startDate + " - " + record.endDate,
+        record.start_date + " - " + record.end_date,
     },
     {
       title: "Giờ",
       key: "time",
       width: "16%",
       render: (record: ScheduleFormatType) =>
-        record.startTime + " - " + record.endTime,
+        record.start_time + " - " + record.end_time,
     },
     {
       title: "Tuyến đường - Xe buýt - Tài xế",
@@ -167,39 +165,34 @@ const SchedulePage = () => {
 
   // Truy vấn dữ liệu
   const getRouteData = async () => {
-    try {
-      const response = await execute(getRoutesActive(), false);
-
-      if (response && response.result) {
-        if (Array.isArray(response.data)) {
-          setRoutes(
-            response.data.map((route) => ({
-              ...route,
-              status: route.status == "ACTIVE" ? "Hoạt động" : "Tạm dừng",
-              routeDetails: route?.pickups?.map(
-                (pickupNotFormat: { pickup: PickupType; order: number }) => ({
+      try {
+        const response = await execute(getRoutesActive(), false);
+        if (response && response.result) {
+          if (Array.isArray(response.data)) {
+            setRoutes(
+              response.data.map((route) => ({
+                ...route,
+                status: route.status == "ACTIVE" ? "Hoạt động" : "Tạm dừng",
+                routeDetails: route?.routePickups?.map((rp: any) => ({
                   pickup: {
-                    ...pickupNotFormat.pickup,
+                    ...rp.pickup,
                     category:
-                      pickupNotFormat.pickup.category == "SCHOOL"
+                      rp.pickup.category == "SCHOOL"
                         ? "Trường học"
                         : "Điểm đưa đón",
                     status:
-                      pickupNotFormat.pickup.status == "ACTIVE"
-                        ? "Hoạt động"
-                        : "Tạm dừng",
+                      rp.pickup.status == "ACTIVE" ? "Hoạt động" : "Tạm dừng",
                   },
-                  order: pickupNotFormat.order,
-                })
-              ),
-            }))
-          );
+                  order: rp.order,
+                })),
+              }))
+            );
+          }
         }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    };
   const getBusData = async () => {
     try {
       const response = await execute(getBusesActive(), false);
@@ -443,14 +436,15 @@ const SchedulePage = () => {
 
   // Schedule Actions
   const defaultLabels = {
-    id: "Mã lịch làm việc",
+    id: "Mã lịch trình",
     route: "Tuyến đường",
     bus: "Xe buýt",
     driver: "Tài xế",
-    startDate: "Ngày bắt đầu",
-    endDate: "Ngày kết thúc",
-    startTime: "Giờ bắt đầu",
-    endTime: "Giờ kết thúc",
+    start_date: "Ngày bắt đầu",
+    end_date: "Ngày kết thúc",
+    start_time: "Giờ bắt đầu",
+    end_time: "Giờ kết thúc",
+    days_of_week: "Thứ trong tuần",
     status: "Trạng thái",
     routeDriverAndBus: "Chi tiết Tuyến đường - Xe buýt - Tài xế",
     map: "Bản đồ",
@@ -461,10 +455,11 @@ const SchedulePage = () => {
     route: "Chọn Tuyến đường",
     bus: "Chọn Xe buýt",
     driver: "Chọn Tài xế",
-    startDate: "Chọn Ngày bắt đầu",
-    endDate: "Chọn Ngày kết thúc",
-    startTime: "Chọn Giờ bắt đầu",
-    endTime: "Chọn Giờ kết thúc",
+    start_date: "Chọn Ngày bắt đầu",
+    end_date: "Chọn Ngày kết thúc",
+    start_time: "Chọn Giờ bắt đầu",
+    end_time: "Chọn Giờ kết thúc",
+    days_of_week: "Chọn Thứ trong tuần",
     status: "Chọn Trạng thái",
     routeDriverAndBus: "",
     map: "",
@@ -487,18 +482,19 @@ const SchedulePage = () => {
               route: schedule.route?.id || undefined,
               bus: schedule.bus?.id || undefined,
               driver: schedule.driver?.id || undefined,
-              startDate: schedule.startDate
-                ? dayjs(schedule.startDate, "DD/MM/YYYY")
+              start_date: schedule.start_date
+                ? dayjs(schedule.start_date, "DD/MM/YYYY")
                 : undefined,
-              endDate: schedule.endDate
-                ? dayjs(schedule.endDate, "DD/MM/YYYY")
+              end_date: schedule.end_date
+                ? dayjs(schedule.end_date, "DD/MM/YYYY")
                 : undefined,
-              startTime: schedule.startTime
-                ? dayjs(schedule.startTime, "HH:mm:ss")
+              start_time: schedule.start_time
+                ? dayjs(schedule.start_time, "HH:mm:ss")
                 : undefined,
-              endTime: schedule.endTime
-                ? dayjs(schedule.endTime, "HH:mm:ss")
+              end_time: schedule.end_time
+                ? dayjs(schedule.end_time, "HH:mm:ss")
                 : undefined,
+              days_of_week: schedule.days_of_week?.split("|") || undefined,
               status: schedule.status || undefined,
             }}
           >
@@ -522,28 +518,73 @@ const SchedulePage = () => {
                 </Row>
                 <Row className="split-2">
                   <Col>
-                    <Form.Item name="startDate" label={defaultLabels.startDate}>
+                    <Form.Item
+                      name="start_date"
+                      label={defaultLabels.start_date}
+                    >
                       <DatePicker format="DD/MM/YYYY" disabled />
                     </Form.Item>
                   </Col>
                   <Col>
-                    <Form.Item name="endDate" label={defaultLabels.endDate}>
+                    <Form.Item name="end_date" label={defaultLabels.end_date}>
                       <DatePicker format="DD/MM/YYYY" disabled />
                     </Form.Item>
                   </Col>
                 </Row>
                 <Row className="split-2">
                   <Col>
-                    <Form.Item name="startTime" label={defaultLabels.startTime}>
+                    <Form.Item
+                      name="start_time"
+                      label={defaultLabels.start_time}
+                    >
                       <TimePicker format="HH:mm:ss" disabled />
                     </Form.Item>
                   </Col>
                   <Col>
-                    <Form.Item name="endTime" label={defaultLabels.endTime}>
+                    <Form.Item name="end_time" label={defaultLabels.end_time}>
                       <TimePicker format="HH:mm:ss" disabled />
                     </Form.Item>
                   </Col>
                 </Row>
+                <Form.Item
+                  name="days_of_week"
+                  label={defaultLabels.days_of_week}
+                >
+                  <Select
+                    mode="multiple"
+                    options={[
+                      {
+                        label: "Thứ 2",
+                        value: "1",
+                      },
+                      {
+                        label: "Thứ 3",
+                        value: "2",
+                      },
+                      {
+                        label: "Thứ 4",
+                        value: "3",
+                      },
+                      {
+                        label: "Thứ 5",
+                        value: "4",
+                      },
+                      {
+                        label: "Thứ 6",
+                        value: "5",
+                      },
+                      {
+                        label: "Thứ 7",
+                        value: "6",
+                      },
+                      {
+                        label: "Chủ nhật",
+                        value: "0",
+                      },
+                    ]}
+                    disabled
+                  />
+                </Form.Item>
                 <Form.Item name="route" label={defaultLabels.route}>
                   <Select
                     options={[
@@ -556,38 +597,50 @@ const SchedulePage = () => {
                     disabled
                   />
                 </Form.Item>
-                <Form.Item name="bus" label={defaultLabels.bus}>
-                  <Select
-                    options={[
-                      {
-                        label:
-                          schedule.bus?.id +
-                          " - " +
-                          schedule.bus?.license_plate,
-                        value: schedule.bus?.id,
-                      },
-                    ]}
-                    disabled
-                  />
-                </Form.Item>
-                <Form.Item
-                  name="driver"
-                  label={defaultLabels.driver}
-                  className="margin-bottom-0"
-                >
-                  <Select
-                    options={[
-                      {
-                        label:
-                          schedule.driver?.id +
-                          " - " +
-                          schedule.driver?.full_name,
-                        value: schedule.driver?.id,
-                      },
-                    ]}
-                    disabled
-                  />
-                </Form.Item>
+                <Row className="split-2">
+                  <Col>
+                    <Form.Item
+                      name="bus"
+                      label={defaultLabels.bus}
+                      className="margin-bottom-0"
+                    >
+                      <Select
+                        options={[
+                          {
+                            label:
+                              "#" +
+                              schedule.bus?.id +
+                              " - " +
+                              schedule.bus?.license_plate,
+                            value: schedule.bus?.id,
+                          },
+                        ]}
+                        disabled
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col>
+                    <Form.Item
+                      name="driver"
+                      label={defaultLabels.driver}
+                      className="margin-bottom-0"
+                    >
+                      <Select
+                        options={[
+                          {
+                            label:
+                              "#" +
+                              schedule.driver?.id +
+                              " - " +
+                              schedule.driver?.full_name,
+                            value: schedule.driver?.id,
+                          },
+                        ]}
+                        disabled
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
               </Col>
               <Col>
                 <Form.Item
@@ -728,18 +781,24 @@ const SchedulePage = () => {
     const handleCreateSchedule = async () => {
       const restResponse = await execute(
         createSchedule({
-          routeId: form.getFieldValue("route") || undefined,
-          busId: form.getFieldValue("bus") || undefined,
-          driverId: form.getFieldValue("driver") || undefined,
-          startDate: formatByDate(form.getFieldValue("startDate")) || undefined,
-          endDate: formatByDate(form.getFieldValue("endDate")) || undefined,
-          startTime: formatByTime(form.getFieldValue("startTime")) || undefined,
-          endTime: formatByTime(form.getFieldValue("endTime")) || undefined,
+          route_id: form.getFieldValue("route") || undefined,
+          bus_id: form.getFieldValue("bus") || undefined,
+          driver_id: form.getFieldValue("driver") || undefined,
+          start_date:
+            formatByDate(form.getFieldValue("start_date")) || undefined,
+          end_date: formatByDate(form.getFieldValue("end_date")) || undefined,
+          start_time:
+            formatByTime(form.getFieldValue("start_time")) || undefined,
+          end_time: formatByTime(form.getFieldValue("end_time")) || undefined,
+          days_of_week:
+            (form.getFieldValue("days_of_week") as Array<string>)
+              ?.sort((a, b) => a.localeCompare(b))
+              ?.join("|") || undefined,
           status: form.getFieldValue("status") || undefined,
         }),
         true
       );
-      notify(restResponse!, "Thêm lịch làm việc thành công");
+      notify(restResponse!, "Thêm lịch trình thành công");
       if (restResponse?.result) {
         getScheduleData();
         setCurrentAction("list");
@@ -757,10 +816,11 @@ const SchedulePage = () => {
               route: undefined,
               bus: undefined,
               driver: undefined,
-              startDate: undefined,
-              endDate: undefined,
-              startTime: undefined,
-              endTime: undefined,
+              start_date: undefined,
+              end_date: undefined,
+              start_time: undefined,
+              end_time: undefined,
+              days_of_week: undefined,
               status: undefined,
             }}
             autoComplete="off"
@@ -806,25 +866,25 @@ const SchedulePage = () => {
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="startDate"
-                      label={defaultLabels.startDate}
+                      name="start_date"
+                      label={defaultLabels.start_date}
                       rules={[ruleRequired("Cần chọn Ngày bắt đầu !")]}
                     >
                       <DatePicker
                         format="DD/MM/YYYY"
-                        placeholder={defaultInputs.startDate}
+                        placeholder={defaultInputs.start_date}
                       />
                     </Form.Item>
                   </Col>
                   <Col>
                     <Form.Item
-                      name="endDate"
-                      label={defaultLabels.endDate}
+                      name="end_date"
+                      label={defaultLabels.end_date}
                       rules={[ruleRequired("Cần chọn Ngày kết thúc !")]}
                     >
                       <DatePicker
                         format="DD/MM/YYYY"
-                        placeholder={defaultInputs.endDate}
+                        placeholder={defaultInputs.end_date}
                       />
                     </Form.Item>
                   </Col>
@@ -832,29 +892,69 @@ const SchedulePage = () => {
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="startTime"
-                      label={defaultLabels.startTime}
+                      name="start_time"
+                      label={defaultLabels.start_time}
                       rules={[ruleRequired("Cần chọn Giờ bắt đầu !")]}
                     >
                       <TimePicker
                         format="HH:mm:ss"
-                        placeholder={defaultInputs.startTime}
+                        placeholder={defaultInputs.start_time}
                       />
                     </Form.Item>
                   </Col>
                   <Col>
                     <Form.Item
-                      name="endTime"
-                      label={defaultLabels.endTime}
+                      name="end_time"
+                      label={defaultLabels.end_time}
                       rules={[ruleRequired("Cần chọn Giờ kết thúc !")]}
                     >
                       <TimePicker
                         format="HH:mm:ss"
-                        placeholder={defaultInputs.endTime}
+                        placeholder={defaultInputs.end_time}
                       />
                     </Form.Item>
                   </Col>
                 </Row>
+                <Form.Item
+                  name="days_of_week"
+                  label={defaultLabels.days_of_week}
+                  rules={[ruleRequired("Thứ trong tuần không được để trống !")]}
+                >
+                  <Select
+                    mode="multiple"
+                    placeholder={defaultInputs.days_of_week}
+                    options={[
+                      {
+                        label: "Thứ 2",
+                        value: "1",
+                      },
+                      {
+                        label: "Thứ 3",
+                        value: "2",
+                      },
+                      {
+                        label: "Thứ 4",
+                        value: "3",
+                      },
+                      {
+                        label: "Thứ 5",
+                        value: "4",
+                      },
+                      {
+                        label: "Thứ 6",
+                        value: "5",
+                      },
+                      {
+                        label: "Thứ 7",
+                        value: "6",
+                      },
+                      {
+                        label: "Chủ nhật",
+                        value: "0",
+                      },
+                    ]}
+                  />
+                </Form.Item>
                 <Form.Item
                   name="route"
                   label={defaultLabels.route}
@@ -873,42 +973,48 @@ const SchedulePage = () => {
                     }}
                   />
                 </Form.Item>
-                <Form.Item
-                  name="bus"
-                  label={defaultLabels.bus}
-                  rules={[ruleRequired("Xe buýt không được để trống !")]}
-                >
-                  <Select
-                    options={buses?.map((bus) => ({
-                      label: "#" + bus?.id + " - " + bus?.license_plate,
-                      value: bus?.id,
-                    }))}
-                    placeholder={defaultInputs.bus}
-                    onChange={(val) => {
-                      setBusInfoSelected(
-                        buses?.find((bus) => bus.id === val) || null
-                      );
-                    }}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name="driver"
-                  label={defaultLabels.driver}
-                  rules={[ruleRequired("Tài xế không được để trống !")]}
-                >
-                  <Select
-                    options={drivers?.map((driver) => ({
-                      label: "#" + driver?.id + " - " + driver?.full_name,
-                      value: driver?.id,
-                    }))}
-                    placeholder={defaultInputs.driver}
-                    onChange={(val) => {
-                      setDriverInfoSelected(
-                        drivers?.find((driver) => driver.id === val) || null
-                      );
-                    }}
-                  />
-                </Form.Item>
+                <Row className="split-2">
+                  <Col>
+                    <Form.Item
+                      name="bus"
+                      label={defaultLabels.bus}
+                      rules={[ruleRequired("Cần chọn Xe buýt !")]}
+                    >
+                      <Select
+                        options={buses?.map((bus) => ({
+                          label: "#" + bus?.id + " - " + bus?.license_plate,
+                          value: bus?.id,
+                        }))}
+                        placeholder={defaultInputs.bus}
+                        onChange={(val) => {
+                          setBusInfoSelected(
+                            buses?.find((bus) => bus.id === val) || null
+                          );
+                        }}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col>
+                    <Form.Item
+                      name="driver"
+                      label={defaultLabels.driver}
+                      rules={[ruleRequired("Cần chọn Tài xế !")]}
+                    >
+                      <Select
+                        options={drivers?.map((driver) => ({
+                          label: "#" + driver?.id + " - " + driver?.full_name,
+                          value: driver?.id,
+                        }))}
+                        placeholder={defaultInputs.driver}
+                        onChange={(val) => {
+                          setDriverInfoSelected(
+                            drivers?.find((driver) => driver.id === val) || null
+                          );
+                        }}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
               </Col>
               <Col>
                 <Form.Item
@@ -1054,7 +1160,7 @@ const SchedulePage = () => {
     const [routeInfoSelected, setRouteInfoSelected] =
       useState<RouteFormatType | null>(schedule?.route || null);
     const [busInfoSelected, setBusInfoSelected] = useState<BusType | null>(
-       schedule?.bus || null
+      schedule?.bus || null
     );
     const [driverInfoSelected, setDriverInfoSelected] =
       useState<DriverFormatType | null>(schedule?.driver || null);
@@ -1062,17 +1168,23 @@ const SchedulePage = () => {
     const handleUpdateSchedule = async () => {
       const restResponse = await execute(
         updateSchedule(schedule?.id!, {
-          routeId: form.getFieldValue("route") || undefined,
-          busId: form.getFieldValue("bus") || undefined,
-          driverId: form.getFieldValue("driver") || undefined,
-          startDate: formatByDate(form.getFieldValue("startDate")) || undefined,
-          endDate: formatByDate(form.getFieldValue("endDate")) || undefined,
-          startTime: formatByTime(form.getFieldValue("startTime")) || undefined,
-          endTime: formatByTime(form.getFieldValue("endTime")) || undefined,
+          route_id: form.getFieldValue("route") || undefined,
+          bus_id: form.getFieldValue("bus") || undefined,
+          driver_id: form.getFieldValue("driver") || undefined,
+          start_date:
+            formatByDate(form.getFieldValue("start_date")) || undefined,
+          end_date: formatByDate(form.getFieldValue("end_date")) || undefined,
+          start_time:
+            formatByTime(form.getFieldValue("start_time")) || undefined,
+          end_time: formatByTime(form.getFieldValue("end_time")) || undefined,
+          days_of_week:
+            (form.getFieldValue("days_of_week") as Array<string>)
+              ?.sort((a, b) => a.localeCompare(b))
+              ?.join("|") || undefined,
         }),
         true
       );
-      notify(restResponse!, "Thêm lịch làm việc thành công");
+      notify(restResponse!, "Cập nhật lịch trình thành công");
       if (restResponse?.result) {
         getScheduleData();
         setCurrentAction("list");
@@ -1090,18 +1202,19 @@ const SchedulePage = () => {
               route: schedule.route?.id || undefined,
               bus: schedule.bus?.id || undefined,
               driver: schedule.driver?.id || undefined,
-              startDate: schedule.startDate
-                ? dayjs(schedule.startDate, "DD/MM/YYYY")
+              start_date: schedule.start_date
+                ? dayjs(schedule.start_date, "DD/MM/YYYY")
                 : undefined,
-              endDate: schedule.endDate
-                ? dayjs(schedule.endDate, "DD/MM/YYYY")
+              end_date: schedule.end_date
+                ? dayjs(schedule.end_date, "DD/MM/YYYY")
                 : undefined,
-              startTime: schedule.startTime
-                ? dayjs(schedule.startTime, "HH:mm:ss")
+              start_time: schedule.start_time
+                ? dayjs(schedule.start_time, "HH:mm:ss")
                 : undefined,
-              endTime: schedule.endTime
-                ? dayjs(schedule.endTime, "HH:mm:ss")
+              end_time: schedule.end_time
+                ? dayjs(schedule.end_time, "HH:mm:ss")
                 : undefined,
+              days_of_week: schedule.days_of_week?.split("|") || undefined,
               status: schedule.status || undefined,
             }}
             autoComplete="off"
@@ -1128,25 +1241,25 @@ const SchedulePage = () => {
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="startDate"
-                      label={defaultLabels.startDate}
+                      name="start_date"
+                      label={defaultLabels.start_date}
                       rules={[ruleRequired("Cần chọn Ngày bắt đầu !")]}
                     >
                       <DatePicker
                         format="DD/MM/YYYY"
-                        placeholder={defaultInputs.startDate}
+                        placeholder={defaultInputs.start_date}
                       />
                     </Form.Item>
                   </Col>
                   <Col>
                     <Form.Item
-                      name="endDate"
-                      label={defaultLabels.endDate}
+                      name="end_date"
+                      label={defaultLabels.end_date}
                       rules={[ruleRequired("Cần chọn Ngày kết thúc !")]}
                     >
                       <DatePicker
                         format="DD/MM/YYYY"
-                        placeholder={defaultInputs.endDate}
+                        placeholder={defaultInputs.end_date}
                       />
                     </Form.Item>
                   </Col>
@@ -1154,29 +1267,69 @@ const SchedulePage = () => {
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="startTime"
-                      label={defaultLabels.startTime}
+                      name="start_time"
+                      label={defaultLabels.start_time}
                       rules={[ruleRequired("Cần chọn Giờ bắt đầu !")]}
                     >
                       <TimePicker
                         format="HH:mm:ss"
-                        placeholder={defaultInputs.startTime}
+                        placeholder={defaultInputs.start_time}
                       />
                     </Form.Item>
                   </Col>
                   <Col>
                     <Form.Item
-                      name="endTime"
-                      label={defaultLabels.endTime}
+                      name="end_time"
+                      label={defaultLabels.end_time}
                       rules={[ruleRequired("Cần chọn Giờ kết thúc !")]}
                     >
                       <TimePicker
                         format="HH:mm:ss"
-                        placeholder={defaultInputs.endTime}
+                        placeholder={defaultInputs.end_time}
                       />
                     </Form.Item>
                   </Col>
                 </Row>
+                <Form.Item
+                  name="days_of_week"
+                  label={defaultLabels.days_of_week}
+                  rules={[ruleRequired("Thứ trong tuần không được để trống !")]}
+                >
+                  <Select
+                    mode="multiple"
+                    placeholder={defaultInputs.days_of_week}
+                    options={[
+                      {
+                        label: "Thứ 2",
+                        value: "1",
+                      },
+                      {
+                        label: "Thứ 3",
+                        value: "2",
+                      },
+                      {
+                        label: "Thứ 4",
+                        value: "3",
+                      },
+                      {
+                        label: "Thứ 5",
+                        value: "4",
+                      },
+                      {
+                        label: "Thứ 6",
+                        value: "5",
+                      },
+                      {
+                        label: "Thứ 7",
+                        value: "6",
+                      },
+                      {
+                        label: "Chủ nhật",
+                        value: "0",
+                      },
+                    ]}
+                  />
+                </Form.Item>
                 <Form.Item
                   name="route"
                   label={defaultLabels.route}
@@ -1195,42 +1348,48 @@ const SchedulePage = () => {
                     }}
                   />
                 </Form.Item>
-                <Form.Item
-                  name="bus"
-                  label={defaultLabels.bus}
-                  rules={[ruleRequired("Xe buýt không được để trống !")]}
-                >
-                  <Select
-                    options={buses?.map((bus) => ({
-                      label: "#" + bus?.id + " - " + bus?.license_plate,
-                      value: bus?.id,
-                    }))}
-                    placeholder={defaultInputs.bus}
-                    onChange={(val) => {
-                      setBusInfoSelected(
-                        buses?.find((bus) => bus.id === val) || null
-                      );
-                    }}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name="driver"
-                  label={defaultLabels.driver}
-                  rules={[ruleRequired("Tài xế không được để trống !")]}
-                >
-                  <Select
-                    options={drivers?.map((driver) => ({
-                      label: "#" + driver?.id + " - " + driver?.full_name,
-                      value: driver?.id,
-                    }))}
-                    placeholder={defaultInputs.driver}
-                    onChange={(val) => {
-                      setDriverInfoSelected(
-                        drivers?.find((driver) => driver.id === val) || null
-                      );
-                    }}
-                  />
-                </Form.Item>
+                <Row className="split-2">
+                  <Col>
+                    <Form.Item
+                      name="bus"
+                      label={defaultLabels.bus}
+                      rules={[ruleRequired("Cần chọn Xe buýt !")]}
+                    >
+                      <Select
+                        options={buses?.map((bus) => ({
+                          label: "#" + bus?.id + " - " + bus?.license_plate,
+                          value: bus?.id,
+                        }))}
+                        placeholder={defaultInputs.bus}
+                        onChange={(val) => {
+                          setBusInfoSelected(
+                            buses?.find((bus) => bus.id === val) || null
+                          );
+                        }}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col>
+                    <Form.Item
+                      name="driver"
+                      label={defaultLabels.driver}
+                      rules={[ruleRequired("Cần chọn Tài xế !")]}
+                    >
+                      <Select
+                        options={drivers?.map((driver) => ({
+                          label: "#" + driver?.id + " - " + driver?.full_name,
+                          value: driver?.id,
+                        }))}
+                        placeholder={defaultInputs.driver}
+                        onChange={(val) => {
+                          setDriverInfoSelected(
+                            drivers?.find((driver) => driver.id === val) || null
+                          );
+                        }}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
               </Col>
               <Col>
                 <Form.Item
@@ -1383,8 +1542,8 @@ const SchedulePage = () => {
       notify(
         restResponse!,
         schedule.status === CommonStatusValue.active
-          ? "Khoá lịch làm việc thành công"
-          : "Mở khoá lịch làm việc thành công"
+          ? "Khoá lịch trình thành công"
+          : "Mở khoá lịch trình thành công"
       );
       if (restResponse?.result) {
         getScheduleData();
@@ -1395,7 +1554,7 @@ const SchedulePage = () => {
     return (
       <>
         <Alert
-          message={"Lịch làm việc: " + "#" + schedule?.id}
+          message={"lịch trình: " + "#" + schedule?.id}
           showIcon
           icon={
             <FontAwesomeIcon
@@ -1411,7 +1570,7 @@ const SchedulePage = () => {
             (schedule?.status === CommonStatusValue.active
               ? " khoá "
               : " mở khoá ") +
-            "lịch làm việc này ? Hành động không thể hoàn tác !"
+            "lịch trình này ? Hành động không thể hoàn tác !"
           }
           type="error"
           action={

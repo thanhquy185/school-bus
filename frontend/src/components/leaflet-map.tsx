@@ -30,7 +30,7 @@ export interface BusSimulationState {
 }
 
 export type HandleGetBusInfoProps = {
-  activeId?: number;
+  active_id?: number;
   busLat?: number;
   busLng?: number;
   busSpeed?: number;
@@ -51,7 +51,7 @@ export type HandleSelectedPickupProps = {
 };
 
 export type HandleSelectedBusProps = {
-  activeId?: number;
+  active_id?: number;
 };
 
 // Props
@@ -72,17 +72,17 @@ interface LeafletMapProps {
   routes?: RouteFormatType[];
   routeDetails?: RouteDetailsFormatType[];
   routeDetailsList?: {
-    activeId?: number;
+    active_id?: number;
     routeDetails: RouteDetailsFormatType[];
     status: string;
   }[];
   busInfos?: BusInfoType[];
   activePickupsList?: {
-    activeId?: number;
+    active_id?: number;
     activePickups?: ActivePickupFormatType[];
   }[];
   handleGetBusInfo?: ({
-    activeId,
+    active_id,
     busLat,
     busLng,
     busSpeed,
@@ -99,7 +99,7 @@ interface LeafletMapProps {
     lng,
     info,
   }: HandleSelectedPickupProps) => void;
-  handleSelectedBus?: ({ activeId }: HandleSelectedBusProps) => void;
+  handleSelectedBus?: ({ active_id }: HandleSelectedBusProps) => void;
 }
 
 // Api (sử dụng như nào phải ghi chú á, chứ không lúc demo api cũng hết lượt là về luôn...)
@@ -313,7 +313,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     pickups?.forEach((p) => {
       const tooltipContent = `
     <div class="custom-tooltip">
-      <p class="title">Trạm xe buýt #${p.id}</p>
+      <p class="title">trạm xe buýt #${p.id}</p>
       <p>Tên: ${p.name || "-"}</p>
       <p>Loại: ${p.category}</p>
       <p>Toạ độ x: ${p.lat || "-"}</p>
@@ -422,10 +422,10 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         const tooltipContent = `
           <p class="title">Tuyến đường #${route.id}</p>
           <p>Tên: ${route.name}</p>
-          <p>Trạm BĐ: ${route.startPickup}</p>
-          <p>Trạm KT: ${route.endPickup}</p>
-          <p>Quãng đường: ${route.totalDistance?.toFixed(0) ?? "?"} m</p>
-          <p>Thời gian: ${route.totalTime?.toFixed(0) ?? "?"} s</p>
+          <p>Trạm BĐ: ${route.start_pickup}</p>
+          <p>Trạm KT: ${route.end_pickup}</p>
+          <p>Quãng đường: ${route.total_distance?.toFixed(0) ?? "?"} m</p>
+          <p>Thời gian: ${route.total_time?.toFixed(0) ?? "?"} s</p>
           <p>Số điểm dừng: ${sorted.length}</p>
         `;
 
@@ -447,10 +447,10 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         //     const div = L.DomUtil.create("div", "info-block in-tag");
         //     div.innerHTML = `
         //     <p class="title">${route.name}</p>
-        //     <p class="description">- Quãng đường: <b>${route.totalDistance?.toFixed(
+        //     <p class="description">- Quãng đường: <b>${route.total_distance?.toFixed(
         //       0
         //     )} m</b></p>
-        //     <p class="description">- Thời gian: <b>${route.totalTime?.toFixed(
+        //     <p class="description">- Thời gian: <b>${route.total_time?.toFixed(
         //       0
         //     )} s</b></p>`;
         //     return div;
@@ -536,7 +536,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
       .then((res) => res.json())
       .then((data) => {
         const route = data.routes[0];
-        const totalDistance = route.summary.distance; // mét
+        const total_distance = route.summary.distance; // mét
         const totalDuration = route.summary.duration; // giây
 
         // Giải mã geometry để vẽ đường
@@ -561,7 +561,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
           const div = L.DomUtil.create("div", "info-block"); // class CSS là info-block
           div.innerHTML = `
           <p class="title">Thông tin tuyến đường</p>
-          <p class="description">- Tổng quãng đường: <b>${totalDistance.toFixed(
+          <p class="description">- Tổng quãng đường: <b>${total_distance.toFixed(
             0
           )} m</b></p>
           <p class="description">- Thời gian dự kiến: <b>${totalDuration.toFixed(
@@ -574,7 +574,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         infoBlockRef.current = infoBlock;
 
         handleGetRouteInfo?.({
-          distance: totalDistance.toFixed(0),
+          distance: total_distance.toFixed(0),
           duration: totalDuration.toFixed(0),
         });
       })
@@ -664,7 +664,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
 
         // 📊 Nếu chỉ có 1 tuyến => thêm khung thông tin
         if (routeDetailsList.length === 1) {
-          const totalDistance = route.summary.distance;
+          const total_distance = route.summary.distance;
           const totalDuration = route.summary.duration;
 
           const infoBlock = new L.Control({ position: "bottomleft" });
@@ -672,7 +672,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
             const div = L.DomUtil.create("div", "info-block in-tag");
             div.innerHTML = `
             <p class="title">Thông tin tuyến đường</p>
-            <p class="description">- Tổng quãng đường: <b>${totalDistance.toFixed(
+            <p class="description">- Tổng quãng đường: <b>${total_distance.toFixed(
               0
             )} m</b></p>
             <p class="description">- Thời gian dự kiến: <b>${totalDuration.toFixed(
@@ -684,7 +684,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
           infoBlockRef.current = infoBlock;
 
           handleGetRouteInfo?.({
-            distance: totalDistance,
+            distance: total_distance,
             duration: totalDuration,
           });
         }
@@ -712,15 +712,15 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
 
     busInfos.forEach((busInfo) => {
       if (!busInfo) return;
-      const { activeId, busLat, busLng } = busInfo;
-      if (!activeId || busLat == null || busLng == null) return;
+      const { active_id, busLat, busLng } = busInfo;
+      if (!active_id || busLat == null || busLng == null) return;
 
       // ✅ Ưu tiên vị trí mới nhất trong simulation nếu có
-      const simState = busSimulationState.current[activeId];
+      const simState = busSimulationState.current[active_id];
       const lat = simState?.lat ?? busLat;
       const lng = simState?.lng ?? busLng;
 
-      let busMarker = busMarkersRef.current[activeId];
+      let busMarker = busMarkersRef.current[active_id];
       if (!busMarker) {
         busMarker = L.marker([lat, lng], {
           icon: L.icon({
@@ -731,8 +731,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
           }),
         }).addTo(mapRef.current!);
 
-        busMarker.on("click", () => handleSelectedBus?.({ activeId }));
-        busMarkersRef.current[activeId] = busMarker;
+        busMarker.on("click", () => handleSelectedBus?.({ active_id }));
+        busMarkersRef.current[active_id] = busMarker;
       } else {
         busMarker.setLatLng([lat, lng]);
       }
@@ -742,12 +742,12 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   // useEffect(() => {
   //   function handleBusPositionUpdated(e: Event) {
   //     const customEvent = e as CustomEvent<{
-  //       activeId: number;
+  //       active_id: number;
   //       lat: number;
   //       lng: number;
   //     }>;
-  //     const { activeId, lat, lng } = customEvent.detail;
-  //     const marker = busMarkersRef.current[activeId];
+  //     const { active_id, lat, lng } = customEvent.detail;
+  //     const marker = busMarkersRef.current[active_id];
   //     if (marker) marker.setLatLng([lat, lng]);
   //   }
 
@@ -777,12 +777,12 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     const mergedList = routeDetailsList
       ?.map((route) => {
         const busInfo = busInfos.find(
-          (busInfo) => busInfo.activeId === route.activeId
+          (busInfo) => busInfo.active_id === route.active_id
         );
         if (!busInfo) return null;
 
         const activePickupsItem = activePickupsList.find(
-          (p) => p.activeId === route.activeId
+          (p) => p.active_id === route.active_id
         );
 
         const detailedRoute =
@@ -799,7 +799,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
             ?.sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0)) ?? [];
 
         return {
-          activeId: route.activeId,
+          active_id: route.active_id,
           busLat: busInfo.busLat,
           busLng: busInfo.busLng,
           routeDetails: detailedRoute,
@@ -808,14 +808,14 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
       ?.filter(Boolean);
 
     mergedList?.forEach((mergedBus) => {
-      const { activeId, busLat, busLng, routeDetails } = mergedBus!;
-      if (!activeId || !routeDetails?.length) return;
+      const { active_id, busLat, busLng, routeDetails } = mergedBus!;
+      if (!active_id || !routeDetails?.length) return;
 
       // Đọc trạng thái cũ nếu có
-      let state = busSimulationState.current[activeId];
+      let state = busSimulationState.current[active_id];
       if (!state) {
         state = { currentIndex: 0, step: 0 };
-        busSimulationState.current[activeId] = state;
+        busSimulationState.current[active_id] = state;
       }
 
       let { currentIndex, step } = state;
@@ -844,18 +844,18 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
           const lng =
             start.lng! + ((end.lng! - start.lng!) * step) / totalSteps;
 
-          const busMarker = busMarkersRef.current[activeId!];
+          const busMarker = busMarkersRef.current[active_id!];
           busMarker?.setLatLng([lat, lng]);
 
           // ✅ Cập nhật lại vị trí thực tế
           handleGetBusInfo?.({
-            activeId,
+            active_id,
             busLat: lat,
             busLng: lng,
           });
 
           // 🔸 Lưu lại trạng thái hiện tại
-          busSimulationState.current[activeId!] = {
+          busSimulationState.current[active_id!] = {
             currentIndex,
             step,
             lat,
@@ -864,16 +864,16 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
 
           window.dispatchEvent(
             new CustomEvent("busPositionUpdated", {
-              detail: { activeId, lat, lng },
+              detail: { active_id, lat, lng },
             })
           );
 
           if (step >= totalSteps) {
             clearInterval(interval);
-            console.log(`✅ Xe ${activeId} đến trạm: ${end.name}`);
+            console.log(`✅ Xe ${active_id} đến trạm: ${end.name}`);
             currentIndex++;
             step = 0;
-            busSimulationState.current[activeId!] = {
+            busSimulationState.current[active_id!] = {
               currentIndex,
               step,
               lat: end.lat,

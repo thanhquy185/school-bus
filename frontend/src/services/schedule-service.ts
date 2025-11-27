@@ -16,7 +16,7 @@ export const getSchedules = async (): Promise<RestResponse> => {
 
 // Lấy tất cả lịch trình đang hoạt động
 export const getSchedulesActive = async (): Promise<RestResponse> => {
-  const response = await api.get("/api/schedules/active");
+  const response = await api.get("/api/schedules/all-active");
   const restResponse: RestResponse = response.data;
   return restResponse;
 };
@@ -44,23 +44,25 @@ export const deleteSchedule = async (id: number): Promise<RestResponse> => {
 
 // Kiểu dữ liệu cho tham số
 export type CreateParams = {
-  startDate?: string;
-  endDate?: string;
-  startTime?: string;
-  endTime?: string;
+  route_id: number;
+  bus_id: number;
+  driver_id: number;
+  start_date?: string;
+  end_date?: string;
+  start_time?: string;
+  end_time?: string;
+  days_of_week?: string;
   status: "ACTIVE" | "INACTIVE";
-  driverId: number;
-  busId: number;
-  routeId: number;
 };
 
 export type UpdateParams = {
-  startDate?: string;
-  endDate?: string;
-  startTime?: string;
-  endTime?: string;
+  route_id?: number;
+  bus_id?: number;
+  driver_id?: number;
+  start_date?: string;
+  end_date?: string;
+  start_time?: string;
+  end_time?: string;
+  days_of_week?: string;
   status?: "ACTIVE" | "INACTIVE";
-  driverId?: number;
-  busId?: number;
-  routeId?: number;
 };

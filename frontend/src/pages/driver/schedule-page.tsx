@@ -1,206 +1,87 @@
 import { useEffect, useState } from "react";
 import { faCalendarDays } from "@fortawesome/free-solid-svg-icons";
+import {
+  CarOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  CloseCircleOutlined,
+  RobotOutlined,
+} from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Alert, Badge, Calendar, Card, ConfigProvider } from "antd";
+import { Alert, Badge, Button, Calendar, Card, ConfigProvider } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import viVN from "antd/locale/vi_VN";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isBetween from "dayjs/plugin/isBetween";
+import type { ScheduleFormatType } from "../../common/types";
+import useCallApi from "../../api/useCall";
+import { getSchedules } from "../../services/driver-service";
+import { createActive } from "../../services/active-service";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isBetween);
 
+const checkActiveStatus = (
+  schedule: ScheduleFormatType,
+  dateValue: Dayjs,
+  statusValue: string
+) => {
+  return schedule.actives?.some(
+    (active) =>
+      dayjs(active.start_at, "DD/MM/YYYY").isSame(dateValue, "day") &&
+      active.status === statusValue
+  );
+};
+
 const DriverSchedulePage = () => {
-  // Dữ liệu (truy vấn dữ liệu từ đây)
-  const demoData = [
-    {
-      id: 3,
-      startDate: "20/11/2025",
-      endDate: "22/11/2025",
-      startTime: "07:00:00",
-      endTime: "09:00:00",
-      status: "ACTIVE",
-      driver: {
-        id: 1,
-        avatar:
-          "https://firebasestorage.googleapis.com/v0/b/school-bus-cnpm.firebasestorage.app/o/drivers%2F1763513996235_8870864d1be091bec8f1.jpg?alt=media&token=bc8467f5-7afe-48ad-b997-27a264c225c4",
-        full_name: "abcdef",
-        phone: "1234567890",
-      },
-      bus: {
-        id: 1,
-        license_plate: "50A-00000",
-        capacity: 45,
-      },
-      route: {
-        id: 1,
-        name: "Tuyến Trạm Chợ Tân Phước → Trạm Hội trường Thành uỷ",
-        startPickup: "Trạm Chợ Tân Phước",
-        endPickup: "Trạm Hội trường Thành uỷ",
-        totalDistance: 4484,
-        totalTime: 427,
-        pickups: [
-          {
-            pickup: {
-              id: 1,
-              name: "Trạm Chợ Tân Phước",
-              category: "PICKUP",
-              lat: 10.770959636564,
-              lng: 106.6504561901093,
-              status: "ACTIVE",
-            },
-            order: 1,
-          },
-          {
-            pickup: {
-              id: 4,
-              name: "Trạm Chùa Bửu Đà",
-              category: "PICKUP",
-              lat: 10.78123804660808,
-              lng: 106.6751030087471,
-              status: "ACTIVE",
-            },
-            order: 2,
-          },
-          {
-            pickup: {
-              id: 3,
-              name: "Trạm Hội trường Thành uỷ",
-              category: "PICKUP",
-              lat: 10.78009187851693,
-              lng: 106.6825273633003,
-              status: "ACTIVE",
-            },
-            order: 3,
-          },
-        ],
-      },
-    },
-    {
-      id: 10,
-      startDate: "20/11/2025",
-      endDate: "20/12/2025",
-      startTime: "10:00:00",
-      endTime: "12:00:00",
-      status: "ACTIVE",
-      driver: {
-        id: 1,
-        avatar:
-          "https://firebasestorage.googleapis.com/v0/b/school-bus-cnpm.firebasestorage.app/o/drivers%2F1763513996235_8870864d1be091bec8f1.jpg?alt=media&token=bc8467f5-7afe-48ad-b997-27a264c225c4",
-        full_name: "abcdef",
-        phone: "1234567890",
-      },
-      bus: {
-        id: 1,
-        license_plate: "50A-00000",
-        capacity: 45,
-      },
-      route: {
-        id: 1,
-        name: "Tuyến Trạm Chợ Tân Phước → Trạm Hội trường Thành uỷ",
-        startPickup: "Trạm Chợ Tân Phước",
-        endPickup: "Trạm Hội trường Thành uỷ",
-        totalDistance: 4484,
-        totalTime: 427,
-        pickups: [
-          {
-            pickup: {
-              id: 1,
-              name: "Trạm Chợ Tân Phước",
-              category: "PICKUP",
-              lat: 10.770959636564,
-              lng: 106.6504561901093,
-              status: "ACTIVE",
-            },
-            order: 1,
-          },
-          {
-            pickup: {
-              id: 4,
-              name: "Trạm Chùa Bửu Đà",
-              category: "PICKUP",
-              lat: 10.78123804660808,
-              lng: 106.6751030087471,
-              status: "ACTIVE",
-            },
-            order: 2,
-          },
-          {
-            pickup: {
-              id: 3,
-              name: "Trạm Hội trường Thành uỷ",
-              category: "PICKUP",
-              lat: 10.78009187851693,
-              lng: 106.6825273633003,
-              status: "ACTIVE",
-            },
-            order: 3,
-          },
-        ],
-      },
-    },
-    {
-      id: 12,
-      startDate: "19/11/2025",
-      endDate: "23/11/2025",
-      startTime: "07:00:00",
-      endTime: "12:00:00",
-      status: "ACTIVE",
-      driver: {
-        id: 1,
-        avatar:
-          "https://firebasestorage.googleapis.com/v0/b/school-bus-cnpm.firebasestorage.app/o/drivers%2F1763513996235_8870864d1be091bec8f1.jpg?alt=media&token=bc8467f5-7afe-48ad-b997-27a264c225c4",
-        full_name: "abcdef",
-        phone: "1234567890",
-      },
-      bus: {
-        id: 1,
-        license_plate: "50A-00000",
-        capacity: 45,
-      },
-      route: {
-        id: 3,
-        name: "Tuyến Trạm Chợ Tân Phước → Trạm Nhà thờ Đắc Lộ",
-        startPickup: "Trạm Chợ Tân Phước",
-        endPickup: "Trạm Nhà thờ Đắc Lộ",
-        totalDistance: 3776,
-        totalTime: 325,
-        pickups: [
-          {
-            pickup: {
-              id: 1,
-              name: "Trạm Chợ Tân Phước",
-              category: "PICKUP",
-              lat: 10.770959636564,
-              lng: 106.6504561901093,
-              status: "ACTIVE",
-            },
-            order: 1,
-          },
-          {
-            pickup: {
-              id: 2,
-              name: "Trạm Nhà thờ Đắc Lộ",
-              category: "PICKUP",
-              lat: 10.7949811840504,
-              lng: 106.6493028402329,
-              status: "ACTIVE",
-            },
-            order: 2,
-          },
-        ],
-      },
-    },
-  ];
+  const { execute, notify } = useCallApi();
+
+  // Dữ liệu lịch làm việc của tài xế
+  const [driverSchedules, setDriverSchedules] =
+    useState<ScheduleFormatType[]>();
+  const getDriverSchedules = async () => {
+    const response = await execute(getSchedules(), false);
+    const data = response?.data;
+    setDriverSchedules(data);
+  };
+  useEffect(() => {
+    getDriverSchedules();
+  }, []);
 
   // Giá trị liên quan đến lịch
   const [value, setValue] = useState(() => dayjs());
   const [selectedValue, setSelectedValue] = useState(() => dayjs());
   const [calendarMode, setCalendarMode] = useState<"month" | "year">("month");
   const [todaySchedules, setTodaySchedules] = useState<any[]>([]);
+  const isToday = selectedValue.isSame(dayjs(), "day");
+  // const isToday = true;
 
+  //
+  const parseDaysOfWeek = (str: string) => {
+    if (!str) return [];
+    return str.split("|").map(Number);
+  };
+  //
+  const isScheduleOnDay = (
+    schedule: ScheduleFormatType,
+    currentDate: Dayjs
+  ) => {
+    const start = dayjs(schedule.start_date, "DD/MM/YYYY");
+    const end = dayjs(schedule.end_date, "DD/MM/YYYY");
+    const days = parseDaysOfWeek(schedule.days_of_week!);
+
+    const inRange =
+      currentDate.isSame(start, "day") ||
+      currentDate.isSame(end, "day") ||
+      (currentDate.isAfter(start, "day") && currentDate.isBefore(end, "day"));
+
+    const matchDay =
+      days.length === 0 ? true : days.includes(currentDate.day());
+
+    return inRange && matchDay;
+  };
   //
   const onSelect = (newValue: Dayjs) => {
     setValue(newValue);
@@ -209,43 +90,42 @@ const DriverSchedulePage = () => {
 
     setSelectedValue(newValue);
 
-    // Lấy ra danh sách lịch làm việc của ngày được chọn
-    const schedules = demoData.filter((item) => {
-      const start = dayjs(item.startDate, "DD/MM/YYYY");
-      const end = dayjs(item.endDate, "DD/MM/YYYY");
-      return (
-        newValue.isSame(start, "day") ||
-        newValue.isSame(end, "day") ||
-        (newValue.isAfter(start, "day") && newValue.isBefore(end, "day"))
-      );
+    // Lấy ra danh sách Lịch làm việc của ngày được chọn
+    const schedules = driverSchedules?.filter((item) => {
+      return isScheduleOnDay(item, newValue);
     });
-    setTodaySchedules(schedules);
+    setTodaySchedules(schedules!);
   };
   //
   const onPanelChange = (value: Dayjs, mode: "month" | "year") => {
     setCalendarMode(mode);
   };
   // Tuỳ chỉnh từng ô ngày trong lịch
-  const dayCellRender = (current: Dayjs, schedules: any[]) => {
-    const items = schedules.filter((item) => {
-      const start = dayjs(item.startDate, "DD/MM/YYYY");
-      const end = dayjs(item.endDate, "DD/MM/YYYY");
-      return (
-        current.isSame(start, "day") ||
-        current.isSame(end, "day") ||
-        (current.isAfter(start, "day") && current.isBefore(end, "day"))
-      );
+  const dayCellRender = (
+    currentDate: Dayjs,
+    schedules: ScheduleFormatType[]
+  ) => {
+    const items = schedules?.filter((item) => {
+      return isScheduleOnDay(item, currentDate);
     });
 
-    if (!items.length) return null;
+    if (!items?.length) return null;
 
     return (
       <ul style={{ padding: 0, margin: 0, listStyle: "none" }}>
         {items.map((item) => (
           <li key={item.id} style={{ marginBottom: 4 }}>
             <Badge
-              status="warning"
-              text={`${item.startTime.slice(0, 5)} - ${item.endTime.slice(
+              status={
+                checkActiveStatus(item, currentDate, "SUCCESS")
+                  ? "success"
+                  : checkActiveStatus(item, currentDate, "ACTIVE")
+                  ? "warning"
+                  : checkActiveStatus(item, currentDate, "CANCELED")
+                  ? "error"
+                  : "default"
+              }
+              text={`${item.start_time?.slice(0, 5)} - ${item.end_time?.slice(
                 0,
                 5
               )}`}
@@ -257,12 +137,14 @@ const DriverSchedulePage = () => {
   };
   // Hàm thống kê số lịch cho từng tháng trong năm
   const getMonthSummary = (month: number, year: number) => {
-    const schedules = demoData.filter((item) => {
-      const start = dayjs(item.startDate, "DD/MM/YYYY");
-      const end = dayjs(item.endDate, "DD/MM/YYYY");
-      const monthStart = dayjs(`${year}-${month + 1}-01`);
-      const monthEnd = monthStart.endOf("month");
+    const monthStart = dayjs(`${year}-${month + 1}-01`);
+    const monthEnd = monthStart.endOf("month");
 
+    const schedules = driverSchedules?.filter((item) => {
+      const start = dayjs(item.start_date, "DD/MM/YYYY");
+      const end = dayjs(item.end_date, "DD/MM/YYYY");
+
+      // kiểm tra schedule có giao với tháng này không
       return (
         start.isSame(monthStart, "month") ||
         end.isSame(monthStart, "month") ||
@@ -274,30 +156,38 @@ const DriverSchedulePage = () => {
     let totalHours = 0;
     const routes = new Set<string>();
 
-    schedules.forEach((item) => {
-      const start = dayjs(item.startDate, "DD/MM/YYYY");
-      const end = dayjs(item.endDate, "DD/MM/YYYY");
+    schedules?.forEach((schedule) => {
+      const start = dayjs(schedule.start_date, "DD/MM/YYYY");
+      const end = dayjs(schedule.end_date, "DD/MM/YYYY");
+      const days = parseDaysOfWeek(schedule.days_of_week || "");
 
-      // Xác định ngày rơi vào tháng hiện tại
-      const monthStart = dayjs(`${year}-${month + 1}-01`);
-      const monthEnd = monthStart.endOf("month");
       const itemStart = start.isBefore(monthStart) ? monthStart : start;
       const itemEnd = end.isAfter(monthEnd) ? monthEnd : end;
 
+      // Tính dailyHours của schedule này (1 phiên)
+      const sTime = dayjs(schedule.start_time, "HH:mm:ss");
+      const eTime = dayjs(schedule.end_time, "HH:mm:ss");
+      const dailyHours = eTime.diff(sTime, "minute") / 60; // chính xác tuyệt đối
+
+      // Lặp từng ngày trong khoảng
       for (
         let d = itemStart;
         d.isSameOrBefore(itemEnd, "day");
         d = d.add(1, "day")
       ) {
-        totalDays.add(d.date() + d.month() * 100); // key unique cho từng ngày
+        const matchDay = days.length === 0 ? true : days.includes(d.day());
+
+        if (matchDay) {
+          // Thêm ngày làm
+          totalDays.add(d.date() + d.month() * 100);
+
+          // Cộng giờ cho ngày này
+          totalHours += dailyHours;
+
+          // Ghi nhận tuyến
+          routes.add(schedule?.route?.name!);
+        }
       }
-
-      // Tổng số giờ (tính giờ chênh lệch)
-      const startTime = dayjs(item.startTime, "HH:mm:ss");
-      const endTime = dayjs(item.endTime, "HH:mm:ss");
-      totalHours += endTime.diff(startTime, "hour", true); // giờ thập phân
-
-      routes.add(item.route.name);
     });
 
     return {
@@ -330,22 +220,20 @@ const DriverSchedulePage = () => {
   };
 
   useEffect(() => {
-    // Lấy ra danh sách lịch làm việc của ngày hôm này
+    if (!driverSchedules) return;
+
+    // Lấy ra danh sách Lịch làm việc của ngày hôm này
     const currentDate = dayjs();
-    const schedules = demoData.filter((item) => {
-      const start = dayjs(item.startDate, "DD/MM/YYYY");
-      const end = dayjs(item.endDate, "DD/MM/YYYY");
-      return (
-        currentDate.isSame(start, "day") ||
-        currentDate.isSame(end, "day") ||
-        (currentDate.isAfter(start, "day") && currentDate.isBefore(end, "day"))
-      );
+    setValue(currentDate);
+    setSelectedValue(currentDate);
+    const schedules = driverSchedules?.filter((item) => {
+      return isScheduleOnDay(item, currentDate);
     });
-    setTodaySchedules(schedules);
-  }, []);
+    setTodaySchedules(schedules!);
+  }, [driverSchedules]);
 
   return (
-    <div className="client-layout__main parent">
+    <div className="client-layout__main">
       <h2 className="client-layout__title">
         <span>
           <FontAwesomeIcon icon={faCalendarDays} />
@@ -356,7 +244,7 @@ const DriverSchedulePage = () => {
         {calendarMode !== "year" && (
           <>
             <div>
-              {todaySchedules.length > 0 ? (
+              {todaySchedules?.length > 0 ? (
                 <Alert
                   type="info"
                   message={
@@ -375,26 +263,171 @@ const DriverSchedulePage = () => {
                   }
                   description={
                     <ul style={{ padding: 0, margin: 0, listStyle: "none" }}>
-                      {todaySchedules.map((item) => (
+                      {todaySchedules.map((schedule: ScheduleFormatType) => (
                         <Alert
-                          type="warning"
+                          type={
+                            checkActiveStatus(
+                              schedule,
+                              selectedValue,
+                              "SUCCESS"
+                            )
+                              ? "success"
+                              : checkActiveStatus(
+                                  schedule,
+                                  selectedValue,
+                                  "ACTIVE"
+                                )
+                              ? "warning"
+                              : checkActiveStatus(
+                                  schedule,
+                                  selectedValue,
+                                  "CANCELED"
+                                )
+                              ? "error"
+                              : undefined
+                          }
                           message={
                             <p style={{ fontSize: 14, fontWeight: 500 }}>
-                              {item.route.name}
+                              {schedule.route?.name}
                             </p>
                           }
                           description={
                             <div style={{ fontSize: 14 }}>
                               <p>
-                                🕒 {item.startTime} - {item.endTime}
+                                🕒 {schedule.start_time} - {schedule.end_time}
                               </p>
                               <p>
-                                🚍 {item.bus.license_plate} |{" "}
-                                {item.bus.capacity} ghế
+                                🚍 {schedule.bus?.license_plate} |{" "}
+                                {schedule.bus?.capacity} ghế
                               </p>
                             </div>
                           }
+                          action={
+                            isToday &&
+                            !schedule.actives?.some((active) =>
+                              dayjs(active.start_at, "DD/MM/YYYY").isSame(
+                                selectedValue,
+                                "day"
+                              )
+                            ) &&
+                            !driverSchedules?.some((schedule) => {
+                              return schedule?.actives?.some(
+                                (active) => active.status === "ACTIVE"
+                              );
+                            })
+                              ? [
+                                  <Button
+                                    variant="solid"
+                                    color="green"
+                                    icon={<CarOutlined />}
+                                    style={{ marginRight: 6 }}
+                                    onClick={async () => {
+                                      const restResponse = await execute(
+                                        createActive({
+                                          schedule_id: schedule.id!,
+                                          start_at: dayjs().format(
+                                            "DD/MM/YYYY HH:mm:ss"
+                                          ),
+                                          status: "ACTIVE",
+                                        }),
+                                        true
+                                      );
+                                      notify(
+                                        restResponse!,
+                                        "Xác nhận làm việc thành công"
+                                      );
+                                      if (restResponse?.result) {
+                                        getDriverSchedules();
+                                      }
+                                    }}
+                                  >
+                                    Làm việc
+                                  </Button>,
+                                  <Button
+                                    variant="solid"
+                                    color="red"
+                                    icon={<RobotOutlined />}
+                                    onClick={async () => {
+                                      const restResponse = await execute(
+                                        createActive({
+                                          schedule_id: schedule.id!,
+                                          start_at: dayjs().format(
+                                            "DD/MM/YYYY HH:mm:ss"
+                                          ),
+                                          end_at: dayjs().format(
+                                            "DD/MM/YYYY HH:mm:ss"
+                                          ),
+                                          // start_at: `${selectedValue.format(
+                                          //   "DD/MM/YYYY"
+                                          // )} 00:00:00`,
+                                          // end_at: `${selectedValue.format(
+                                          //   "DD/MM/YYYY"
+                                          // )} 00:00:00`,
+                                          status: "CANCELED",
+                                        }),
+                                        true
+                                      );
+                                      notify(
+                                        restResponse!,
+                                        "Xác nhận huỷ làm thành công"
+                                      );
+                                      if (restResponse?.result) {
+                                        getDriverSchedules();
+                                      }
+                                    }}
+                                  >
+                                    Huỷ làm
+                                  </Button>,
+                                ]
+                              : isToday &&
+                                checkActiveStatus(
+                                  schedule,
+                                  selectedValue,
+                                  "SUCCESS"
+                                )
+                              ? [
+                                  <Button
+                                    variant="solid"
+                                    color="green"
+                                    icon={<CheckCircleOutlined />}
+                                  >
+                                    Đã hoàn thành
+                                  </Button>,
+                                ]
+                              : isToday &&
+                                checkActiveStatus(
+                                  schedule,
+                                  selectedValue,
+                                  "ACTIVE"
+                                )
+                              ? [
+                                  <Button
+                                    variant="solid"
+                                    color="orange"
+                                    icon={<ClockCircleOutlined />}
+                                  >
+                                    Đang làm việc
+                                  </Button>,
+                                ]
+                              : isToday &&
+                                checkActiveStatus(
+                                  schedule,
+                                  selectedValue,
+                                  "CANCELED"
+                                )
+                              ? [
+                                  <Button
+                                    variant="solid"
+                                    color="red"
+                                    icon={<CloseCircleOutlined />}
+                                  >
+                                    Đã huỷ làm
+                                  </Button>,
+                                ]
+                              : []
+                          }
                           style={{ padding: 14, marginTop: 6 }}
+                          className="driver-schedule-alert"
                         ></Alert>
                       ))}
                     </ul>
@@ -413,7 +446,7 @@ const DriverSchedulePage = () => {
                     >
                       {`Ngày ${selectedValue.format(
                         "DD/MM/YYYY"
-                      )} không có lịch làm việc`}
+                      )} không có Lịch làm việc`}
                     </p>
                   }
                 />
@@ -432,7 +465,7 @@ const DriverSchedulePage = () => {
             mode={calendarMode}
             cellRender={(current) =>
               calendarMode === "month"
-                ? dayCellRender(current, demoData)
+                ? dayCellRender(current, driverSchedules!)
                 : monthCellRender(current)
             }
           />

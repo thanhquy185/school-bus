@@ -633,3 +633,36 @@
     font-weight: 700;
   }
 }
+
+.ant-modal {
+  top: 0;
+  padding: 0;
+
+  &-wrap {
+    @include flexCenter();
+  }
+
+  &.inform-modal .ant-modal-title {
+    font-size: 2.2rem;
+  }
+
+  &.inform-modal .ant-modal-title p.red {
+    color: #f5222d;
+  }
+
+  &.inform-modal .ant-modal-title p.orange {
+    color: #fa8c16;
+  }
+
+  &.inform-modal .ant-modal-title p.blue {
+    color: #1677ff;
+  }
+
+  &.inform-modal .ant-modal-title p.purple {
+    color: #722ed1;
+  }
+
+  &.inform-modal .ant-form {
+    margin-top: 20px;
+  }
+}

@@ -1,6 +1,9 @@
+import { AccountStatus, ActiveStatus, ScheduleStatus } from "@prisma/client";
 import prisma from "../configs/prisma.config";
 import { AuthenticationPayload } from "../middlewares/auth.middleware";
+import { ActiveResponse } from "../responses/active.response";
 import { DriverResponse } from "../responses/driver.response";
+import { ScheduleResponse } from "../responses/schedule.response";
 import { createSchema, updateSchema } from "../schemas/driver.schema";
 import { hashPassword } from "../utils/bcypt.util";
 import { verifyToken } from "../utils/jwt.util";
@@ -74,7 +77,7 @@ const DriverService = {
       },
       where: {
         account: {
-          status: "ACTIVE",
+          status: AccountStatus.ACTIVE,
         },
       },
     });
@@ -125,8 +128,8 @@ const DriverService = {
 
     const driver = await prisma.drivers.create({
       data: {
-        full_name: data.fullName,
-        birth_date: data.birthDate,
+        full_name: data.full_name,
+        birth_date: data.birth_date,
         gender: data.gender,
         phone: data.phone,
         email: data.email ?? null,
@@ -176,17 +179,17 @@ const DriverService = {
 
       if (activeSchedule) {
         throw new Error(
-          `Không thể khoá tài xế này vì có lịch làm việc #${activeSchedule.id} hoạt động đang sử dụng !`
+          `Không thể khoá tài xế này vì có lịch trình #${activeSchedule.id} hoạt động đang sử dụng !`
         );
       }
     }
 
     const updateData: any = {};
-    if (data.fullName) {
-      updateData.full_name = data.fullName;
+    if (data.full_name) {
+      updateData.full_name = data.full_name;
     }
-    if (data.birthDate) {
-      updateData.birth_date = data.birthDate;
+    if (data.birth_date) {
+      updateData.birth_date = data.birth_date;
     }
     if (data.gender) {
       updateData.gender = data.gender;
@@ -232,6 +235,167 @@ const DriverService = {
       account_id: driverUpdate.account.id,
       username: driverUpdate.account.username,
     } as DriverResponse);
+  },
+
+  async getActive(authentication: string) {
+    const payload: AuthenticationPayload = await verifyToken(authentication);
+
+    const active = await prisma.actives.findFirst({
+      where: {
+        status: ActiveStatus.ACTIVE,
+        schedule: {
+          driver: {
+            account_id: payload.id,
+          },
+        },
+      },
+      include: {
+        schedule: {
+          include: {
+            route: true,
+            bus: true,
+            driver: true,
+          },
+        },
+        active_pickups: { include: { pickup: true } },
+        active_students: {
+          include: {
+            student: {
+              include: {
+                parent: true,
+                class: true,
+                pickup: true,
+              },
+            },
+          },
+        },
+        informs: true,
+      },
+    });
+    if (!active) return isGetRest(null);
+
+    return isGetRest({
+      id: active.id,
+      schedule: {
+        id: active.schedule.id,
+        start_date: active.schedule.start_date,
+        end_date: active.schedule.end_date,
+        start_time: active.schedule.start_time,
+        end_time: active.schedule.end_time,
+        days_of_week: active.schedule.days_of_week,
+        route: {
+          id: active.schedule.route.id,
+          name: active.schedule.route.name,
+          start_pickup: active.schedule.route.start_pickup,
+          end_pickup: active.schedule.route.end_pickup,
+        },
+        bus: {
+          id: active.schedule.bus.id,
+          license_plate: active.schedule.bus.license_plate,
+          capacity: active.schedule.bus.capacity,
+        },
+        driver: {
+          id: active.schedule.driver.id,
+          avatar: active.schedule.driver.avatar,
+          full_name: active.schedule.driver.full_name,
+        },
+      },
+      start_at: active.start_at,
+      end_at: active.end_at,
+      bus_lat: active.bus_lat,
+      bus_lng: active.bus_lng,
+      bus_speed: active.bus_speed,
+      bus_status: active.bus_status,
+      status: active.status,
+      active_pickups: active.active_pickups.map((ap) => ({
+        pickup: ap.pickup,
+        order: ap.order,
+        at: ap.at,
+        status: ap.status,
+      })),
+      active_students: active.active_students.map((as) => ({
+        student: as.student,
+        at: as.at,
+        status: as.status,
+      })),
+      informs: active.informs.map((inform) => ({
+        id: inform.id,
+        at: inform.at,
+        type: inform.type,
+        message: inform.message,
+        description: inform.description,
+      })),
+    } as ActiveResponse);
+  },
+
+  async getActiveForSchedule(authentication: string) {
+    const payload: AuthenticationPayload = await verifyToken(authentication);
+
+    const active = await prisma.actives.findFirst({
+      where: {
+        status: ActiveStatus.ACTIVE,
+        schedule: {
+          driver: {
+            account_id: payload.id,
+          },
+        },
+      },
+      include: {
+        schedule: true,
+      },
+    });
+    if (!active) return isGetRest(null);
+
+    return isGetRest({
+      id: active.id,
+      schedule: {
+        id: active.schedule.id,
+      },
+    } as ActiveResponse);
+  },
+
+  async getSchedules(authentication: string) {
+    const payload: AuthenticationPayload = await verifyToken(authentication);
+
+    const schedules = await prisma.schedules.findMany({
+      where: {
+        driver: {
+          account_id: payload.id,
+        },
+        status: ScheduleStatus.ACTIVE,
+      },
+      include: {
+        route: true,
+        bus: true,
+        actives: {
+          orderBy: { start_at: "desc" },
+        },
+      },
+    });
+
+    const response: ScheduleResponse[] = schedules.map((schedule) => ({
+      id: schedule.id,
+      route: schedule.route,
+      bus: schedule.bus,
+      start_date: schedule.start_date,
+      end_date: schedule.end_date,
+      start_time: schedule.start_time,
+      end_time: schedule.end_time,
+      days_of_week: schedule.days_of_week,
+      status: schedule.status,
+      actives: schedule.actives.map((active) => ({
+        id: active.id,
+        start_at: active.start_at,
+        end_at: active.end_at,
+        bus_lat: active.bus_lat,
+        bus_lng: active.bus_lng,
+        bus_speed: active.bus_speed,
+        bus_status: active.bus_status,
+        status: active.status,
+      })),
+    }));
+
+    return isGetRest(response);
   },
 
   async getInfo(authentication: string) {

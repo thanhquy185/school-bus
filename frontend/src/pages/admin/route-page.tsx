@@ -86,31 +86,31 @@ const RoutePage = () => {
     },
     {
       title: "Trạm BĐ",
-      dataIndex: "startPickup",
-      key: "startPickup",
+      dataIndex: "start_pickup",
+      key: "start_pickup",
       width: "16%",
-      sorter: (a, b) => a?.startPickup!.localeCompare(b?.startPickup!),
+      sorter: (a, b) => a?.start_pickup!.localeCompare(b?.start_pickup!),
     },
     {
       title: "Trạm KT",
-      dataIndex: "endPickup",
-      key: "endPickup",
+      dataIndex: "end_pickup",
+      key: "end_pickup",
       width: "16%",
-      sorter: (a, b) => a?.endPickup!.localeCompare(b?.endPickup!),
+      sorter: (a, b) => a?.end_pickup!.localeCompare(b?.end_pickup!),
     },
     {
       title: "Tổng m",
-      dataIndex: "totalDistance",
-      key: "totalDistance",
+      dataIndex: "total_distance",
+      key: "total_distance",
       width: "8%",
-      sorter: (a, b) => a?.totalDistance! - b?.totalDistance!,
+      sorter: (a, b) => a?.total_distance! - b?.total_distance!,
     },
     {
       title: "Tổng s",
-      dataIndex: "totalTime",
-      key: "totalTime",
+      dataIndex: "total_time",
+      key: "total_time",
       width: "8%",
-      sorter: (a, b) => a?.totalTime! - b?.totalTime!,
+      sorter: (a, b) => a?.total_time! - b?.total_time!,
     },
     {
       title: "Trạng thái",
@@ -194,33 +194,26 @@ const RoutePage = () => {
   const getRouteData = async () => {
     try {
       const response = await execute(getRoutes(), false);
-
       if (response && response.result) {
         if (Array.isArray(response.data)) {
           setRoutes(
             response.data.map((route) => ({
               ...route,
               status: route.status == "ACTIVE" ? "Hoạt động" : "Tạm dừng",
-              routeDetails: route?.pickups?.map(
-                (pickupNotFormat: { pickup: PickupType; order: number }) => ({
-                  pickup: {
-                    ...pickupNotFormat.pickup,
-                    category:
-                      pickupNotFormat.pickup.category == "SCHOOL"
-                        ? "Trường học"
-                        : "Điểm đưa đón",
-                    status:
-                      pickupNotFormat.pickup.status == "ACTIVE"
-                        ? "Hoạt động"
-                        : "Tạm dừng",
-                  },
-                  order: pickupNotFormat.order,
-                })
-              ),
+              routeDetails: route?.routePickups?.map((rp: any) => ({
+                pickup: {
+                  ...rp.pickup,
+                  category:
+                    rp.pickup.category == "SCHOOL"
+                      ? "Trường học"
+                      : "Điểm đưa đón",
+                  status:
+                    rp.pickup.status == "ACTIVE" ? "Hoạt động" : "Tạm dừng",
+                },
+                order: rp.order,
+              })),
             }))
           );
-
-          console.log(routes);
         }
       }
     } catch (error) {
@@ -393,10 +386,10 @@ const RoutePage = () => {
   const defaultLabels = {
     id: "Mã tuyến đường",
     name: "Tên tuyến đường",
-    startPickup: "Trạm bắt đầu",
-    endPickup: "Trạm kết thúc",
-    totalDistance: "Tổng quãng đường (m)",
-    totalTime: "Tổng thời gian (s)",
+    start_pickup: "Trạm bắt đầu",
+    end_pickup: "Trạm kết thúc",
+    total_distance: "Tổng quãng đường (m)",
+    total_time: "Tổng thời gian (s)",
     status: "Trạng thái",
     map: "Bản đồ",
     list: "Danh sách",
@@ -404,10 +397,10 @@ const RoutePage = () => {
   const defaultInputs = {
     id: "Chưa xác định !",
     name: "Nhập Tên tuyến đường",
-    startPickup: "Nhập Trạm bắt đầu",
-    endPickup: "Nhập Trạm kết thúc",
-    totalDistance: "Nhập Tổng quãng đường (m)",
-    totalTime: "Nhập Tổng thời gian (s)",
+    start_pickup: "Nhập Trạm bắt đầu",
+    end_pickup: "Nhập Trạm kết thúc",
+    total_distance: "Nhập Tổng quãng đường (m)",
+    total_time: "Nhập Tổng thời gian (s)",
     status: "Chọn Trạng thái",
     map: "",
     list: "",
@@ -425,10 +418,10 @@ const RoutePage = () => {
             initialValues={{
               id: route.id || undefined,
               name: route.name || undefined,
-              startPickup: route.startPickup || undefined,
-              endPickup: route.endPickup || undefined,
-              totalDistance: route.totalDistance || undefined,
-              totalTime: route.totalTime || undefined,
+              start_pickup: route.start_pickup || undefined,
+              end_pickup: route.end_pickup || undefined,
+              total_distance: route.total_distance || undefined,
+              total_time: route.total_time || undefined,
               status: route.status || undefined,
             }}
           >
@@ -453,17 +446,20 @@ const RoutePage = () => {
                 <Form.Item name="name" label={defaultLabels.name}>
                   <Input disabled />
                 </Form.Item>
-                <Form.Item name="startPickup" label={defaultLabels.startPickup}>
+                <Form.Item
+                  name="start_pickup"
+                  label={defaultLabels.start_pickup}
+                >
                   <Input disabled />
                 </Form.Item>
-                <Form.Item name="endPickup" label={defaultLabels.endPickup}>
+                <Form.Item name="end_pickup" label={defaultLabels.end_pickup}>
                   <Input disabled />
                 </Form.Item>
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="totalDistance"
-                      label={defaultLabels.totalDistance}
+                      name="total_distance"
+                      label={defaultLabels.total_distance}
                       className="margin-bottom-0"
                     >
                       <InputNumber disabled />
@@ -471,8 +467,8 @@ const RoutePage = () => {
                   </Col>
                   <Col>
                     <Form.Item
-                      name="totalTime"
-                      label={defaultLabels.totalTime}
+                      name="total_time"
+                      label={defaultLabels.total_time}
                       className="margin-bottom-0"
                     >
                       <InputNumber disabled />
@@ -574,8 +570,8 @@ const RoutePage = () => {
       distance,
       duration,
     }: HandleGetRouteInfoProps) => {
-      form.setFieldValue("totalDistance", distance),
-        form.setFieldValue("totalTime", duration);
+      form.setFieldValue("total_distance", distance),
+        form.setFieldValue("total_time", duration);
     };
     useEffect(() => {
       if (routeDetailsValue.length >= 2) {
@@ -585,9 +581,9 @@ const RoutePage = () => {
             routeDetailsValue[routeDetailsValue.length - 1].pickup?.name
           }`
         );
-        form.setFieldValue("startPickup", routeDetailsValue[0].pickup?.name);
+        form.setFieldValue("start_pickup", routeDetailsValue[0].pickup?.name);
         form.setFieldValue(
-          "endPickup",
+          "end_pickup",
           routeDetailsValue[routeDetailsValue.length - 1].pickup?.name
         );
         form.setFieldValue("routeDetails", routeDetailsValue);
@@ -600,15 +596,15 @@ const RoutePage = () => {
       const restResponse = await execute(
         createRoute({
           name: form.getFieldValue("name") || undefined,
-          startPickup: form.getFieldValue("startPickup") || undefined,
-          endPickup: form.getFieldValue("endPickup") || undefined,
-          totalDistance: Number(
-            form.getFieldValue("totalDistance") || undefined
+          start_pickup: form.getFieldValue("start_pickup") || undefined,
+          end_pickup: form.getFieldValue("end_pickup") || undefined,
+          total_distance: Number(
+            form.getFieldValue("total_distance") || undefined
           ),
-          totalTime: Number(form.getFieldValue("totalTime") || undefined),
+          total_time: Number(form.getFieldValue("total_time") || undefined),
           status: form.getFieldValue("status") || undefined,
-          pickups: routeDetailsValue?.map((routeDetail) => ({
-            pickupId: routeDetail?.pickup?.id!,
+          routePickups: routeDetailsValue?.map((routeDetail) => ({
+            pickup_id: routeDetail?.pickup?.id!,
             order: routeDetail?.order!,
           })),
         }),
@@ -630,10 +626,10 @@ const RoutePage = () => {
             initialValues={{
               id: undefined,
               name: undefined,
-              startPickup: undefined,
-              endPickup: undefined,
-              totalDistance: undefined,
-              totalTime: undefined,
+              start_pickup: undefined,
+              end_pickup: undefined,
+              total_distance: undefined,
+              total_time: undefined,
               status: undefined,
             }}
             autoComplete="off"
@@ -687,53 +683,53 @@ const RoutePage = () => {
                   <Input id="create-name" placeholder={defaultInputs.name} />
                 </Form.Item>
                 <Form.Item
-                  name="startPickup"
-                  htmlFor="create-startPickup"
-                  label={defaultLabels.startPickup}
+                  name="start_pickup"
+                  htmlFor="create-start_pickup"
+                  label={defaultLabels.start_pickup}
                   rules={[ruleRequired("Trạm bắt đầu không được để trống !")]}
                 >
                   <Input
-                    id="create-startPickup"
-                    placeholder={defaultInputs.startPickup}
+                    id="create-start_pickup"
+                    placeholder={defaultInputs.start_pickup}
                   />
                 </Form.Item>
                 <Form.Item
-                  name="endPickup"
-                  htmlFor="create-endPickup"
-                  label={defaultLabels.endPickup}
+                  name="end_pickup"
+                  htmlFor="create-end_pickup"
+                  label={defaultLabels.end_pickup}
                   rules={[ruleRequired("Trạm kết thúc không được để trống !")]}
                 >
                   <Input
-                    id="create-endPickup"
-                    placeholder={defaultInputs.endPickup}
+                    id="create-end_pickup"
+                    placeholder={defaultInputs.end_pickup}
                   />
                 </Form.Item>
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="totalDistance"
-                      htmlFor="create-totalDistance"
-                      label={defaultLabels.totalDistance}
+                      name="total_distance"
+                      htmlFor="create-total_distance"
+                      label={defaultLabels.total_distance}
                       rules={[ruleRequired("Cần nhập Quãng đường (m) !")]}
                     >
                       <InputNumber
                         min={0}
-                        id="create-totalDistance"
-                        placeholder={defaultInputs.totalDistance}
+                        id="create-total_distance"
+                        placeholder={defaultInputs.total_distance}
                       />
                     </Form.Item>
                   </Col>
                   <Col>
                     <Form.Item
-                      name="totalTime"
-                      htmlFor="create-totalTime"
-                      label={defaultLabels.totalTime}
+                      name="total_time"
+                      htmlFor="create-total_time"
+                      label={defaultLabels.total_time}
                       rules={[ruleRequired("Cần nhập Thời gian (s) !")]}
                     >
                       <InputNumber
                         min={0}
-                        id="create-totalTime"
-                        placeholder={defaultInputs.totalTime}
+                        id="create-total_time"
+                        placeholder={defaultInputs.total_time}
                       />
                     </Form.Item>
                   </Col>
@@ -793,7 +789,7 @@ const RoutePage = () => {
                     <Select
                       allowClear
                       showSearch
-                      placeholder="Chọn Trạm xe buýt để thêm"
+                      placeholder="Chọn trạm xe buýt để thêm"
                       options={pickups?.map((pickup) => ({
                         label:
                           "#" +
@@ -855,7 +851,7 @@ const RoutePage = () => {
                     <Select
                       allowClear
                       showSearch
-                      placeholder="Chọn Trạm xe buýt để xoá"
+                      placeholder="Chọn trạm xe buýt để xoá"
                       options={routeDetailsValue?.map((routeDetail) => ({
                         label:
                           "#" +
@@ -994,8 +990,8 @@ const RoutePage = () => {
       distance,
       duration,
     }: HandleGetRouteInfoProps) => {
-      form.setFieldValue("totalDistance", distance),
-        form.setFieldValue("totalTime", duration);
+      form.setFieldValue("total_distance", distance),
+        form.setFieldValue("total_time", duration);
     };
     useEffect(() => {
       if (routeDetailsValue.length >= 2) {
@@ -1005,9 +1001,9 @@ const RoutePage = () => {
             routeDetailsValue[routeDetailsValue.length - 1].pickup?.name
           }`
         );
-        form.setFieldValue("startPickup", routeDetailsValue[0].pickup?.name);
+        form.setFieldValue("start_pickup", routeDetailsValue[0].pickup?.name);
         form.setFieldValue(
-          "endPickup",
+          "end_pickup",
           routeDetailsValue[routeDetailsValue.length - 1].pickup?.name
         );
         form.setFieldValue("routeDetails", routeDetailsValue);
@@ -1020,14 +1016,14 @@ const RoutePage = () => {
       const restResponse = await execute(
         updateRoute(route.id!, {
           name: form.getFieldValue("name") || undefined,
-          startPickup: form.getFieldValue("startPickup") || undefined,
-          endPickup: form.getFieldValue("endPickup") || undefined,
-          totalDistance: Number(
-            form.getFieldValue("totalDistance") || undefined
+          start_pickup: form.getFieldValue("start_pickup") || undefined,
+          end_pickup: form.getFieldValue("end_pickup") || undefined,
+          total_distance: Number(
+            form.getFieldValue("total_distance") || undefined
           ),
-          totalTime: Number(form.getFieldValue("totalTime") || undefined),
-          pickups: routeDetailsValue?.map((routeDetail) => ({
-            pickupId: routeDetail?.pickup?.id!,
+          total_time: Number(form.getFieldValue("total_time") || undefined),
+          routePickups: routeDetailsValue?.map((routeDetail) => ({
+            pickup_id: routeDetail?.pickup?.id!,
             order: routeDetail?.order!,
           })),
         }),
@@ -1049,10 +1045,10 @@ const RoutePage = () => {
             initialValues={{
               id: route.id || undefined,
               name: route.name || undefined,
-              startPickup: route.startPickup || undefined,
-              endPickup: route.endPickup || undefined,
-              totalDistance: route.totalDistance || undefined,
-              totalTime: route.totalTime || undefined,
+              start_pickup: route.start_pickup || undefined,
+              end_pickup: route.end_pickup || undefined,
+              total_distance: route.total_distance || undefined,
+              total_time: route.total_time || undefined,
               status: route.status || undefined,
             }}
             autoComplete="off"
@@ -1087,53 +1083,53 @@ const RoutePage = () => {
                   <Input id="update-name" placeholder={defaultInputs.name} />
                 </Form.Item>
                 <Form.Item
-                  name="startPickup"
-                  htmlFor="update-startPickup"
-                  label={defaultLabels.startPickup}
+                  name="start_pickup"
+                  htmlFor="update-start_pickup"
+                  label={defaultLabels.start_pickup}
                   rules={[ruleRequired("Trạm bắt đầu không được để trống !")]}
                 >
                   <Input
-                    id="update-startPickup"
-                    placeholder={defaultInputs.startPickup}
+                    id="update-start_pickup"
+                    placeholder={defaultInputs.start_pickup}
                   />
                 </Form.Item>
                 <Form.Item
-                  name="endPickup"
-                  htmlFor="update-endPickup"
-                  label={defaultLabels.endPickup}
+                  name="end_pickup"
+                  htmlFor="update-end_pickup"
+                  label={defaultLabels.end_pickup}
                   rules={[ruleRequired("Trạm kết thúc không được để trống !")]}
                 >
                   <Input
-                    id="update-endPickup"
-                    placeholder={defaultInputs.endPickup}
+                    id="update-end_pickup"
+                    placeholder={defaultInputs.end_pickup}
                   />
                 </Form.Item>
                 <Row className="split-2">
                   <Col>
                     <Form.Item
-                      name="totalDistance"
-                      htmlFor="update-totalDistance"
-                      label={defaultLabels.totalDistance}
+                      name="total_distance"
+                      htmlFor="update-total_distance"
+                      label={defaultLabels.total_distance}
                       rules={[ruleRequired("Cần nhập Tổng quãng đường (m) !")]}
                     >
                       <InputNumber
                         min={0}
-                        id="update-totalDistance"
-                        placeholder={defaultInputs.totalDistance}
+                        id="update-total_distance"
+                        placeholder={defaultInputs.total_distance}
                       />
                     </Form.Item>
                   </Col>
                   <Col>
                     <Form.Item
-                      name="totalTime"
-                      htmlFor="update-totalTime"
-                      label={defaultLabels.totalTime}
+                      name="total_time"
+                      htmlFor="update-total_time"
+                      label={defaultLabels.total_time}
                       rules={[ruleRequired("Cần nhập Tổng thời gian (s) !")]}
                     >
                       <InputNumber
                         min={0}
-                        id="update-totalTime"
-                        placeholder={defaultInputs.totalTime}
+                        id="update-total_time"
+                        placeholder={defaultInputs.total_time}
                       />
                     </Form.Item>
                   </Col>
@@ -1193,7 +1189,7 @@ const RoutePage = () => {
                     <Select
                       allowClear
                       showSearch
-                      placeholder="Chọn Trạm xe buýt để thêm"
+                      placeholder="Chọn trạm xe buýt để thêm"
                       options={pickups?.map((pickup) => ({
                         label:
                           "#" +
@@ -1255,7 +1251,7 @@ const RoutePage = () => {
                     <Select
                       allowClear
                       showSearch
-                      placeholder="Chọn Trạm xe buýt để xoá"
+                      placeholder="Chọn trạm xe buýt để xoá"
                       options={routeDetailsValue?.map((routeDetail) => ({
                         label:
                           "#" +

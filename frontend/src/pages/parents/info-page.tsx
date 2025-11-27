@@ -33,7 +33,7 @@ const ParentInfoPage = () => {
   const [parentInfo, setParentInfo] = useState<ParentFormatType>();
   const getParentInfo = async () => {
     const response = await execute(getInfo(), false);
-    const data = response.data;
+    const data = response?.data;
     setParentInfo(data);
   };
   useEffect(() => {
@@ -52,7 +52,7 @@ const ParentInfoPage = () => {
       if (!parentInfo?.id) return;
 
       const updateData = {
-        fullName: values.fullname,
+        full_name: values.full_name,
         phone: values.phone,
         email: values.email,
         address: values.address,
@@ -77,7 +77,7 @@ const ParentInfoPage = () => {
               uploadParentAvatar(parentInfo.id, formData),
               false
             );
-            notify(uploadResponse, "Cập nhật ảnh đại diện thành công!");
+            notify(uploadResponse!, "Cập nhật ảnh đại diện thành công!");
           }
 
           // Load lại thông tin và tắt chế độ edit
@@ -95,7 +95,7 @@ const ParentInfoPage = () => {
           form={form}
           layout="vertical"
           initialValues={{
-            fullname: parentInfo?.full_name || undefined,
+            full_name: parentInfo?.full_name || undefined,
             phone: parentInfo?.phone || undefined,
             email: parentInfo?.email || undefined,
             address: parentInfo?.address || undefined,
@@ -127,7 +127,7 @@ const ParentInfoPage = () => {
             </Col>
             <Col>
               <Form.Item
-                name="fullname"
+                name="full_name"
                 label="Họ và tên"
                 rules={
                   isEditing
