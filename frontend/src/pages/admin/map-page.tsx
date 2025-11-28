@@ -53,486 +53,38 @@ import LeafletMap, {
 import CustomStatistic from "../../components/statistic";
 import { useNotification } from "../../utils/showNotification";
 import dayjs from "dayjs";
+import { getActivesActive } from "../../services/active-service";
+import useCallApi from "../../api/useCall";
 
 // Map Page
 const MapPage = () => {
   // Language
   const { t } = useTranslation();
 
-  // Notification
-  const { openNotification } = useNotification();
+  const { execute, notify, loading } = useCallApi();
 
-  //
-  const data: ActiveFormatType[] = [
-    {
-      id: 1,
-      schedule: {
-        id: 1,
-        bus: {
-          id: 1,
-          licensePlate: "AA00-0000",
-          capacity: 20,
-          status: "Hoạt động",
-        },
-        route: {
-          id: 1,
-          name: "Tuyến CV Lê Thị Riêng-Ngã 3 Tô Hiến Thành",
-          startPickup: "Công Viên Lê Thị Riêng",
-          endPickup: "Ngã 3 Tô Hiến Thành",
-          startTime: "07:00:00",
-          endTime: "08:00:00",
-          status: "Hoạt động",
-          routeDetails: [
-            {
-              pickup: {
-                id: 2,
-                name: "Trạm Công viên Lê Thị Riêng",
-                category: "Điểm đưa đón",
-                lat: 10.786197005344277,
-                lng: 106.66577696800232,
-                status: "Tạm dừng",
-              },
-              order: 1,
-            },
-            {
-              pickup: {
-                id: 3,
-                name: "Trạm Ngã 3 Tô Hiến Thành",
-                category: "Điểm đưa đón",
-                lat: 10.782542301538852,
-                lng: 106.67269945487907,
-                status: "Hoạt động",
-              },
-              order: 2,
-            },
-          ],
-        },
-        driver: {
-          id: 1,
-          user: {
-            id: 1,
-            role: "driver",
-            username: "taixe1",
-            password: "taixe1",
-          },
-          fullname: "Họ tên tài xế 1",
-          birthday: "2025-01-01",
-          gender: "Nữ",
-          phone: "1234567890",
-          email: "taixe1@gmail.com",
-          address: "Địa chỉ ở đâu không biết",
-          status: "Hoạt động",
-        },
-        startDate: "2025-10-01",
-        endDate: "2025-10-31",
-      },
-      createTime: "2025-10-11 04:56:20",
-      startTime: "2025-10-11 05:00:20",
-      busLat: 10.786197005344277,
-      busLng: 106.66577696800232,
-      busSpeed: 1000,
-      status: "Đã hoàn thành",
-      activeStudents: [
-        {
-          student: {
-            id: "1",
-            parent: {
-              id: 1,
-              user: {
-                id: 1,
-                role: "parent",
-                username: "phuhuynh1",
-                password: "phuhuynh1",
-              },
-              fullname: "Họ tên phụ huynh 1",
-              phone: "1234567890",
-              email: "phuhuynh1@gmail.com",
-              address: "Địa chỉ ở đâu không biết",
-              status: "Hoạt động",
-            },
-            pickup: {
-              id: 2,
-              name: "Trạm Công viên Lê Thị Riêng",
-              category: "Điểm đưa đón",
-              lat: 10.786197005344277,
-              lng: 106.66577696800232,
-              status: "Tạm dừng",
-            },
-            class: {
-              id: 1,
-              name: "Lớp 10A1",
-            },
-            avatar: "test-1.png",
-            fullname: "Học sinh 1",
-            birthday: "2025-01-01",
-            gender: "Nam",
-            address: "Địa chỉ ở đâu không biết",
-            status: "Hoạt động",
-          },
-          time: "2025-10-01 08:00:00",
-          status: "Đã điểm danh",
-        },
-        {
-          student: {
-            id: "2",
-            parent: {
-              id: 2,
-              user: {
-                id: 2,
-                role: "parent",
-                username: "phuhuynh2",
-                password: "phuhuynh2",
-              },
-              fullname: "Họ tên phụ huynh 2",
-              phone: "2234567890",
-              email: "phuhuynh2@gmail.com",
-              address: "Địa chỉ ở đâu không biết",
-              status: "Tạm dừng",
-            },
+  // Dữ liệu về các chuyến xe đang vận hành "ACTIVE"
+  const [actives, setActives] = useState<ActiveFormatType[]>();
+  const getActiveData = async () => {
+    try {
+      const response = await execute(getActivesActive(), false);
 
-            pickup: {
-              id: 3,
-              name: "Trạm Ngã 3 Tô Hiến Thành",
-              category: "Điểm đưa đón",
-              lat: 10.782542301538852,
-              lng: 106.67269945487907,
-              status: "Hoạt động",
-            },
+      if (response && response.result) {
+        if (Array.isArray(response.data)) {
+          setActives(response.data);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    getActiveData();
+  }, []);
 
-            class: {
-              id: 2,
-              name: "Lớp 10A2",
-            },
-            avatar: "test-2.png",
-            fullname: "Học sinh 2",
-            birthday: "2025-02-02",
-            gender: "Nam",
-            address: "Địa chỉ ở đâu không biết",
-            status: "Tạm dừng",
-          },
-          time: "2025-10-01 08:30:00",
-          status: "Đã nghỉ học",
-        },
-      ],
-      activePickups: [
-        {
-          pickup: {
-            id: 2,
-            name: "Trạm Công viên Lê Thị Riêng",
-            category: "Điểm đưa đón",
-            lat: 10.786197005344277,
-            lng: 106.66577696800232,
-            status: "Tạm dừng",
-          },
-          time: "2025-10-01 06:58:23",
-          status: "Đã đến trạm",
-        },
-        {
-          pickup: {
-            id: 3,
-            name: "Trạm Ngã 3 Tô Hiến Thành",
-            category: "Điểm đưa đón",
-            lat: 10.782542301538852,
-            lng: 106.67269945487907,
-            status: "Hoạt động",
-          },
-          time: "2025-10-01 08:10:23",
-          status: "Đang đến trạm",
-        },
-      ],
-    },
-    {
-      id: 2,
-      schedule: {
-        id: 2,
-        route: {
-          id: 2,
-          name: "Tuyến Vòng Xoay Dân Chủ-Vòng Xoay Lý Thái Tổ",
-          startPickup: "Vòng Xoay Dân Chủ",
-          endPickup: "Vòng Xoay Lý Thái Tổ",
-          startTime: "07:00:00",
-          endTime: "08:00:00",
-          status: "Hoạt động",
-          routeDetails: [
-            {
-              pickup: {
-                id: 4,
-                name: "Trạm Vòng xoay Dân Chủ",
-                category: "Điểm đưa đón",
-                lat: 10.778231651587179,
-                lng: 106.68071896686253,
-                status: "Hoạt động",
-              },
-              order: 3,
-            },
-            {
-              pickup: {
-                id: 5,
-                name: "Trạm Nhà hát Hoà Bình",
-                category: "Điểm đưa đón",
-                lat: 10.771691782379415,
-                lng: 106.67420637069971,
-                status: "Hoạt động",
-              },
-              order: 4,
-            },
-            {
-              pickup: {
-                id: 6,
-                name: "Trạm Vòng xoay Lý Thái Tổ",
-                category: "Điểm đưa đón",
-                lat: 10.767212337954136,
-                lng: 106.67562797183044,
-                status: "Hoạt động",
-              },
-              order: 5,
-            },
-          ],
-        },
-        bus: {
-          id: 2,
-          licensePlate: "AA00-0000",
-          capacity: 20,
-          status: "Hoạt động",
-        },
-        driver: {
-          id: 2,
-          user: {
-            id: 2,
-            role: "driver",
-            username: "taixe2",
-            password: "taixe2",
-          },
-          fullname: "Họ tên tài xế 2",
-          birthday: "2025-02-02",
-          gender: "Nữ",
-          phone: "2234567890",
-          email: "taixe2@gmail.com",
-          address: "Địa chỉ ở đâu không biết",
-          status: "Hoạt động",
-        },
-        startDate: "2025-10-01",
-        endDate: "2025-10-31",
-      },
-      createTime: "2025-10-11 08:56:20",
-      startTime: "2025-10-11 09:00:20",
-      busLat: 10.778231651587179,
-      busLng: 106.68071896686253,
-      status: "Đang chạy xe",
-      activeStudents: [
-        {
-          student: {
-            id: "3",
-            parent: {
-              id: 3,
-              user: {
-                id: 3,
-                role: "parent",
-                username: "phuhuynh3",
-                password: "phuhuynh3",
-              },
-              fullname: "Họ tên phụ huynh 3",
-              phone: "3234567890",
-              email: "phuhuynh3@gmail.com",
-              address: "Địa chỉ ở đâu không biết",
-              status: "Hoạt động",
-            },
-            pickup: {
-              id: 4,
-              name: "Trạm Vòng xoay Dân Chủ",
-              category: "Điểm đưa đón",
-              lat: 10.778231651587179,
-              lng: 106.68071896686253,
-              status: "Hoạt động",
-            },
-            class: {
-              id: 3,
-              name: "Lớp 10A3",
-            },
-            avatar: "test-3.png",
-            fullname: "Học sinh 3",
-            birthday: "2025-03-03",
-            gender: "Nữ",
-            address: "Địa chỉ ở đâu không biết",
-            status: "Hoạt động",
-          },
-          time: "2025-10-01 08:00:00",
-          status: "Đang chờ xác nhận",
-        },
-      ],
-      activePickups: [
-        {
-          pickup: {
-            id: 4,
-            name: "Trạm Vòng xoay Dân Chủ",
-            category: "Điểm đưa đón",
-            lat: 10.778231651587179,
-            lng: 106.68071896686253,
-            status: "Hoạt động",
-          },
-          time: "2025-10-01 06:58:23",
-          status: "Đã đến trạm",
-        },
-        {
-          pickup: {
-            id: 5,
-            name: "Trạm Nhà hát Hoà Bình",
-            category: "Điểm đưa đón",
-            lat: 10.771691782379415,
-            lng: 106.67420637069971,
-            status: "Hoạt động",
-          },
-          time: "2025-10-01 08:10:23",
-          status: "Đang đến trạm",
-        },
-        {
-          pickup: {
-            id: 6,
-            name: "Trạm Vòng xoay Lý Thái Tổ",
-            category: "Điểm đưa đón",
-            lat: 10.767212337954136,
-            lng: 106.67562797183044,
-            status: "Hoạt động",
-          },
-          time: "2025-10-01 09:02:23",
-          status: "Đang chờ xác nhận",
-        },
-      ],
-    },
-    {
-      id: 3,
-      schedule: {
-        id: 3,
-        route: {
-          id: 3,
-          name: "Tuyến Vòng xoay Cộng Hoà-Trường Đại học Sài Gòn",
-          startPickup: "Vòng xoay Cộng Hoà",
-          endPickup: "Trường Đại học Sài Gòn",
-          startTime: "07:00:00",
-          endTime: "08:00:00",
-          status: "Hoạt động",
-          routeDetails: [
-            {
-              pickup: {
-                id: 7,
-                name: "Trạm Vòng xoay Cộng Hoà",
-                category: "Điểm đưa đón",
-                lat: 10.764561529473132,
-                lng: 106.6818913125902,
-                status: "Hoạt động",
-              },
-              order: 6,
-            },
-            {
-              pickup: {
-                id: 1,
-                name: "Trường Đại học Sài Gòn",
-                category: "Trường học",
-                lat: 10.75960314081626,
-                lng: 106.68201506137848,
-                status: "Hoạt động",
-              },
-              order: 7,
-            },
-          ],
-        },
-        bus: {
-          id: 3,
-          licensePlate: "AA00-0000",
-          capacity: 20,
-          status: "Hoạt động",
-        },
-        driver: {
-          id: 3,
-          user: {
-            id: 3,
-            role: "driver",
-            username: "taixe3",
-            password: "taixe3",
-          },
-          fullname: "Họ tên tài xế 3",
-          birthday: "2025-03-03",
-          gender: "Nữ",
-          phone: "3234567890",
-          email: "taixe3@gmail.com",
-          address: "Địa chỉ ở đâu không biết",
-          status: "Hoạt động",
-        },
-        startDate: "2025-10-01",
-        endDate: "2025-10-31",
-      },
-      startTime: "2025-10-11 04:56:20",
-      status: "Đang có sự cố",
-      activeStudents: [
-        {
-          student: {
-            id: "4",
-            parent: {
-              id: 4,
-              user: {
-                id: 4,
-                role: "parent",
-                username: "phuhuynh4",
-                password: "phuhuynh4",
-              },
-              fullname: "Họ tên phụ huynh 4",
-              phone: "4244567890",
-              email: "phuhuynh4@gmail.com",
-              address: "Địa chỉ ở đâu không biết",
-              status: "Hoạt động",
-            },
-            pickup: {
-              id: 7,
-              name: "Trạm Vòng xoay Cộng Hoà",
-              category: "Điểm đưa đón",
-              lat: 10.764561529473132,
-              lng: 106.6818913125902,
-              status: "Hoạt động",
-            },
-            class: {
-              id: 4,
-              name: "Lớp 10A4",
-            },
-            avatar: "test-4.png",
-            fullname: "Học sinh 4",
-            birthday: "2025-04-04",
-            gender: "Nữ",
-            address: "Địa chỉ ở đâu không biết",
-            status: "Hoạt động",
-          },
-          time: "2025-10-01 08:00:00",
-          status: "Đã nghỉ phép",
-        },
-      ],
-      activePickups: [
-        {
-          pickup: {
-            id: 7,
-            name: "Trạm Vòng xoay Cộng Hoà",
-            category: "Điểm đưa đón",
-            lat: 10.764561529473132,
-            lng: 106.6818913125902,
-            status: "Hoạt động",
-          },
-          time: "2025-10-01 06:58:23",
-          status: "Đã đến trạm",
-        },
-        {
-          pickup: {
-            id: 1,
-            name: "Trường Đại học Sài Gòn",
-            category: "Trường học",
-            lat: 10.75960314081626,
-            lng: 106.68201506137848,
-            status: "Hoạt động",
-          },
-          time: "2025-10-01 08:10:23",
-          status: "Đang chờ xác nhận",
-        },
-      ],
-    },
-  ];
-  const [actives, setActives] = useState<ActiveFormatType[]>(data);
+  useEffect(() => {
+    console.log(actives);
+  }, [actives]);
 
   // State giữ đối tượng được chọn hiện tại
   const [currentSelectedItem, setCurrentSelectedItem] =
@@ -545,30 +97,6 @@ const MapPage = () => {
     useState<ActiveStudentFormatType | null>(null);
   // State giữ hành động hiện tại
   const [currentAction, setCurrentAction] = useState<string>("journey");
-  // State giữ breadcrumb items hiện tại
-  const [currentBreadcrumbItems, setCurrentBreadcrumbItems] = useState<
-    Partial<BreadcrumbItemType & BreadcrumbSeparatorType>[]
-  >([
-    {
-      title: (
-        <span onClick={() => setCurrentAction("list")}>
-          <FontAwesomeIcon icon={faMapLocationDot} />
-          &nbsp;{t("map-manager")}
-        </span>
-      ),
-    },
-    {
-      title: (
-        <span onClick={() => setCurrentAction("list")}>{t("map-info")}</span>
-      ),
-    },
-  ]);
-  // State giữ card info hiện tại
-  const [currentCardTitle, setCurrentCardTitle] = useState<string>(
-    t("map-info")
-  );
-  // const [currentCardContent, setCurrentCardContent] =
-  //   useState<string>("journey");
 
   //
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -585,13 +113,13 @@ const MapPage = () => {
 
   //
   const handleGetBusInfo = ({
-    activeId,
+    active_id,
     busLat,
     busLng,
   }: HandleGetBusInfoProps) => {
-    // console.log(activeId, busLat, busLng);
+    // console.log(active_id, busLat, busLng);
     const newActives = actives?.map((active) => {
-      if (active.id === activeId) {
+      if (active.id === active_id) {
         return {
           ...active,
           busLat: busLat,
@@ -618,12 +146,12 @@ const MapPage = () => {
 
     let active: ActiveFormatType | null = null;
     let activePickup: ActivePickupFormatType | null = null;
-    for (let i = 0; i < actives.length; i++) {
+    for (let i = 0; i < actives!.length; i++) {
       const activePickups: ActivePickupFormatType[] =
-        actives[i]?.activePickups || [];
+        actives![i]?.active_pickups || [];
       for (let j = 0; j < activePickups.length; j++) {
         if (activePickups[j].pickup?.id === id) {
-          active = actives[i];
+          active = actives![i];
           activePickup = activePickups[j];
           break;
         }
@@ -634,7 +162,7 @@ const MapPage = () => {
     setCurrentSelectedActivePickup(activePickup);
   };
   //
-  const handleSelectedBus = ({ activeId }: HandleSelectedBusProps) => {
+  const handleSelectedBus = ({ active_id }: HandleSelectedBusProps) => {
     // - ĐANG NGU CHỖ NÀY
     // const item = actives?.map((active) => active.route?.routeDetails)?.find((routeDetail) => routeDetail?.)
     // let active: ActiveFormatType | null = null;
@@ -649,11 +177,12 @@ const MapPage = () => {
     // }
     // }
 
-    const active = actives?.find((active) => active?.id === activeId)!;
+    const active = actives?.find((active) => active?.id === active_id)!;
 
     setCurrentSelectedItem(active);
     setCurrentSelectedActivePickup(null);
   };
+
   //
   const updateCard = () => {
     let newTotalActive = 0,
@@ -664,13 +193,13 @@ const MapPage = () => {
 
     actives?.forEach((active) => {
       newTotalActive += 1;
-      if (active.status === ActiveStatusValue.success) {
+      if (active.status === "SUCCESS") {
         newSuccess += 1;
-      } else if (active.status === ActiveStatusValue.running) {
+      } else if (active.status === "ACTIVE") {
         newRunning += 1;
-      } else if (active.status === ActiveStatusValue.incident) {
+      } else if (active.status === "CANCELED") {
         newIncident += 1;
-      } else if (active.status === ActiveStatusValue.pending) {
+      } else if (active.status === "PENDING") {
         newPending += 1;
       }
     });
@@ -683,9 +212,9 @@ const MapPage = () => {
   };
   //
   const getStatisticColorByActiveStatus = (status: string) => {
-    if (status === ActiveStatusValue.success) return "purple";
-    if (status === ActiveStatusValue.running) return "green";
-    if (status === ActiveStatusValue.incident) return "red";
+    if (status === "SUCCESS") return "purple";
+    if (status === "ACTIVE") return "green";
+    if (status === "CANCELED") return "red";
 
     return "default";
   };
@@ -700,11 +229,27 @@ const MapPage = () => {
       <div className="admin-layout__main-content">
         {/* Breadcrumb */}
         <Breadcrumb
-          items={currentBreadcrumbItems}
+          items={[
+            {
+              title: (
+                <span onClick={() => setCurrentAction("list")}>
+                  <FontAwesomeIcon icon={faMapLocationDot} />
+                  &nbsp;{t("map-manager")}
+                </span>
+              ),
+            },
+            {
+              title: (
+                <span onClick={() => setCurrentAction("list")}>
+                  {t("map-info")}
+                </span>
+              ),
+            },
+          ]}
           className="admin-layout__main-breadcrumb"
         />
         {/* Card */}
-        <Card title={currentCardTitle} className="admin-layout__main-card">
+        <Card title={t("map-info")} className="admin-layout__main-card">
           <div className="admin-layout__main-filter">
             <div className="left">
               <DatePicker.RangePicker
@@ -759,7 +304,7 @@ const MapPage = () => {
               </Button>
             </div>
           </div>
-          <div className="admin-layout__main-statistics">
+          {/* <div className="admin-layout__main-statistics">
             <CustomStatistic
               title="Tổng tuyến vận hành"
               value={totalActiveCardValue}
@@ -790,7 +335,7 @@ const MapPage = () => {
               prefix={<QuestionCircleOutlined />}
               color="#676767"
             />
-          </div>  
+          </div> */}
           <div
             className={
               "admin-layout__main-map" +
@@ -801,19 +346,19 @@ const MapPage = () => {
               id="map-summary"
               type="detail"
               busInfos={actives?.map((active) => ({
-                activeId: active?.id,
-                busLat: active?.busLat,
-                busLng: active?.busLng,
-                busSpeed: active?.busSpeed,
+                active_id: active?.id,
+                busLat: active?.bus_lat,
+                busLng: active?.bus_lng,
+                busSpeed: active?.bus_speed,
               }))}
               routeDetailsList={actives?.map((active) => ({
-                activeId: active?.id,
-                routeDetails: active?.schedule?.route?.routeDetails || [],
+                active_id: active?.id,
+                routeDetails: active?.schedule?.route?.routePickups || [],
                 status: active.status!,
               }))}
               activePickupsList={actives?.flatMap((active) => ({
-                activeId: active?.id,
-                activePickups: active?.activePickups,
+                active_id: active?.id,
+                activePickups: active?.active_pickups,
               }))}
               handleGetBusInfo={handleGetBusInfo}
               handleSelectedPickup={handleSelectedPickup}
@@ -882,19 +427,21 @@ const MapPage = () => {
                       <p>
                         <span>Giờ:</span>
                         <b>
-                          {currentSelectedItem?.schedule?.route?.startTime} -{" "}
-                          {currentSelectedItem?.schedule?.route?.endTime}
+                          {currentSelectedItem?.schedule?.start_time} -{" "}
+                          {currentSelectedItem?.schedule?.end_time}
                         </b>
                       </p>
                       <p>
                         <span>Trạm BĐ:</span>
                         <b>
-                          {currentSelectedItem?.schedule?.route?.startPickup}
+                          {currentSelectedItem?.schedule?.route?.start_pickup}
                         </b>
                       </p>
                       <p>
                         <span>Trạm KT:</span>
-                        <b>{currentSelectedItem?.schedule?.route?.endPickup}</b>
+                        <b>
+                          {currentSelectedItem?.schedule?.route?.end_pickup}
+                        </b>
                       </p>
                       <LeafletMap
                         id="map-route"
@@ -904,15 +451,15 @@ const MapPage = () => {
                         enableBaseLayers={false}
                         busInfos={[
                           {
-                            activeId: currentSelectedItem?.id,
-                            busLat: currentSelectedItem?.busLat,
-                            busLng: currentSelectedItem?.busLng,
-                            busSpeed: currentSelectedItem?.busSpeed,
+                            active_id: currentSelectedItem?.id,
+                            bus_lat: currentSelectedItem?.bus_lat,
+                            bus_lng: currentSelectedItem?.bus_lng,
+                            bus_speed: currentSelectedItem?.bus_speed,
                           },
                         ]}
                         routeDetailsList={[
                           {
-                            activeId: currentSelectedItem?.id,
+                            active_id: currentSelectedItem?.id,
                             routeDetails:
                               currentSelectedItem?.schedule?.route
                                 ?.routeDetails || [],
@@ -921,8 +468,8 @@ const MapPage = () => {
                         ]}
                         activePickupsList={[
                           {
-                            activeId: currentSelectedItem?.id,
-                            activePickups: currentSelectedItem?.activePickups,
+                            active_id: currentSelectedItem?.id,
+                            activePickups: currentSelectedItem?.active_pickups,
                           },
                         ]}
                         handleGetRouteInfo={handleGetRouteInfo}
@@ -947,7 +494,10 @@ const MapPage = () => {
                           <p>
                             <span>Biển số:</span>
                             <b>
-                              {currentSelectedItem?.schedule?.bus?.licensePlate}
+                              {
+                                currentSelectedItem?.schedule?.bus
+                                  ?.license_plate
+                              }
                             </b>
                           </p>
                           <p>
@@ -958,7 +508,7 @@ const MapPage = () => {
                           </p>
                           <p>
                             <span>Vận tốc:</span>
-                            <b>{currentSelectedItem?.busSpeed} km/h</b>
+                            <b>{currentSelectedItem?.bus_speed} km/h</b>
                           </p>
                           <p>
                             <span>Đã đi:</span>
@@ -996,13 +546,16 @@ const MapPage = () => {
                           <p>
                             <span>Họ tên:</span>
                             <b>
-                              {currentSelectedItem?.schedule?.driver?.fullname}
+                              {currentSelectedItem?.schedule?.driver?.full_name}
                             </b>
                           </p>
                           <p>
                             <span>Ngày sinh:</span>
                             <b>
-                              {currentSelectedItem?.schedule?.driver?.birthday}
+                              {
+                                currentSelectedItem?.schedule?.driver
+                                  ?.birth_date
+                              }
                             </b>
                           </p>
                           <p>
@@ -1026,8 +579,8 @@ const MapPage = () => {
                           <p>
                             <span>Lịch chạy:</span>
                             <b>
-                              {currentSelectedItem?.schedule?.startDate} -{" "}
-                              {currentSelectedItem?.schedule?.endDate}
+                              {currentSelectedItem?.schedule?.start_date} -{" "}
+                              {currentSelectedItem?.schedule?.end_date}
                             </b>
                           </p>
                         </div>
@@ -1045,10 +598,10 @@ const MapPage = () => {
                         <img
                           src={
                             currentSelectedActivePickup?.pickup?.category ===
-                            PointTypeValue.school
+                            "SCHOOL"
                               ? "https://cdn-icons-png.flaticon.com/512/167/167707.png"
                               : currentSelectedActivePickup?.pickup
-                                  ?.category === PointTypeValue.pickup
+                                  ?.category === "PICKUP"
                               ? "https://cdn-icons-png.flaticon.com/512/6395/6395324.png"
                               : "https://cdn-icons-png.flaticon.com/512/1068/1068580.png"
                           }
@@ -1098,19 +651,22 @@ const MapPage = () => {
                                 <Tag
                                   color={
                                     currentSelectedActivePickup?.status ===
-                                    ActivePickupStatusValue.confirmed
+                                    "CONFIRMED"
                                       ? "green-inverse"
                                       : currentSelectedActivePickup?.status ===
-                                        ActivePickupStatusValue.canceled
+                                        "DRIVING"
+                                      ? "orange-inverse"
+                                      : currentSelectedActivePickup?.status ===
+                                        "CANCELED"
                                       ? "red-inverse"
                                       : "default"
                                   }
                                 >
                                   {currentSelectedActivePickup?.status}{" "}
                                   {currentSelectedActivePickup?.status !==
-                                  ActivePickupStatusValue.pending
+                                  "PENDING"
                                     ? "(" +
-                                      currentSelectedActivePickup?.time +
+                                      currentSelectedActivePickup?.at +
                                       ")"
                                     : ""}
                                 </Tag>
@@ -1149,20 +705,20 @@ const MapPage = () => {
                           <List
                             bordered
                             itemLayout="horizontal"
-                            dataSource={currentSelectedItem?.activePickups?.map(
-                              (activePickup) => activePickup
+                            dataSource={currentSelectedItem?.active_pickups?.map(
+                              (active_pickup) => active_pickup
                             )}
                             style={{ marginTop: 6 }}
-                            renderItem={(activePickup) => (
-                              <List.Item key={activePickup?.pickup?.id}>
+                            renderItem={(active_pickup) => (
+                              <List.Item key={active_pickup?.pickup?.id}>
                                 <List.Item.Meta
                                   avatar={
                                     <Avatar
                                       src={
-                                        activePickup?.pickup?.category ===
+                                        active_pickup?.pickup?.category ===
                                         PointTypeValue.school
                                           ? "https://cdn-icons-png.flaticon.com/512/167/167707.png"
-                                          : activePickup?.pickup?.category ===
+                                          : active_pickup?.pickup?.category ===
                                             PointTypeValue.pickup
                                           ? "https://cdn-icons-png.flaticon.com/512/6395/6395324.png"
                                           : "https://cdn-icons-png.flaticon.com/512/1068/1068580.png"
@@ -1173,13 +729,13 @@ const MapPage = () => {
                                   title={
                                     <strong>
                                       {
-                                        currentSelectedItem?.schedule?.route?.routeDetails?.find(
-                                          (routeDetail) =>
-                                            routeDetail?.pickup?.id ===
-                                            activePickup?.pickup?.id
+                                        currentSelectedItem?.schedule?.route?.routePickups?.find(
+                                          (routePickup) =>
+                                            routePickup?.pickup?.id ===
+                                            active_pickup?.pickup?.id
                                         )?.order
                                       }{" "}
-                                      - {activePickup?.pickup?.name}
+                                      - {active_pickup?.pickup?.name}
                                     </strong>
                                   }
                                   description={
@@ -1188,33 +744,33 @@ const MapPage = () => {
                                         <div className="left">
                                           <div>
                                             Loại:{" "}
-                                            {activePickup?.pickup?.category}
+                                            {active_pickup?.pickup?.category}
                                           </div>
                                           <div>
                                             Toạ độ x:{" "}
-                                            {activePickup?.pickup?.lat}
+                                            {active_pickup?.pickup?.lat}
                                           </div>
                                           <div>
                                             Toạ độ y:{" "}
-                                            {activePickup?.pickup?.lng}
+                                            {active_pickup?.pickup?.lng}
                                           </div>
                                           <div>
                                             Trạng thái:{" "}
                                             <Tag
                                               color={
-                                                activePickup?.status ===
-                                                ActivePickupStatusValue.confirmed
+                                                active_pickup?.status ===
+                                                "CONFIRMED"
                                                   ? "green-inverse"
-                                                  : activePickup?.status ===
-                                                    ActivePickupStatusValue.driving
+                                                  : active_pickup?.status ===
+                                                    "DRIVING"
                                                   ? "orange-inverse"
-                                                  : activePickup?.status ===
-                                                    ActivePickupStatusValue.canceled
+                                                  : active_pickup?.status ===
+                                                    "CANCELED"
                                                   ? "red-inverse"
                                                   : "default"
                                               }
                                             >
-                                              {activePickup?.status}
+                                              {active_pickup?.status}
                                             </Tag>
                                           </div>
                                         </div>
@@ -1222,16 +778,16 @@ const MapPage = () => {
                                           <LeafletMap
                                             id={
                                               "map-pickup-" +
-                                              activePickup?.pickup?.id
+                                              active_pickup?.pickup?.id
                                             }
                                             type="detail"
                                             enableZoom={false}
                                             enableSearch={false}
                                             enableBaseLayers={false}
-                                            lat={activePickup?.pickup?.lat}
-                                            lng={activePickup?.pickup?.lng}
+                                            lat={active_pickup?.pickup?.lat}
+                                            lng={active_pickup?.pickup?.lng}
                                             pointType={
-                                              activePickup?.pickup?.category
+                                              active_pickup?.pickup?.category
                                             }
                                           />
                                         </div>
@@ -1267,18 +823,18 @@ const MapPage = () => {
                         itemLayout="horizontal"
                         dataSource={
                           currentSelectedActivePickup
-                            ? currentSelectedItem?.activeStudents?.filter(
-                                (activeStudent) =>
-                                  activeStudent?.student?.pickup?.id ===
+                            ? currentSelectedItem?.active_students?.filter(
+                                (active_student) =>
+                                  active_student?.student?.pickup?.id ===
                                   currentSelectedActivePickup?.pickup?.id
                               )
-                            : currentSelectedItem?.activeStudents?.map(
-                                (activeStudent) => activeStudent
+                            : currentSelectedItem?.active_students?.map(
+                                (active_student) => active_student
                               )
                         }
-                        renderItem={(activeStudent) => (
+                        renderItem={(active_student) => (
                           <List.Item
-                            key={activeStudent?.student?.id}
+                            key={active_student?.student?.id}
                             actions={[
                               <Button
                                 variant="solid"
@@ -1286,7 +842,7 @@ const MapPage = () => {
                                 icon={<EyeOutlined />}
                                 onClick={() => {
                                   setCurrentSelectedActiveStudent(
-                                    activeStudent
+                                    active_student
                                   );
                                   showModal();
                                 }}
@@ -1298,48 +854,45 @@ const MapPage = () => {
                             <List.Item.Meta
                               avatar={
                                 <Avatar
-                                  src={activeStudent?.student?.avatar}
+                                  src={active_student?.student?.avatar}
                                   size={36}
                                 />
                               }
                               title={
                                 <strong>
-                                  {activeStudent?.student?.fullname}
+                                  {active_student?.student?.full_name}
                                 </strong>
                               }
                               description={
                                 <>
-                                  <div>Mã: {activeStudent?.student?.id}</div>
+                                  <div>Mã: {active_student?.student?.id}</div>
                                   <div>
-                                    Lớp: {activeStudent?.student?.class?.name}
+                                    Lớp: {active_student?.student?.class?.name}
                                   </div>
                                   <div>
                                     Phụ huynh:{" "}
-                                    {activeStudent?.student?.parent?.fullname}
+                                    {active_student?.student?.parent?.full_name}
                                   </div>
                                   {!currentSelectedActivePickup && (
                                     <div>
                                       Trạm:{" "}
-                                      {activeStudent?.student?.pickup?.name}
+                                      {active_student?.student?.pickup?.name}
                                     </div>
                                   )}
                                   <div>
                                     Trạng thái:{" "}
                                     <Tag
                                       color={
-                                        activeStudent?.status ===
-                                        ActiveStudentStatusValue.confirmed
+                                        active_student?.status === "CHECKED"
                                           ? "green-inverse"
-                                          : activeStudent?.status ===
-                                            ActiveStudentStatusValue.canceled
-                                          ? "red-inverse"
-                                          : activeStudent?.status ===
-                                            ActiveStudentStatusValue.leave
+                                          : active_student?.status === "LEAVE"
                                           ? "orange-inverse"
+                                          : active_student?.status === "ABSENT"
+                                          ? "red-inverse"
                                           : "default"
                                       }
                                     >
-                                      {activeStudent?.status}
+                                      {active_student?.status}
                                     </Tag>
                                   </div>
                                 </>
@@ -1374,17 +927,17 @@ const MapPage = () => {
           <Form
             initialValues={{
               id: currentSelectedActiveStudent?.student?.id,
-              fullname: currentSelectedActiveStudent?.student?.fullname,
-              birthday: currentSelectedActiveStudent?.student?.birthday
+              full_name: currentSelectedActiveStudent?.student?.full_name,
+              birthday: currentSelectedActiveStudent?.student?.birth_date
                 ? dayjs(
-                    currentSelectedActiveStudent?.student?.birthday,
+                    currentSelectedActiveStudent?.student?.birth_date,
                     "YYYY-MM-DD"
                   )
                 : "",
               gender: currentSelectedActiveStudent?.student?.gender,
               class: currentSelectedActiveStudent?.student?.class?.name,
               parent:
-                currentSelectedActiveStudent?.student?.parent?.fullname +
+                currentSelectedActiveStudent?.student?.parent?.full_name +
                 " - " +
                 currentSelectedActiveStudent?.student?.parent?.phone,
               address: currentSelectedActiveStudent?.student?.address,
@@ -1411,7 +964,7 @@ const MapPage = () => {
                   <Input />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
+                  name="full_name"
                   label="Họ và tên"
                   className="multiple-2"
                 >

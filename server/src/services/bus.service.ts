@@ -1,3 +1,4 @@
+import { BusStatus } from "@prisma/client";
 import prisma from "../configs/prisma.config";
 import { BusResponse } from "../responses/bus.respone";
 import { createSchema, updateSchema } from "../schemas/bus.schema";
@@ -12,7 +13,7 @@ const BusService = {
   async getAllActive() {
     const buses = await prisma.buses.findMany({
       where: {
-        status: "ACTIVE",
+        status: BusStatus.ACTIVE,
       },
     });
 
@@ -58,7 +59,7 @@ const BusService = {
 
       if (activeSchedule) {
         throw new Error(
-          `Không thể khoá xe buýt này vì có lịch làm việc #${activeSchedule.id} hoạt động đang sử dụng !`
+          `Không thể khoá xe buýt này vì có lịch trình #${activeSchedule.id} hoạt động đang sử dụng !`
         );
       }
     }

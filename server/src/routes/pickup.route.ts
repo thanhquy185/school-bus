@@ -3,7 +3,7 @@ import PickupController from "../controllers/pickup.controller";
 
 const router = Router();
 
-router.get("/active", PickupController.getAllActive)
+router.get("/all-active", PickupController.getAllActive)
 router.get("", PickupController.getAll)
 router.get("/:id", PickupController.get);
 router.post("", PickupController.create);

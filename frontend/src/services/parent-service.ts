@@ -7,7 +7,7 @@ export const getParents = async (): Promise<RestResponse> => {
 }
 
 export const getParentsActive = async (): Promise<RestResponse> => {
-    const response = await api.get("/api/parents/active");
+    const response = await api.get("/api/parents/all-active");
     const restResponse: RestResponse = response.data;
     return restResponse;
 }
@@ -30,8 +30,8 @@ export const updateParent = async (id: number, params: UpdateParams): Promise<Re
     return restResponse;
 }
 
-export const getInfo = async (): Promise<RestResponse> => {
-    const response = await api.get("/api/parents/info");
+export const getActiveByStudent = async (id: number): Promise<RestResponse> => {
+    const response = await api.get(`/api/parents/active-by-student/${id}`);
     const restResponse: RestResponse = response.data;
     return restResponse;
 }
@@ -42,8 +42,14 @@ export const getStudents = async (): Promise<RestResponse> => {
     return restResponse;
 }
 
+export const getInfo = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/parents/info");
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
 type CreateParams = {
-    fullName: string,
+    full_name: string,
     phone: string,
     email: string,
     address: string,
@@ -53,7 +59,7 @@ type CreateParams = {
 }
 
 type UpdateParams = {
-    fullName?: string,
+    full_name?: string,
     phone?: string,
     email?: string,
     address?: string,

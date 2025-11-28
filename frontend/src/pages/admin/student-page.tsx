@@ -13,7 +13,6 @@ import {
   Row,
   DatePicker,
   Alert,
-  Avatar,
 } from "antd";
 import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -227,6 +226,7 @@ const StudentPage = () => {
 
   const defaultLabels = {
     id: "Mã học sinh",
+    card_id: "Mã thẻ xe buýt",
     avatar: "Ảnh đại diện",
     parent: "Phụ huynh",
     pickup: "Trạm xe buýt",
@@ -238,7 +238,8 @@ const StudentPage = () => {
     status: "Trạng thái",
   };
   const defaultInputs = {
-    id: "Nhập Mã học sinh",
+    id: "Chưa xác định !",
+    card_id: "Chưa xác định !",
     parent: "Chọn Phụ huynh",
     pickup: "Chọn Trạm xe buýt",
     class: "Chọn Lớp",
@@ -262,9 +263,10 @@ const StudentPage = () => {
             layout="vertical"
             initialValues={{
               id: student.id || undefined,
-              parentId: student.parent?.id || undefined,
+              parent_id: student.parent?.id || undefined,
               pickup: student.pickup?.id || undefined,
               class: student.class?.id || undefined,
+              card_id: student.card_id || undefined,
               avatar: student.avatar || undefined,
               full_name: student.full_name || undefined,
               birth_date: student.birth_date
@@ -294,10 +296,27 @@ const StudentPage = () => {
                 </Form.Item>
               </Col>
               <Col>
-                <Form.Item name="id" label={defaultLabels.id}>
-                  <Input disabled />
-                </Form.Item>
-                <Form.Item name="parentId" label={defaultLabels.parent}>
+                <Row className="split-2">
+                  <Col>
+                    <Form.Item
+                      name="id"
+                      label={defaultLabels.id}
+                      className="text-center"
+                    >
+                      <Input disabled />
+                    </Form.Item>
+                  </Col>
+                  <Col>
+                    <Form.Item
+                      name="card_id"
+                      label={defaultLabels.card_id}
+                      className="text-center"
+                    >
+                      <Input disabled />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Form.Item name="parent_id" label={defaultLabels.parent}>
                   <Select
                     options={[
                       {
@@ -398,14 +417,14 @@ const StudentPage = () => {
       const createResponse = await execute(
         createStudent({
           id: form.getFieldValue("id"),
-          fullName: form.getFieldValue("full_name"),
-          birthDate: formatByString(form.getFieldValue("birth_date")),
+          full_name: form.getFieldValue("full_name"),
+          birth_date: formatByString(form.getFieldValue("birth_date")),
           gender: form.getFieldValue("gender"),
           address: form.getFieldValue("address"),
           status: form.getFieldValue("status"),
-          parentId: form.getFieldValue("parentId"),
-          classId: form.getFieldValue("classId"),
-          pickupId: form.getFieldValue("pickupId"),
+          parent_id: form.getFieldValue("parent_id"),
+          class_id: form.getFieldValue("class_id"),
+          pickup_id: form.getFieldValue("pickup_id"),
         }),
         true
       );
@@ -440,11 +459,11 @@ const StudentPage = () => {
             layout="vertical"
             initialValues={{
               id: undefined,
-              parentId: undefined,
-              pickupId: undefined,
-              classId: undefined,
+              parent_id: undefined,
+              pickup_id: undefined,
+              class_id: undefined,
               avatar: undefined,
-              fullname: undefined,
+              full_name: undefined,
               birthday: undefined,
               gender: undefined,
               address: undefined,
@@ -474,16 +493,38 @@ const StudentPage = () => {
                 </Form.Item>
               </Col>
               <Col>
+                <Row className="split-2">
+                  <Col>
+                    <Form.Item
+                      name="id"
+                      htmlFor="create-id"
+                      label={defaultLabels.id}
+                      className="text-center"
+                    >
+                      <Input
+                        id="create-id"
+                        placeholder={defaultInputs.id}
+                        disabled
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col>
+                    <Form.Item
+                      name="card_id"
+                      htmlFor="create-card_id"
+                      label={defaultLabels.card_id}
+                      className="text-center"
+                    >
+                      <Input
+                        id="create-id"
+                        placeholder={defaultInputs.card_id}
+                        disabled
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
                 <Form.Item
-                  name="id"
-                  htmlFor="create-id"
-                  label={defaultLabels.id}
-                  rules={[ruleRequired("Mã học sinh không được để trống !")]}
-                >
-                  <Input id="create-id" placeholder={defaultInputs.id} />
-                </Form.Item>
-                <Form.Item
-                  name="parentId"
+                  name="parent_id"
                   htmlFor="create-parent"
                   label={defaultLabels.parent}
                   rules={[ruleRequired("Phụ huynh không được để trống !")]}
@@ -501,13 +542,13 @@ const StudentPage = () => {
                 </Form.Item>
                 <Form.Item
                   name="full_name"
-                  htmlFor="create-fullname"
+                  htmlFor="create-full_name"
                   label={defaultLabels.full_name}
                   className="multiple-2"
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                 >
                   <Input
-                    id="create-fullname"
+                    id="create-full_name"
                     placeholder={defaultInputs.full_name}
                   />
                 </Form.Item>
@@ -590,10 +631,10 @@ const StudentPage = () => {
                   />
                 </Form.Item>
                 <Form.Item
-                  name="pickupId"
+                  name="pickup_id"
                   htmlFor="create-pickup"
                   label={defaultLabels.pickup}
-                  rules={[ruleRequired("Trạm xe buýt không được để trống !")]}
+                  rules={[ruleRequired("trạm xe buýt không được để trống !")]}
                 >
                   <Select
                     showSearch
@@ -610,7 +651,7 @@ const StudentPage = () => {
                   <Input />
                 </Form.Item>
                 <Form.Item
-                  name="classId"
+                  name="class_id"
                   htmlFor="create-class"
                   label={defaultLabels.class}
                   rules={[ruleRequired("Lớp không được để trống !")]}
@@ -643,21 +684,21 @@ const StudentPage = () => {
     );
   };
   const StudentUpdate: React.FC<{ student: StudentFormatType }> = ({
-    student,
-  }) => {
+    student, 
+  }) => { 
     const [form] = Form.useForm<StudentNotFormatType>();
     const [imageFile, setImageFile] = useState<RcFile>();
 
     const handleSubmitUpdate = async () => {
       const updateResponse = await execute(
         updateStudent(student.id!, {
-          fullName: form.getFieldValue("full_name"),
-          birthDate: formatByString(form.getFieldValue("birth_date")),
+          parent_id: form.getFieldValue("parent_id"),
+          pickup_id: form.getFieldValue("pickup_id"),
+          class_id: form.getFieldValue("class_id"),
+          full_name: form.getFieldValue("full_name"),
+          birth_date: formatByString(form.getFieldValue("birth_date")),
           gender: form.getFieldValue("gender"),
           address: form.getFieldValue("address"),
-          pickupId: form.getFieldValue("pickupId"),
-          classId: form.getFieldValue("classId"),
-          parentId: form.getFieldValue("parentId"),
         }),
         true
       );
@@ -689,9 +730,10 @@ const StudentPage = () => {
             layout="vertical"
             initialValues={{
               id: student.id || undefined,
-              parentId: student.parent?.id || undefined,
-              pickup: student.pickup?.id || undefined,
-              class: student.class?.id || undefined,
+              parent_id: student.parent?.id || undefined,
+              pickup_id: student.pickup?.id || undefined,
+              class_id: student.class?.id || undefined,
+              card_id: student.card_id || undefined,
               avatar: student.avatar || undefined,
               full_name: student.full_name || undefined,
               birth_date: student.birth_date
@@ -728,11 +770,28 @@ const StudentPage = () => {
                 </Form.Item>
               </Col>
               <Col>
-                <Form.Item name="id" label={defaultLabels.id}>
-                  <Input disabled />
-                </Form.Item>
+                <Row className="split-2">
+                  <Col>
+                    <Form.Item
+                      name="id"
+                      label={defaultLabels.id}
+                      className="text-center"
+                    >
+                      <Input disabled />
+                    </Form.Item>
+                  </Col>
+                  <Col>
+                    <Form.Item
+                      name="card_id"
+                      label={defaultLabels.card_id}
+                      className="text-center"
+                    >
+                      <Input disabled />
+                    </Form.Item>
+                  </Col>
+                </Row>
                 <Form.Item
-                  name="parentId"
+                  name="parent_id"
                   htmlFor="update-parent"
                   label={defaultLabels.parent}
                   rules={[ruleRequired("Phụ huynh không được để trống !")]}
@@ -750,13 +809,13 @@ const StudentPage = () => {
                 </Form.Item>
                 <Form.Item
                   name="full_name"
-                  htmlFor="update-fullname"
+                  htmlFor="update-full_name"
                   label={defaultLabels.full_name}
                   className="multiple-2"
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                 >
                   <Input
-                    id="update-fullname"
+                    id="update-full_name"
                     placeholder={defaultInputs.full_name}
                   />
                 </Form.Item>
@@ -832,10 +891,10 @@ const StudentPage = () => {
                   />
                 </Form.Item>
                 <Form.Item
-                  name="pickup"
+                  name="pickup_id"
                   htmlFor="update-pickup"
                   label={defaultLabels.pickup}
-                  rules={[ruleRequired("Trạm xe buýt không được để trống !")]}
+                  rules={[ruleRequired("trạm xe buýt không được để trống !")]}
                 >
                   <Select
                     showSearch
@@ -852,7 +911,7 @@ const StudentPage = () => {
                   <Input />
                 </Form.Item>
                 <Form.Item
-                  name="class"
+                  name="class_id"
                   htmlFor="update-class"
                   label={defaultLabels.class}
                   rules={[ruleRequired("Lớp không được để trống !")]}
@@ -959,10 +1018,6 @@ const StudentPage = () => {
                 <div className="card front">
                   <div className="header">
                     <div>
-                      {/* <img
-                            src="/src/assets/images/others/logo-image.png"
-                            alt=""
-                          /> */}
                       <strong>SCHOOL BUS CARD</strong>
                     </div>
                   </div>
@@ -989,11 +1044,11 @@ const StudentPage = () => {
                     </div>
                   </div>
                   <div className="footer">
-                    <div className="id">{student?.id}</div>
+                    <div className="id">{student?.card_id}</div>
                     <div className="barcode">
                       <img
                         alt="Barcode Generator TEC-IT"
-                        src={`https://barcode.tec-it.com/barcode.ashx?data=${student?.id}&translate-esc=on`}
+                        src={`https://barcode.tec-it.com/barcode.ashx?data=${student?.card_id}&translate-esc=on`}
                       />
                     </div>
                   </div>
@@ -1002,21 +1057,20 @@ const StudentPage = () => {
               <div className="card-wrapper">
                 <div className="card back">
                   <div>
-                    <img src="/src/assets/images/others/logo-image.png" alt="" />
+                    <img
+                      src="/src/assets/images/others/logo-image.png"
+                      alt=""
+                    />
                   </div>
                 </div>
               </div>
             </Col>
           </Row>
           <div className="buttons">
-              <Button
-                type="primary"
-                htmlType="button"
-                className="submit-button"
-              >
-                In thẻ điểm danh
-              </Button>
-            </div>
+            <Button type="primary" htmlType="button" className="submit-button">
+              In thẻ điểm danh
+            </Button>
+          </div>
         </Form>
       </>
     );

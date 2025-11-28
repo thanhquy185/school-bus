@@ -1,29 +1,28 @@
 import z from "zod";
 
 export const createSchema = z.object({
-    // id: z.number().min(1, "Mã học sinh không được để trống"),
-    fullName: z.string().min(1, "Họ và tên không được để trống"),
-    birthDate: z.string().min(1, "Ngày sinh không được để trống"),
+    full_name: z.string().min(1, "Họ và tên không được để trống"),
+    birth_date: z.string().min(1, "Ngày sinh không được để trống"),
     gender: z.enum(["MALE", "FEMALE"], "Giới tính không hợp lệ"),
     address: z.string().min(1, "Địa chỉ không được để trống"),
 
     status: z.enum(["STUDYING", "DROPPED_OUT"], "Trạng thái không hợp lệ"),
 
-    parentId: z.number().min(1, "Yêu cầu mã phụ huynh"),
-    classId: z.number().min(1, "Yêu cầu mã lớp học"),
-    pickupId: z.number().min(1, "Yêu cầu mã điểm đón")
+    parent_id: z.number().min(1, "Yêu cầu mã phụ huynh"),
+    class_id: z.number().min(1, "Yêu cầu mã lớp học"),
+    pickup_id: z.number().min(1, "Yêu cầu mã trạm xe buýt")
 });
 
 export const updateSchema = z.object({
     id: z.number().min(1, "Mã học sinh không hợp lệ"),
-    fullName: z.string().min(1, "Họ và tên không được để trống").optional(),
-    birthDate: z.string().min(1, "Ngày sinh không được để trống").optional(),
+    full_name: z.string().min(1, "Họ và tên không được để trống").optional(),
+    birth_date: z.string().min(1, "Ngày sinh không được để trống").optional(),
     gender: z.enum(["MALE", "FEMALE"], "Giới tính không hợp lệ").optional(),
     address: z.string().min(1, "Địa chỉ không được để trống").optional(),
 
     status: z.enum(["STUDYING", "DROPPED_OUT", "UNKNOWN"], "Trạng thái không hợp lệ").optional(),
 
-    parentId: z.number().min(1, "Yêu cầu mã phụ huynh").optional(),
-    classId: z.number().min(1, "Yêu cầu mã lớp học").optional(),
-    pickupId: z.number().min(1, "Yêu cầu mã điểm đón").optional()
+    parent_id: z.number().min(1, "Yêu cầu mã phụ huynh").optional(),
+    class_id: z.number().min(1, "Yêu cầu mã lớp học").optional(),
+    pickup_id: z.number().min(1, "Yêu cầu mã trạm xe buýt").optional()
 })

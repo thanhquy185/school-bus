@@ -1,3 +1,4 @@
+import { PickupStatus } from "@prisma/client";
 import prisma from "../configs/prisma.config";
 import { PickupResponse } from "../responses/pickup.response";
 import {
@@ -34,7 +35,7 @@ const PickupService = {
   async getAllActive() {
     const pickups = await prisma.pickups.findMany({
       where: {
-        status: "ACTIVE",
+        status: PickupStatus.ACTIVE,
       },
     });
 
@@ -72,10 +73,10 @@ const PickupService = {
       },
     });
     if (!pickupSelected) {
-      throw new Error("Trạm xe buýt không tồn tại !");
+      throw new Error("trạm xe buýt không tồn tại !");
     }
     if (data.status === "INACTIVE") {
-        const activeRoute = await prisma.routePickups.findFirst({
+        const activeRoute = await prisma.route_pickups.findFirst({
           where: {
             pickup_id: data.id,
             route: {

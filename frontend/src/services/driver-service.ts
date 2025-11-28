@@ -7,7 +7,7 @@ export const getDrivers = async (): Promise<RestResponse> => {
 }
 
 export const getDriversActive = async (): Promise<RestResponse> => {
-    const response = await api.get("/api/drivers/active");
+    const response = await api.get("/api/drivers/all-active");
     const restResponse: RestResponse = response.data;
     return restResponse;
 }
@@ -30,6 +30,24 @@ export const uploadDriverAvatar = async (id: number, params: FormData): Promise<
     return restResponse;
 }
 
+export const getActive = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/drivers/active");
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
+export const getActiveForSchedule = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/drivers/active-for-schedule");
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
+export const getSchedules = async (): Promise<RestResponse> => {
+    const response = await api.get("/api/drivers/schedules");
+    const restResponse: RestResponse = response.data;
+    return restResponse;
+}
+
 export const getInfo = async (): Promise<RestResponse> => {
     const response = await api.get("/api/drivers/info");
     const restResponse: RestResponse = response.data;
@@ -37,8 +55,8 @@ export const getInfo = async (): Promise<RestResponse> => {
 }
 
 type CreateParams = {
-    fullName: string,
-    birthDate: string,
+    full_name: string,
+    birth_date: string,
     gender: string,
     address: string,
     phone: string,
@@ -50,8 +68,8 @@ type CreateParams = {
 }
 
 type UpdateParams = {
-    fullName?: string,
-    birthDate?: string,
+    full_name?: string,
+    birth_date?: string,
     gender?: string,
     address?: string,
     phone?: string,

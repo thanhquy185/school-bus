@@ -9,6 +9,10 @@ import AuthMiddleware from './middlewares/auth.middleware';
 
 import AuthRouter from './routes/auth.route';
 import AccountRouter from './routes/account.route';
+import ActiveRouter from './routes/active.route';
+import ActivePickupRouter from './routes/active-pickup.route';
+import ActiveStudentRouter from './routes/active-student.route';
+import InformRouter from './routes/inform.route';
 import ScheduleRouter from './routes/schedule.route';
 import RouteRouter from './routes/route.route';
 import PickupRouter from './routes/pickup.route';
@@ -59,6 +63,10 @@ socketIO.on("connection", (socket) => {
 app.use("/auth", AuthRouter);
 // app.use("/api/accounts", AuthMiddleware(["ADMIN"]).authenticate, AccountRouter);
 app.use("/api/accounts", AccountRouter);
+app.use("/api/actives", ActiveRouter);
+app.use("/api/active-pickups", ActivePickupRouter);
+app.use("/api/active-students", ActiveStudentRouter);
+app.use("/api/informs", InformRouter);
 app.use("/api/schedules", ScheduleRouter);
 app.use("/api/buses", BusRouter);
 app.use("/api/routes", RouteRouter);

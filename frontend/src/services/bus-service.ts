@@ -7,7 +7,7 @@ export const getBuses = async (): Promise<RestResponse> => {
 }
 
 export const getBusesActive = async (): Promise<RestResponse> => {
-    const response = await api.get("/api/buses/active");
+    const response = await api.get("/api/buses/all-active");
     const restResponse: RestResponse = response.data;
     return restResponse;
 }

@@ -49,6 +49,12 @@ import {
 } from "../../services/driver-service";
 import { getAccountStatusText, getGenderText } from "../../utils/vi-trans";
 import dayjs from "dayjs";
+import { formatByDate } from "../../utils/format-day";
+
+const statusMap: Record<string, string> = {
+  "Hoạt động": "ACTIVE",
+  "Tạm dừng": "INACTIVE",
+};
 
 // Driver Page
 const DriverPage = () => {
@@ -62,6 +68,17 @@ const DriverPage = () => {
   const [statusFilter, setStatusFilter] = useState<string | undefined>(
     undefined
   );
+  const filteredDriverList = drivers.filter((driver) => {
+    const matchesfull_name = driver.full_name
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase());
+
+    const matchesStatus = statusFilter
+      ? driver.status === statusMap[statusFilter]
+      : true;
+
+    return matchesfull_name && matchesStatus;
+  });
 
   const handleGetData = async () => {
     const restResponse = await execute(getDrivers(), false);
@@ -201,7 +218,7 @@ const DriverPage = () => {
     username: "Tên tài khoản",
     password: "Mật khẩu",
     avatar: "Ảnh đại diện",
-    fullname: "Họ và tên",
+    full_name: "Họ và tên",
     birthday: "Ngày sinh",
     gender: "Giới tính",
     phone: "Số điện thoại",
@@ -214,7 +231,7 @@ const DriverPage = () => {
     username: "Nhập Tên tài khoản",
     password: "Nhập Mật khẩu",
     avatar: "Tải ảnh lên",
-    fullname: "Nhập Họ và tên",
+    full_name: "Nhập Họ và tên",
     birthday: "Chọn Ngày sinh",
     gender: "Chọn Giới tính",
     phone: "Nhập Số điện thoại",
@@ -246,22 +263,6 @@ const DriverPage = () => {
     return { password: form.newPassword };
   };
 
-  const statusMap: Record<string, string> = {
-    "Hoạt động": "ACTIVE",
-    "Tạm dừng": "INACTIVE",
-  };
-
-  const filteredDriverList = drivers.filter((driver) => {
-    const matchesFullname = driver.full_name
-      ?.toLowerCase()
-      .includes(searchText.toLowerCase());
-
-    const matchesStatus = statusFilter
-      ? driver.status === statusMap[statusFilter]
-      : true;
-
-    return matchesFullname && matchesStatus;
-  });
   const DriverDetail: React.FC<{ driver: DriverFormatType }> = ({ driver }) => {
     const [form] = Form.useForm<DriverNotFormatType>();
 
@@ -276,9 +277,9 @@ const DriverPage = () => {
               username: driver.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
               avatar: driver.avatar || undefined,
-              fullname: driver.full_name || undefined,
+              full_name: driver.full_name || undefined,
               birthday: driver.birth_date
-                ? dayjs(driver.birth_date)
+                ? dayjs(driver.birth_date, "DD/MM/YYYY")
                 : undefined,
               gender: driver.gender || undefined,
               phone: driver.phone || undefined,
@@ -316,7 +317,7 @@ const DriverPage = () => {
                 <Form.Item name="username" label={defaultLabels.username}>
                   <Input disabled />
                 </Form.Item>
-                <Form.Item name="fullname" label={defaultLabels.fullname}>
+                <Form.Item name="full_name" label={defaultLabels.full_name}>
                   <Input disabled />
                 </Form.Item>
                 <Form.Item name="phone" label={defaultLabels.phone}>
@@ -346,7 +347,7 @@ const DriverPage = () => {
                 <Row className="split-2">
                   <Col>
                     <Form.Item name="birthday" label={defaultLabels.birthday}>
-                      <DatePicker disabled />
+                      <DatePicker mode="date" format="DD/MM/YYYY" disabled />
                     </Form.Item>
                   </Col>
                   <Col>
@@ -378,8 +379,8 @@ const DriverPage = () => {
     const handleSubmit = async () => {
       const createResponse = await execute(
         createDriver({
-          fullName: form.getFieldValue("fullname"),
-          birthDate: form.getFieldValue("birthday"),
+          full_name: form.getFieldValue("full_name"),
+          birth_date: formatByDate(form.getFieldValue("birthday")),
           gender: form.getFieldValue("gender"),
           phone: form.getFieldValue("phone"),
           email: form.getFieldValue("email"),
@@ -392,13 +393,13 @@ const DriverPage = () => {
       );
       notify(createResponse!, "Thêm tài xế thành công");
       if (createResponse?.result) {
-        const driverId = createResponse.data.id;
-        if (imageFile && driverId) {
+        const driver_Id = createResponse.data.id;
+        if (imageFile && driver_Id) {
           const formData = new FormData();
           formData.append("avatar", imageFile);
           const uploadResponse = await execute(
-            uploadDriverAvatar(driverId, formData),
-            true
+            uploadDriverAvatar(driver_Id, formData),
+            false
           );
           notify(uploadResponse!, "Tải ảnh đại diện thành công");
         }
@@ -422,7 +423,7 @@ const DriverPage = () => {
               username: undefined,
               password: undefined,
               avatar: undefined,
-              fullname: undefined,
+              full_name: undefined,
               birthday: undefined,
               gender: undefined,
               phone: undefined,
@@ -469,11 +470,11 @@ const DriverPage = () => {
                   <Input placeholder={defaultInputs.username} />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
-                  label={defaultLabels.fullname}
+                  name="full_name"
+                  label={defaultLabels.full_name}
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                 >
-                  <Input placeholder={defaultInputs.fullname} />
+                  <Input placeholder={defaultInputs.full_name} />
                 </Form.Item>
                 <Form.Item
                   name="phone"
@@ -532,6 +533,7 @@ const DriverPage = () => {
                       <DatePicker
                         allowClear
                         mode="date"
+                        format="DD/MM/YYYY"
                         id="create-birthday"
                         placeholder={defaultInputs.birthday}
                       />
@@ -592,8 +594,8 @@ const DriverPage = () => {
     const handleSubmit = async () => {
       const updateResponse = await execute(
         updateDriver(driver.id!, {
-          fullName: form.getFieldValue("fullname"),
-          birthDate: form.getFieldValue("birthday"),
+          full_name: form.getFieldValue("full_name"),
+          birth_date: formatByDate(form.getFieldValue("birthday")),
           gender: form.getFieldValue("gender"),
           address: form.getFieldValue("address"),
           phone: form.getFieldValue("phone"),
@@ -609,7 +611,7 @@ const DriverPage = () => {
           formData.append("avatar", imageFile);
           const uploadResponse = await execute(
             uploadDriverAvatar(driver.id, formData),
-            true
+            false
           );
           notify(uploadResponse!, "Cập nhật avatar tài xế thành công");
         }
@@ -633,9 +635,9 @@ const DriverPage = () => {
               avatar: driver.avatar || undefined,
               username: driver.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
-              fullname: driver.full_name || undefined,
+              full_name: driver.full_name || undefined,
               birthday: driver.birth_date
-                ? dayjs(driver.birth_date)
+                ? dayjs(driver.birth_date, "DD/MM/YYYY")
                 : undefined,
               gender: driver.gender || undefined,
               phone: driver.phone || undefined,
@@ -679,11 +681,11 @@ const DriverPage = () => {
                   <Input disabled />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
-                  label={defaultLabels.fullname}
+                  name="full_name"
+                  label={defaultLabels.full_name}
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                 >
-                  <Input placeholder={defaultInputs.fullname} />
+                  <Input placeholder={defaultInputs.full_name} />
                 </Form.Item>
                 <Form.Item
                   name="phone"
@@ -727,6 +729,7 @@ const DriverPage = () => {
                       <DatePicker
                         allowClear
                         mode="date"
+                        format="DD/MM/YYYY"
                         id="update-birthday"
                         placeholder={defaultInputs.birthday}
                       />

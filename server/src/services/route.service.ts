@@ -12,6 +12,7 @@ import {
   isPutRest,
 } from "../utils/rest.util";
 import { RouteResponse } from "../responses/route.response";
+import { RouteStatus } from "@prisma/client";
 
 const RouteService = {
   // Lấy 1 tuyến đường
@@ -21,7 +22,7 @@ const RouteService = {
     const route = await prisma.routes.findUnique({
       where: { id: data.id },
       include: {
-        pickups: {
+        routePickups: {
           orderBy: { order: "asc" },
           include: { pickup: true },
         },
@@ -33,12 +34,12 @@ const RouteService = {
     const response: RouteResponse = {
       id: route.id,
       name: route.name,
-      startPickup: route.start_pickup,
-      endPickup: route.end_pickup,
-      totalDistance: route.total_distance,
-      totalTime: route.total_time,
+      start_pickup: route.start_pickup,
+      end_pickup: route.end_pickup,
+      total_distance: route.total_distance,
+      total_time: route.total_time,
       status: route.status,
-      pickups: route.pickups.map((rp) => ({
+      routePickups: route.routePickups.map((rp) => ({
         pickup: {
           id: rp.pickup.id,
           name: rp.pickup.name,
@@ -58,7 +59,7 @@ const RouteService = {
   async getAll() {
     const routes = await prisma.routes.findMany({
       include: {
-        pickups: {
+        routePickups: {
           orderBy: { order: "asc" },
           include: { pickup: true },
         },
@@ -68,12 +69,12 @@ const RouteService = {
     const response = routes.map((route) => ({
       id: route.id,
       name: route.name,
-      startPickup: route.start_pickup,
-      endPickup: route.end_pickup,
-      totalDistance: route.total_distance,
-      totalTime: route.total_time,
+      start_pickup: route.start_pickup,
+      end_pickup: route.end_pickup,
+      total_distance: route.total_distance,
+      total_time: route.total_time,
       status: route.status,
-      pickups: route.pickups.map((rp) => ({
+      routePickups: route.routePickups.map((rp) => ({
         pickup: {
           id: rp.pickup.id,
           name: rp.pickup.name,
@@ -92,25 +93,25 @@ const RouteService = {
   async getAllActive() {
     const routes = await prisma.routes.findMany({
       include: {
-        pickups: {
+        routePickups: {
           orderBy: { order: "asc" },
           include: { pickup: true },
         },
       },
       where: {
-        status: "ACTIVE",
+        status: RouteStatus.ACTIVE,
       },
     });
 
     const response = routes.map((route) => ({
       id: route.id,
       name: route.name,
-      startPickup: route.start_pickup,
-      endPickup: route.end_pickup,
-      totalDistance: route.total_distance,
-      totalTime: route.total_time,
+      start_pickup: route.start_pickup,
+      end_pickup: route.end_pickup,
+      total_distance: route.total_distance,
+      total_time: route.total_time,
       status: route.status,
-      pickups: route.pickups.map((rp) => ({
+      routePickups: route.routePickups.map((rp) => ({
         pickup: {
           id: rp.pickup.id,
           name: rp.pickup.name,
@@ -129,36 +130,37 @@ const RouteService = {
   // Tạo tuyến đường
   async create(input: any) {
     const data = createSchema.parse(input);
+    console.log(data);
 
     const route = await prisma.routes.create({
       data: {
         name: data.name,
-        start_pickup: data.startPickup,
-        end_pickup: data.endPickup,
-        total_distance: data.totalDistance,
-        total_time: data.totalTime,
+        start_pickup: data.start_pickup,
+        end_pickup: data.end_pickup,
+        total_distance: data.total_distance,
+        total_time: data.total_time,
         status: data.status,
-        pickups: {
-          create: data.pickups.map((p: any) => ({
-            pickup_id: p.pickupId,
+        routePickups: {
+          create: data.routePickups.map((p: any) => ({
+            pickup_id: p.pickup_id,
             order: p.order,
           })),
         },
       },
       include: {
-        pickups: { include: { pickup: true }, orderBy: { order: "asc" } },
+        routePickups: { include: { pickup: true }, orderBy: { order: "asc" } },
       },
     });
 
     const response: RouteResponse = {
       id: route.id,
       name: route.name,
-      startPickup: route.start_pickup,
-      endPickup: route.end_pickup,
-      totalDistance: route.total_distance,
-      totalTime: route.total_time,
+      start_pickup: route.start_pickup,
+      end_pickup: route.end_pickup,
+      total_distance: route.total_distance,
+      total_time: route.total_time,
       status: route.status,
-      pickups: route.pickups.map((rp) => ({
+      routePickups: route.routePickups.map((rp) => ({
         pickup: {
           id: rp.pickup.id,
           name: rp.pickup.name,
@@ -196,30 +198,30 @@ const RouteService = {
 
       if (activeSchedule) {
         throw new Error(
-          `Không thể khoá tuyến đường này vì có lịch làm việc #${activeSchedule.id} hoạt động đang sử dụng !`
+          `Không thể khoá tuyến đường này vì có lịch trình #${activeSchedule.id} hoạt động đang sử dụng !`
         );
       }
     }
 
     const updateData: any = {};
     if (data.name) updateData.name = data.name;
-    if (data.startPickup) updateData.start_pickup = data.startPickup;
-    if (data.endPickup) updateData.end_pickup = data.endPickup;
-    if (data.totalDistance !== undefined)
-      updateData.total_distance = data.totalDistance;
-    if (data.totalTime !== undefined) updateData.total_time = data.totalTime;
+    if (data.start_pickup) updateData.start_pickup = data.start_pickup;
+    if (data.end_pickup) updateData.end_pickup = data.end_pickup;
+    if (data.total_distance !== undefined)
+      updateData.total_distance = data.total_distance;
+    if (data.total_time !== undefined) updateData.total_time = data.total_time;
     if (data.status) updateData.status = data.status;
 
-    // Nếu người dùng muốn cập nhật pickups
-    if (data.pickups) {
+    // Nếu người dùng muốn cập nhật routePickups
+    if (data.routePickups) {
       // Xóa pickup cũ, tạo mới (cách dễ nhất)
-      await prisma.routePickups.deleteMany({
+      await prisma.route_pickups.deleteMany({
         where: { route_id: data.id },
       });
 
-      updateData.pickups = {
-        create: data.pickups.map((p: any) => ({
-          pickup_id: p.pickupId,
+      updateData.routePickups = {
+        create: data.routePickups.map((p: any) => ({
+          pickup_id: p.pickup_id,
           order: p.order,
         })),
       };
@@ -229,19 +231,19 @@ const RouteService = {
       where: { id: data.id },
       data: updateData,
       include: {
-        pickups: { include: { pickup: true }, orderBy: { order: "asc" } },
+        routePickups: { include: { pickup: true }, orderBy: { order: "asc" } },
       },
     });
 
     const response: RouteResponse = {
       id: route.id,
       name: route.name,
-      startPickup: route.start_pickup,
-      endPickup: route.end_pickup,
-      totalDistance: route.total_distance,
-      totalTime: route.total_time,
+      start_pickup: route.start_pickup,
+      end_pickup: route.end_pickup,
+      total_distance: route.total_distance,
+      total_time: route.total_time,
       status: route.status,
-      pickups: route.pickups.map((rp) => ({
+      routePickups: route.routePickups.map((rp) => ({
         pickup: {
           id: rp.pickup.id,
           name: rp.pickup.name,
@@ -264,19 +266,19 @@ const RouteService = {
     const route = await prisma.routes.delete({
       where: { id: data.id },
       include: {
-        pickups: { include: { pickup: true }, orderBy: { order: "asc" } },
+        routePickups: { include: { pickup: true }, orderBy: { order: "asc" } },
       },
     });
 
     const response: RouteResponse = {
       id: route.id,
       name: route.name,
-      startPickup: route.start_pickup,
-      endPickup: route.end_pickup,
-      totalDistance: route.total_distance,
-      totalTime: route.total_time,
+      start_pickup: route.start_pickup,
+      end_pickup: route.end_pickup,
+      total_distance: route.total_distance,
+      total_time: route.total_time,
       status: route.status,
-      pickups: route.pickups.map((rp) => ({
+      routePickups: route.routePickups.map((rp) => ({
         pickup: {
           id: rp.pickup.id,
           name: rp.pickup.name,

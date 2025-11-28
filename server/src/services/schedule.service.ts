@@ -10,82 +10,84 @@ import {
   isPutRest,
 } from "../utils/rest.util";
 import { ScheduleResponse } from "../responses/schedule.response";
+import { ScheduleStatus } from "@prisma/client";
 
 
-function validateTime(startDate: string, endDate: string, startTime: string, endTime: string) {
-  if (startDate > endDate)
+function validateTime(start_date: string, end_date: string, start_time: string, end_time: string) {
+  if (start_date > end_date)
     throw new Error("Ngày bắt đầu không được lớn hơn ngày kết thúc");
 
-  if (startTime >= endTime)
+  if (start_time >= end_time)
     throw new Error("Giờ bắt đầu phải nhỏ hơn giờ kết thúc");
 }
 
-async function checkConflictSchedule({
-  driverId,
-  busId,
-  routeId,
-  startDate,
-  endDate,
-  startTime,
-  endTime,
-  ignoreId,
-}: {
-  driverId: number;
-  busId: number;
-  routeId: number;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  ignoreId?: number;
-}) {
+// async function checkConflictSchedule({
+//   driver_id,
+//   bus_id,
+//   route_id,
+//   start_date,
+//   end_date,
+//   start_time,
+//   end_time,
+//   ignoreId,
+// }: {
+//   driver_id: number;
+//   bus_id: number;
+//   route_id: number;
+//   start_date: string;
+//   end_date: string;
+//   start_time: string;
+//   end_time: string;
+//   ignoreId?: number;
+// }) {
 
-  // Base condition time overlap
-  const timeOverlap = {
-    AND: [
-      { start_date: { lte: endDate } },
-      { end_date: { gte: startDate } },
-      { start_time: { lte: endTime } },
-      { end_time: { gte: startTime } },
-    ],
-  };
+//   // Base condition time overlap
+//   const timeOverlap = {
+//     AND: [
+//       { start_date: { lte: end_date } },
+//       { end_date: { gte: start_date } },
+//       { start_time: { lte: end_time } },
+//       { end_time: { gte: start_time } },
+//     ],
+//   };
 
-  // 1. Conflict for driver on same route
-  const driverConflict = await prisma.schedules.findFirst({
-    where: {
-      driver_id: driverId,
-      route_id: routeId,
-      NOT: ignoreId ? { id: ignoreId } : undefined,
-      ...timeOverlap,
-    },
-  });
+//   // 1. Conflict for driver on same route
+//   const driverConflict = await prisma.schedules.findFirst({
+//     where: {
+//       driver_id: driver_id,
+//       route_id: route_id,
+//       NOT: ignoreId ? { id: ignoreId } : undefined,
+//       ...timeOverlap,
+//     },
+//   });
 
-  if (driverConflict) {
-    throw new Error("Tài xế đã có lịch khác trùng thời gian trên tuyến này");
-  }
+//   if (driverConflict) {
+//     throw new Error("Tài xế đã có lịch khác trùng thời gian trên tuyến này");
+//   }
 
-  // 2. Conflict for bus on same route
-  const busConflict = await prisma.schedules.findFirst({
-    where: {
-      bus_id: busId,
-      route_id: routeId,
-      NOT: ignoreId ? { id: ignoreId } : undefined,
-      ...timeOverlap,
-    },
-  });
+//   // 2. Conflict for bus on same route
+//   const busConflict = await prisma.schedules.findFirst({
+//     where: {
+//       bus_id: bus_id,
+//       route_id: route_id,
+//       NOT: ignoreId ? { id: ignoreId } : undefined,
+//       ...timeOverlap,
+//     },
+//   });
 
-  if (busConflict) {
-    throw new Error("Xe buýt đã có lịch khác trùng thời gian trên tuyến này");
-  }
-}
+//   if (busConflict) {
+//     throw new Error("Xe buýt đã có lịch khác trùng thời gian trên tuyến này");
+//   }
+// }
 
 function mapSchedule(schedule: any): ScheduleResponse {
   return {
     id: schedule.id,
-    startDate: schedule.start_date,
-    endDate: schedule.end_date,
-    startTime: schedule.start_time,
-    endTime: schedule.end_time,
+    start_date: schedule.start_date,
+    end_date: schedule.end_date,
+    start_time: schedule.start_time,
+    end_time: schedule.end_time,
+    days_of_week: schedule.days_of_week,
     status: schedule.status,
     driver: {
       id: schedule.driver.id,
@@ -101,11 +103,11 @@ function mapSchedule(schedule: any): ScheduleResponse {
     route: {
       id: schedule.route.id,
       name: schedule.route.name,
-      startPickup: schedule.route.start_pickup,
-      endPickup: schedule.route.end_pickup,
-      totalDistance: schedule.route.total_distance,
-      totalTime: schedule.route.total_time,
-      pickups: schedule.route.pickups.map((p: any) => ({
+      start_pickup: schedule.route.start_pickup,
+      end_pickup: schedule.route.end_pickup,
+      total_distance: schedule.route.total_distance,
+      total_time: schedule.route.total_time,
+      routePickups: schedule.route.routePickups.map((p: any) => ({
         pickup: {
           id: p.pickup.id,
           name: p.pickup.name,
@@ -121,7 +123,6 @@ function mapSchedule(schedule: any): ScheduleResponse {
 }
 
 const ScheduleService = {
-
   async get(input: any) {
     const { id } = updateScheduleSchema.parse(input);
 
@@ -132,7 +133,7 @@ const ScheduleService = {
         bus: true,
         route: {
           include: {
-            pickups: { include: { pickup: true }, orderBy: { order: "asc" } },
+            routePickups: { include: { pickup: true }, orderBy: { order: "asc" } },
           },
         },
       },
@@ -150,7 +151,7 @@ const ScheduleService = {
         bus: true,
         route: {
           include: {
-            pickups: { include: { pickup: true }, orderBy: { order: "asc" } },
+            routePickups: { include: { pickup: true }, orderBy: { order: "asc" } },
           },
         },
       },
@@ -166,12 +167,12 @@ const ScheduleService = {
         bus: true,
         route: {
           include: {
-            pickups: { include: { pickup: true }, orderBy: { order: "asc" } },
+            routePickups: { include: { pickup: true }, orderBy: { order: "asc" } },
           },
         },
       },
       where: {
-        status: "ACTIVE"
+        status: ScheduleStatus.ACTIVE
       }
     });
 
@@ -182,36 +183,37 @@ const ScheduleService = {
     const data = createScheduleSchema.parse(input);
 
     // Validate date/time
-    validateTime(data.startDate, data.endDate, data.startTime, data.endTime);
+    validateTime(data.start_date, data.end_date, data.start_time, data.end_time);
 
     // Check conflicts
-    await checkConflictSchedule({
-      routeId: data.routeId,
-      busId: data.busId,
-      driverId: data.driverId,
-      startDate: data.startDate,
-      endDate: data.endDate,
-      startTime: data.startTime,
-      endTime: data.endTime,
-    });
+    // await checkConflictSchedule({
+    //   route_id: data.route_id,
+    //   bus_id: data.bus_id,
+    //   driver_id: data.driver_id,
+    //   start_date: data.start_date,
+    //   end_date: data.end_date,
+    //   start_time: data.start_time,
+    //   end_time: data.end_time,
+    // });
 
     const schedule = await prisma.schedules.create({
       data: {
-        start_date: data.startDate,
-        end_date: data.endDate,
-        start_time: data.startTime,
-        end_time: data.endTime,
+        start_date: data.start_date,
+        end_date: data.end_date,
+        start_time: data.start_time,
+        end_time: data.end_time,
+        days_of_week: data.days_of_week,
         status: data.status,
-        driver_id: data.driverId,
-        bus_id: data.busId,
-        route_id: data.routeId,
+        driver_id: data.driver_id,
+        bus_id: data.bus_id,
+        route_id: data.route_id,
       },
       include: {
         driver: true,
         bus: true,
         route: {
           include: {
-            pickups: { include: { pickup: true }, orderBy: { order: "asc" } },
+            routePickups: { include: { pickup: true }, orderBy: { order: "asc" } },
           },
         },
       },
@@ -226,45 +228,47 @@ const ScheduleService = {
     const existing = await prisma.schedules.findUnique({ where: { id: data.id } });
     if (!existing) throw new Error("Không tìm thấy lịch trình");
 
-    const startDate = data.startDate ?? existing.start_date;
-    const endDate = data.endDate ?? existing.end_date;
-    const startTime = data.startTime ?? existing.start_time;
-    const endTime = data.endTime ?? existing.end_time;
-    const driverId = data.driverId ?? existing.driver_id;
-    const busId = data.busId ?? existing.bus_id;
-    const routeId = data.routeId ?? existing.route_id;
+    const start_date = data.start_date ?? existing.start_date;
+    const end_date = data.end_date ?? existing.end_date;
+    const start_time = data.start_time ?? existing.start_time;
+    const end_time = data.end_time ?? existing.end_time;
+    const days_of_week = data.days_of_week ?? existing.days_of_week;
+    const driver_id = data.driver_id ?? existing.driver_id;
+    const bus_id = data.bus_id ?? existing.bus_id;
+    const route_id = data.route_id ?? existing.route_id;
 
-    validateTime(startDate, endDate, startTime, endTime);
+    validateTime(start_date, end_date, start_time, end_time);
 
-    await checkConflictSchedule({
-      busId,
-      routeId,
-      driverId,
-      startDate,
-      endDate,
-      startTime,
-      endTime,
-      ignoreId: data.id,
-    });
+    // await checkConflictSchedule({
+    //   bus_id,
+    //   route_id,
+    //   driver_id,
+    //   start_date,
+    //   end_date,
+    //   start_time,
+    //   end_time,
+    //   ignoreId: data.id,
+    // });
 
     const schedule = await prisma.schedules.update({
       where: { id: data.id },
       data: {
-        start_date: startDate,
-        end_date: endDate,
-        start_time: startTime,
-        end_time: endTime,
+        start_date: start_date,
+        end_date: end_date,
+        start_time: start_time,
+        end_time: end_time,
+        days_of_week: days_of_week,
         status: data.status ?? existing.status,
-        driver_id: driverId,
-        bus_id: busId,
-        route_id: routeId,
+        driver_id: driver_id,
+        bus_id: bus_id,
+        route_id: route_id,
       },
       include: {
         driver: true,
         bus: true,
         route: {
           include: {
-            pickups: { include: { pickup: true }, orderBy: { order: "asc" } },
+            routePickups: { include: { pickup: true }, orderBy: { order: "asc" } },
           },
         },
       },
@@ -283,7 +287,7 @@ const ScheduleService = {
         bus: true,
         route: {
           include: {
-            pickups: { include: { pickup: true }, orderBy: { order: "asc" } },
+            routePickups: { include: { pickup: true }, orderBy: { order: "asc" } },
           },
         },
       },

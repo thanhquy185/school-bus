@@ -3,7 +3,7 @@ import ScheduleController from "../controllers/schedule.controller";
 
 const router = Router();
 
-router.get("/active", ScheduleController.getAllActive)
+router.get("/all-active", ScheduleController.getAllActive)
 router.get("", ScheduleController.getAll)
 router.get("/:id", ScheduleController.get);
 router.post("", ScheduleController.create);

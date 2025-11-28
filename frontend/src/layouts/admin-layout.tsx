@@ -21,6 +21,7 @@ import {
   faLocationDot,
   faMessage,
   faCalendarDays,
+  faClipboardList,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
@@ -35,56 +36,62 @@ type CustomItemType = {
   label: React.ReactNode;
 };
 const CustomItemValue = {
-  map: {
+  history: {
     key: "1",
+    value: "history",
+    link: "/admin/histories",
+    icon: <FontAwesomeIcon icon={faClipboardList} />,
+  },
+  map: {
+    key: "2",
     value: "map",
     link: "/admin/map",
     icon: <FontAwesomeIcon icon={faMapLocationDot} />,
   },
   inform: {
-    key: "2",
+    key: "3",
     value: "inform",
     link: "/admin/informs",
     icon: <FontAwesomeIcon icon={faMessage} />,
   },
   schedule: {
-    key: "3",
+    key: "4",
     value: "schedule",
     link: "/admin/schedules",
     icon: <FontAwesomeIcon icon={faCalendarDays} />,
   },
   route: {
-    key: "4",
+    key: "5",
     value: "route",
     link: "/admin/routes",
     icon: <FontAwesomeIcon icon={faRoad} />,
   },
   pickup: {
-    key: "5",
+    key: "6",
     value: "pickup",
     link: "/admin/pickups",
     icon: <FontAwesomeIcon icon={faLocationDot} />,
   },
   bus: {
-    key: "6",
+    key: "7",
     value: "bus",
     link: "/admin/buses",
     icon: <FontAwesomeIcon icon={faBus} />,
   },
   driver: {
-    key: "7",
+    key: "8",
     value: "driver",
     link: "/admin/drivers",
     icon: <FontAwesomeIcon icon={faChalkboardUser} />,
   },
   parent: {
-    key: "8",
+    key: "9",
     value: "parent",
     link: "/admin/parents",
     icon: <FontAwesomeIcon icon={faPeopleRoof} />,
   },
   student: {
-    key: "9",
+    key: "10",
     value: "student",
     link: "/admin/students",
     icon: <FontAwesomeIcon icon={faUserGraduate} />,
@@ -138,6 +145,15 @@ const AdminLayout: React.FC = () => {
 
   // Menu items
   const menuItems: MenuProps["items"] = [
+    {
+      key: CustomItemValue.history.key,
+      icon: CustomItemValue.history.icon,
+      label: (
+        <Link to={CustomItemValue.history.link}>
+          {t(CustomItemValue.history.value)}
+        </Link>
+      ),
+    },
     {
       key: CustomItemValue.map.key,
       icon: CustomItemValue.map.icon,
@@ -225,7 +241,11 @@ const AdminLayout: React.FC = () => {
   );
   useEffect(() => {
     const pathname = location.pathname;
-    if (pathname === "/admin/parents") {
+    if (pathname === "/admin/histories") {
+      setSelectedItem(
+        menuItems[Number(CustomItemValue.history.key) - 1] as CustomItemType
+      );
+    } else if (pathname === "/admin/map") {
       setSelectedItem(
         menuItems[Number(CustomItemValue.map.key) - 1] as CustomItemType
       );

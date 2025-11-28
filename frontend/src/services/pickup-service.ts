@@ -14,7 +14,7 @@ export const getPickups = async (): Promise<RestResponse> => {
 
 // Lấy tất cả trạm ACTIVE
 export const getPickupsActive = async (): Promise<RestResponse> => {
-  const response = await api.get("/api/pickups/active");
+  const response = await api.get("/api/pickups/all-active");
   return response.data;
 };
 

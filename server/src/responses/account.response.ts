@@ -1,6 +1,6 @@
 export type AccountResponse = {
     id: number,
-    username: string,
-    role: string,
-    status: string
+    username?: string,
+    role?: string,
+    status?: string
 }

@@ -44,7 +44,7 @@ const DriverInfoPage = () => {
   const [driverInfo, setDriverInfo] = useState<DriverFormatType>();
   const getDriverInfo = async () => {
     const response = await execute(getInfo(), false);
-    const data = response.data;
+    const data = response?.data;
     setDriverInfo(data);
   };
   useEffect(() => {
@@ -63,8 +63,8 @@ const DriverInfoPage = () => {
       if (!driverInfo?.id) return;
 
       const updateData = {
-        fullName: form.getFieldValue("fullname"),
-        birthDate: form.getFieldValue("birthday"),
+        full_name: form.getFieldValue("full_name"),
+        birth_date: form.getFieldValue("birthday"),
         gender: form.getFieldValue("gender"),
         phone: form.getFieldValue("phone"),
         email: form.getFieldValue("email"),
@@ -90,7 +90,7 @@ const DriverInfoPage = () => {
               uploadDriverAvatar(driverInfo.id, formData),
               false
             );
-            notify(uploadResponse, "Cập nhật ảnh đại diện thành công!");
+            notify(uploadResponse!, "Cập nhật ảnh đại diện thành công!");
           }
 
           // Load lại thông tin và tắt chế độ edit
@@ -108,7 +108,7 @@ const DriverInfoPage = () => {
           form={form}
           layout="vertical"
           initialValues={{
-            fullname: driverInfo?.full_name || undefined,
+            full_name: driverInfo?.full_name || undefined,
             birthday: driverInfo?.birth_date
               ? dayjs(driverInfo?.birth_date)
               : undefined,
@@ -144,7 +144,7 @@ const DriverInfoPage = () => {
             </Col>
             <Col>
               <Form.Item
-                name="fullname"
+                name="full_name"
                 label="Họ và tên"
                 rules={
                   isEditing

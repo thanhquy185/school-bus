@@ -18,6 +18,34 @@ enum Gender {
   FEMALE
 }
 
+enum ActiveStatus {
+  PENDING
+  CANCELED
+  ACTIVE
+  SUCCESS
+}
+
+enum ActivePickupStatus {
+  PENDING
+  CANCELED
+  DRIVING
+  CONFIRMED
+}
+
+enum ActiveStudentStatus {
+  PENDING
+  ABSENT
+  LEAVE
+  CHECKED
+}
+
+enum InformType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
 enum AccountStatus {
   ACTIVE
   INACTIVE
@@ -71,13 +99,68 @@ model classes {
   students students[]
 }
 
+model actives {
+  id         Int          @id @default(autoincrement())
+  start_at   String
+  end_at     String?
+  bus_lat    Float?
+  bus_lng    Float?
+  bus_speed  Int?
+  bus_status String?
+  status     ActiveStatus @default(PENDING)
+
+  schedule_id Int
+  schedule    schedules @relation(fields: [schedule_id], references: [id])
+
+  active_pickups  active_pickups[]
+  active_students active_students[]
+  informs         informs[]
+}
+
+model active_pickups {
+  active_id Int
+  pickup_id Int
+  order     Int
+  at        String?
+  status    ActivePickupStatus @default(PENDING)
+
+  active actives @relation(fields: [active_id], references: [id], onDelete: Cascade)
+  pickup pickups @relation(fields: [pickup_id], references: [id], onDelete: Cascade)
+
+  @@id([active_id, pickup_id])
+}
+
+model active_students {
+  active_id  Int
+  student_id Int
+  at         String?
+  status     ActiveStudentStatus @default(PENDING)
+
+  active  actives  @relation(fields: [active_id], references: [id], onDelete: Cascade)
+  student students @relation(fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@id([active_id, student_id])
+}
+
+model informs {
+  id          Int        @id @default(autoincrement())
+  at          String
+  type        InformType @default(INFO)
+  message     String
+  description String
+
+  active_id Int
+  active    actives @relation(fields: [active_id], references: [id])
+}
+
 model schedules {
-  id         Int            @id @default(autoincrement())
-  start_date String
-  end_date   String
-  start_time String
-  end_time   String
-  status     ScheduleStatus @default(ACTIVE)
+  id           Int            @id @default(autoincrement())
+  start_date   String
+  end_date     String
+  start_time   String
+  end_time     String
+  days_of_week String
+  status       ScheduleStatus @default(ACTIVE)
 
   driver_id Int
   driver    drivers @relation(fields: [driver_id], references: [id])
@@ -87,6 +170,8 @@ model schedules {
 
   route_id Int
   route    routes @relation(fields: [route_id], references: [id])
+
+  actives actives[]
 }
 
 model routes {
@@ -98,9 +183,8 @@ model routes {
   total_time     Int
   status         RouteStatus @default(ACTIVE)
 
-  schedules schedules[]
-  pickups   routePickups[]
-  students  students[]
+  schedules    schedules[]
+  routePickups route_pickups[]
 }
 
 model pickups {
@@ -111,11 +195,12 @@ model pickups {
   lng      Float
   status   PickupStatus   @default(ACTIVE)
 
-  routes   routePickups[]
-  students students[]
+  routes        route_pickups[]
+  students      students[]
+  activePickups active_pickups[]
 }
 
-model routePickups {
+model route_pickups {
   route_id  Int
   pickup_id Int
   order     Int
@@ -135,13 +220,13 @@ model buses {
 }
 
 model drivers {
-  id         Int          @id @default(autoincrement())
+  id         Int     @id @default(autoincrement())
   avatar     String?
   full_name  String
   birth_date String
-  gender     Gender       @default(MALE)
-  phone      String       @unique
-  email      String?      @unique
+  gender     Gender  @default(MALE)
+  phone      String  @unique
+  email      String? @unique
   address    String?
 
   schedule schedules[]
@@ -165,8 +250,9 @@ model parents {
 }
 
 model students {
-  id         Int        @id @default(autoincrement())
+  id         Int           @id @default(autoincrement())
   avatar     String?
+  card_id    String?
   full_name  String
   birth_date String
   gender     Gender        @default(MALE)
@@ -179,9 +265,7 @@ model students {
   class_id Int
   class    classes @relation(fields: [class_id], references: [id])
 
-  pickup_id Int
-  pickup    pickups @relation(fields: [pickup_id], references: [id])
-
-  route_id Int
-  route    routes?   @relation(fields: [route_id], references: [id])
+  pickup_id      Int
+  pickup         pickups           @relation(fields: [pickup_id], references: [id])
+  activeStudents active_students[]
 }

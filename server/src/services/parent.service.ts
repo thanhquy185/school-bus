@@ -18,6 +18,9 @@ import FirebaseService from "./firebase.service";
 import { AuthenticationPayload } from "../middlewares/auth.middleware";
 import { verifyToken } from "../utils/jwt.util";
 import { StudentResponse } from "../responses/student.response";
+import { AccountStatus, ActiveStatus } from "@prisma/client";
+import { ActiveResponse } from "../responses/active.response";
+import { RestResponse } from "../responses/rest.response";
 
 const ParentService = {
   async get(input: any) {
@@ -67,7 +70,7 @@ const ParentService = {
       },
       where: {
         account: {
-          status: "ACTIVE",
+          status: AccountStatus.ACTIVE,
         },
       },
     });
@@ -112,7 +115,7 @@ const ParentService = {
 
     const parent = await prisma.parents.create({
       data: {
-        full_name: data.fullName,
+        full_name: data.full_name,
         phone: data.phone,
         email: data.email,
         address: data.address,
@@ -160,8 +163,8 @@ const ParentService = {
     }
 
     const updateData: any = {};
-    if (data.fullName) {
-      updateData.full_name = data.fullName;
+    if (data.full_name) {
+      updateData.full_name = data.full_name;
     }
     if (data.email || data.email === "") {
       updateData.email = data.email;
@@ -196,6 +199,187 @@ const ParentService = {
     });
   },
 
+  async getActiveByStudent(authentication: string, student_id: number) {
+    const payload: AuthenticationPayload = await verifyToken(authentication);
+
+    const student = await prisma.students.findFirst({
+      where: {
+        id: student_id,
+        parent_id: payload.id,
+      },
+    });
+    if (!student) throw new Error("Học sinh này không tồn tại");
+
+    const active = await prisma.actives.findFirst({
+      where: {
+        status: ActiveStatus.ACTIVE,
+        active_students: {
+          some: {
+            student_id: student_id,
+          },
+        },
+      },
+      include: {
+        schedule: {
+          include: {
+            route: {
+              include: {
+                routePickups: {
+                  include: {
+                    pickup: true,
+                  },
+                },
+              },
+            },
+            bus: true,
+            driver: true,
+          },
+        },
+        active_pickups: { include: { pickup: true } },
+        active_students: {
+          include: {
+            student: {
+              include: {
+                parent: true,
+                class: true,
+                pickup: true,
+              },
+            },
+          },
+        },
+        informs: true,
+      },
+    });
+    if (!active)
+      throw new Error("Không có hành trình đưa đón cho học sinh này");
+
+    return isGetRest({
+      id: active.id,
+      schedule: {
+        id: active.schedule.id,
+        start_date: active.schedule.start_date,
+        end_date: active.schedule.end_date,
+        start_time: active.schedule.start_time,
+        end_time: active.schedule.end_time,
+        days_of_week: active.schedule.days_of_week,
+        route: {
+          id: active.schedule.route.id,
+          name: active.schedule.route.name,
+          start_pickup: active.schedule.route.start_pickup,
+          end_pickup: active.schedule.route.end_pickup,
+          routePickups: active.schedule.route.routePickups.map((rp) => ({
+            pickup: {
+              id: rp.pickup.id,
+              name: rp.pickup.name,
+              category: rp.pickup.category,
+              lat: rp.pickup.lat,
+              lng: rp.pickup.lng,
+              status: rp.pickup.status,
+            },
+            order: rp.order,
+          })),
+        },
+        bus: {
+          id: active.schedule.bus.id,
+          license_plate: active.schedule.bus.license_plate,
+          capacity: active.schedule.bus.capacity,
+        },
+        driver: {
+          id: active.schedule.driver.id,
+          avatar: active.schedule.driver.avatar,
+          full_name: active.schedule.driver.full_name,
+          birth_date: active.schedule.driver.birth_date,
+          gender: active.schedule.driver.gender,
+          phone: active.schedule.driver.phone,
+        },
+      },
+      start_at: active.start_at,
+      end_at: active.end_at,
+      bus_lat: active.bus_lat,
+      bus_lng: active.bus_lng,
+      bus_speed: active.bus_speed,
+      bus_status: active.bus_status,
+      status: active.status,
+      // active_pickups: active.active_pickups.map((ap) => ({
+      //   pickup: ap.pickup,
+      //   order: ap.order,
+      //   at: ap.at,
+      //   status: ap.status,
+      // })),
+      // active_students: active.active_students.map((as) => ({
+      //   student: as.student,
+      //   at: as.at,
+      //   status: as.status,
+      // })),
+      informs: active.informs.map((i) => ({
+        id: i.id,
+        at: i.at,
+        type: i.type,
+        message: i.message,
+        description: i.description,
+      })),
+      current_active_student: active.active_students?.find(
+        (active_student) => student.id === active_student.student_id
+      ),
+    } as ActiveResponse);
+  },
+
+  async getStudents(authentication: string) {
+    const payload: AuthenticationPayload = await verifyToken(authentication);
+
+    const account = await prisma.accounts.findUnique({
+      where: {
+        username: payload.username,
+      },
+      include: {
+        parents: {
+          include: {
+            students: {
+              include: {
+                pickup: {
+
+                },
+                class: true,
+                activeStudents: {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const parent = account.parents;
+    const students = parent.students;
+
+    return isGetRest(students.map(student => ({
+      id: student.id,
+      avatar: student.avatar,
+      card_id: student.card_id,
+      full_name: student.full_name,
+      birth_date: student.birth_date,
+      gender: student.gender,
+      address: student.address,
+      status: student.status,
+
+      parent: {
+        id: parent.id,
+        full_name: parent.full_name
+      },
+      pickup: {
+        id: student.pickup.id,
+        name: student.pickup.name,
+        lat: student.pickup.lat,
+        lng: student.pickup.lng
+      },
+      class: {
+        id: student.class.id,
+        name: student.class.name
+      }
+    })))
+  },
+
   async getInfo(authentication: string) {
     const payload: AuthenticationPayload = await verifyToken(authentication);
 
@@ -224,79 +408,6 @@ const ParentService = {
       account_id: parent.account_id,
       status: parent.account.status,
     } as ParentResponse);
-  },
-
-  async getStudents(authentication: string) {
-    const payload: AuthenticationPayload = await verifyToken(authentication);
-
-    const account = await prisma.accounts.findUnique({
-      where: {
-        username: payload.username,
-      },
-      include: {
-        parents: {
-          include: {
-            students: {
-              include: {
-                parent: true,
-                class: true,
-                pickup: true,
-                route: {
-                  include: {
-                    pickups: {
-                      include: {
-                        pickup: true
-                      }
-                    }
-                  }
-                }
-              },
-            },
-          },
-        },
-      },
-    });
-
-    return isGetRest(
-      account.parents.students
-        .filter((student) => student.status === "STUDYING")
-        .map(
-          (student) =>
-          ({
-            id: student.id,
-            avatar: student.avatar,
-            full_name: student.full_name,
-            birth_date: student.birth_date,
-            gender: student.gender,
-            address: student.address,
-            status: student.status,
-            parent: {
-              id: student.parent.id,
-              full_name: student.parent.full_name
-            },
-            class: {
-              id: student.class.id,
-              name: student.class.name
-            },
-            pickup: {
-              id: student.pickup.id,
-              name: student.pickup.name,
-              lat: student.pickup.lat,
-              lng: student.pickup.lng,
-              category: student.pickup.category
-            },
-            route: student.route ? student.route.pickups.map(pk => {
-              return pk.pickup ? {
-                id: pk.pickup.id,
-                name: pk.pickup.name,
-                category: pk.pickup.category,
-                lat: pk.pickup.lat,
-                lng: pk.pickup.lng
-              } : undefined;
-            }) : undefined
-          } as StudentResponse)
-        )
-    );
   },
 };
 

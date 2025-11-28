@@ -3,7 +3,7 @@ import RouteController from "../controllers/route.controller";
 
 const router = Router();
 
-router.get("/active", RouteController.getAllActive)
+router.get("/all-active", RouteController.getAllActive)
 router.get("", RouteController.getAll)
 router.get("/:id", RouteController.get);
 router.post("", RouteController.create);

@@ -1,0 +1,99 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/colors" as *;
+@use "../abstracts/mixins" as *;
+
+.inform {
+  padding: 14px;
+  border-radius: 6px;
+  margin-top: 10px;
+
+  & .ant-alert-message:has(button) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  & .ant-alert-message:has(button) button {
+    font-size: 1.6rem;
+  }
+
+  & .ant-alert-message .title,
+  & .ant-alert-description .info .header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  &.ant-alert-info :is(.title, .description) {
+    color: #1677ff;
+  }
+
+  &.ant-alert-success :is(.title, .description) {
+    color: #389e0d;
+  }
+
+  &.ant-alert-warning :is(.title, .description) {
+    color: #d46b08;
+  }
+
+  &.ant-alert-error :is(.title, .description) {
+    color: #cf1322;
+  }
+
+  & .ant-alert-message .title img {
+    @include size(24px);
+  }
+
+  & .ant-alert-description .description {
+    font-size: 1.8rem;
+    margin-top: 6px;
+  }
+
+  & .ant-alert-description .info {
+    background: #fff;
+    padding: 14px;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.09);
+  }
+
+  & .ant-alert-description .row {
+    display: flex;
+    gap: 14px;
+    margin: 16px 0 14px;
+  }
+
+  & .ant-alert-description .row .info {
+    width: calc(100% / 3 - calc(14px * 2 / 3));
+  }
+
+  & .ant-alert-description .info .header img {
+    @include size(20px);
+  }
+
+  & .ant-alert-description .info .header h4 {
+    color: #000;
+    font-size: 1.6rem;
+  }
+
+  & .ant-alert-description .info p {
+    margin-top: 6px;
+    font-size: 1.5rem;
+  }
+  
+  & .ant-alert-description .info p.current-location {
+    display: flex;
+    align-items: center;
+    font-size: 1.4rem;
+  }
+
+  & .ant-alert-description .info p.current-location img {
+    @include size(16px);
+  }
+
+  & .ant-alert-description .info p.current-location b {
+    font-weight: 600;
+    margin-right: 4px;
+  }
+}

@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import AdminLayout from "../layouts/admin-layout";
 import ClientLayout from "../layouts/client-layout";
+import HistoryPage from "../pages/admin/history-page";
 import MapPage from "../pages/admin/map-page";
 import InformPage from "../pages/admin/inform-page";
 import RoutePage from "../pages/admin/route-page";
@@ -30,6 +31,10 @@ export const getRouter = async (): Promise<
       element: <AdminLayout />,
       errorElement: <ErrorPage />,
       children: [
+        {
+          path: "histories",
+          element: <HistoryPage />,
+        },
         {
           path: "map",
           element: <MapPage />,

@@ -44,17 +44,16 @@ const BusPage = () => {
   const { t } = useTranslation();
 
   const [buses, setBuses] = useState<BusType[]>([]);
-
   const handleGetData = async () => {
     const restResponse = await execute(getBuses(), false);
     if (restResponse?.result) {
       setBuses(restResponse.data);
     }
   };
-
   useEffect(() => {
     handleGetData();
   }, []);
+  
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | undefined>(
     undefined

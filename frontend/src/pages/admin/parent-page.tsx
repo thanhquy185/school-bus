@@ -200,7 +200,7 @@ const ParentPage = () => {
     username: "Tên tài khoản",
     password: "Mật khẩu",
     avatar: "Ảnh đại diện",
-    fullname: "Họ và tên",
+    full_name: "Họ và tên",
     phone: "Số điện thoại",
     email: "Email",
     address: "Địa chỉ",
@@ -211,7 +211,7 @@ const ParentPage = () => {
     username: "Nhập Tên tài khoản",
     password: "Nhập Mật khẩu",
     avatar: "Tải ảnh lên",
-    fullname: "Nhập Họ và tên",
+    full_name: "Nhập Họ và tên",
     phone: "Nhập Số điện thoại",
     email: "Nhập Email",
     address: "Nhập Địa chỉ",
@@ -272,7 +272,7 @@ const ParentPage = () => {
               username: parent.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
               avatar: parent.avatar || undefined,
-              fullname: parent.full_name || undefined,
+              full_name: parent.full_name || undefined,
               phone: parent.phone || undefined,
               email: parent.email || undefined,
               address: parent.address || undefined,
@@ -309,8 +309,8 @@ const ParentPage = () => {
                   <Input disabled />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
-                  label={defaultLabels.fullname}
+                  name="full_name"
+                  label={defaultLabels.full_name}
                   className="multiple-2"
                 >
                   <Input disabled />
@@ -352,7 +352,7 @@ const ParentPage = () => {
 
     const handleSubmit = async () => {
       const createResponse = await execute(createParent({
-        fullName: form.getFieldValue("fullname"),
+        full_name: form.getFieldValue("full_name"),
         phone: form.getFieldValue("phone"),
         email: form.getFieldValue("email"),
         address: form.getFieldValue("address"),
@@ -362,11 +362,11 @@ const ParentPage = () => {
       }), true);
       notify(createResponse!, "Thêm phụ huynh thành công");
       if (createResponse?.result) {
-        const parentId = createResponse.data.id;
-        if (imageFile && parentId) {
+        const parent_id = createResponse.data.id;
+        if (imageFile && parent_id) {
           const formData = new FormData();
           formData.append("avatar", imageFile);
-          const uploadResponse = await execute(uploadParentAvatar(parentId, formData), true);
+          const uploadResponse = await execute(uploadParentAvatar(parent_id, formData), true);
           notify(uploadResponse!, "Tải ảnh đại diện phụ huynh thành công");
         }
         setCurrentAction("list");
@@ -385,7 +385,7 @@ const ParentPage = () => {
               username: undefined,
               password: undefined,
               avatar: undefined,
-              fullname: undefined,
+              full_name: undefined,
               phone: undefined,
               email: undefined,
               address: undefined,
@@ -429,12 +429,12 @@ const ParentPage = () => {
                   <Input placeholder={defaultInputs.username} />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
-                  label={defaultLabels.fullname}
+                  name="full_name"
+                  label={defaultLabels.full_name}
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                   className="multiple-2"
                 >
-                  <Input placeholder={defaultInputs.fullname} />
+                  <Input placeholder={defaultInputs.full_name} />
                 </Form.Item>
                 <Form.Item
                   name="phone"
@@ -507,7 +507,7 @@ const ParentPage = () => {
 
     const handleSubmitUpdate = async () => {
       const updateResponse = await execute(updateParent(parent.id!, {
-        fullName: form.getFieldValue("fullname"),
+        full_name: form.getFieldValue("full_name"),
         phone: form.getFieldValue("phone"),
         email: form.getFieldValue("email"),
         address: form.getFieldValue("address"),
@@ -536,7 +536,7 @@ const ParentPage = () => {
               username: parent.username || undefined,
               password: "Mật khẩu đã được mã hoá !",
               avatar: parent.avatar || undefined,
-              fullname: parent.full_name || undefined,
+              full_name: parent.full_name || undefined,
               phone: parent.phone || undefined,
               email: parent.email || undefined,
               address: parent.address || undefined,
@@ -581,12 +581,12 @@ const ParentPage = () => {
                   <Input disabled />
                 </Form.Item>
                 <Form.Item
-                  name="fullname"
-                  label={defaultLabels.fullname}
+                  name="full_name"
+                  label={defaultLabels.full_name}
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                   className="multiple-2"
                 >
-                  <Input placeholder={defaultInputs.fullname} />
+                  <Input placeholder={defaultInputs.full_name} />
                 </Form.Item>
                 <Form.Item
                   name="phone"

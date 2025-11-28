@@ -9,6 +9,9 @@ import { ConfigProvider } from "antd";
 import { App as AntdApp } from "antd";
 import { AuthProvider } from "./contexts/authContext";
 
+import "leaflet/dist/leaflet.css";
+import "./assets/tailwind.css";
+
 // App
 const App = () => {
   // Biến giữ giá trị router

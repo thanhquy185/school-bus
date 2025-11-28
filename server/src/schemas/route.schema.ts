@@ -5,18 +5,18 @@ export const getSchema = z.object({
 
 export const createSchema = z.object({
   name: z.string().min(1, "Tên tuyến đường không được để trống").optional().optional(),
-  startPickup: z.string().min(1, "Trạm bắt đầu không được để trống").optional(),
-  endPickup: z.string().min(1, "Trạm kết thúc không được để trống").optional(),
-  totalDistance: z
+  start_pickup: z.string().min(1, "Trạm bắt đầu không được để trống").optional(),
+  end_pickup: z.string().min(1, "Trạm kết thúc không được để trống").optional(),
+  total_distance: z
     .number()
     .int()
     .min(0, "Tổng quãng đường không được để trống").optional(),
-  totalTime: z.number().int().min(0, "Tổng thời gian không được để trống").optional(),
+  total_time: z.number().int().min(0, "Tổng thời gian không được để trống").optional(),
   status: z.enum(["ACTIVE", "INACTIVE"], "Trạng thái tuyến đường không hợp lệ").optional(),
-  pickups: z
+  routePickups: z
     .array(
       z.object({
-        pickupId: z.number().int().min(1, "Mã trạm xe buýt không hợp lệ").optional(),
+        pickup_id: z.number().int().min(1, "Mã trạm xe buýt không hợp lệ").optional(),
         order: z.number().int().min(1, "Thứ tự trạm không hợp lệ").optional(),
       })
     )
@@ -26,18 +26,18 @@ export const createSchema = z.object({
 export const updateSchema = z.object({
   id: z.number().min(1, "Mã tuyến đường không hợp lệ").optional(),
   name: z.string().min(1, "Tên tuyến đường không được để trống").optional(),
-  startPickup: z.string().min(1, "Trạm bắt đầu không được để trống").optional(),
-  endPickup: z.string().min(1, "Trạm kết thúc không được để trống").optional(),
-  totalDistance: z
+  start_pickup: z.string().min(1, "Trạm bắt đầu không được để trống").optional(),
+  end_pickup: z.string().min(1, "Trạm kết thúc không được để trống").optional(),
+  total_distance: z
     .number()
     .int()
     .min(0, "Tổng quãng đường không được để trống").optional(),
-  totalTime: z.number().int().min(0, "Tổng thời gian không được để trống").optional(),
+  total_time: z.number().int().min(0, "Tổng thời gian không được để trống").optional(),
   status: z.enum(["ACTIVE", "INACTIVE"], "Trạng thái tuyến đường không hợp lệ").optional(),
-  pickups: z
+  routePickups: z
     .array(
       z.object({
-        pickupId: z.number().int().min(1, "Mã trạm xe buýt không hợp lệ"),
+        pickup_id: z.number().int().min(1, "Mã trạm xe buýt không hợp lệ"),
         order: z.number().int().min(1, "Thứ tự trạm không hợp lệ"),
       })
     )
