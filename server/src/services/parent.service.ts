@@ -241,6 +241,15 @@ const ParentService = {
                 parent: true,
                 class: true,
                 pickup: true,
+                route: {
+                  include: {
+                    pickups: {
+                      include: {
+                        pickup: true
+                      }
+                    }
+                  }
+                }
               },
             },
           },
@@ -253,30 +262,39 @@ const ParentService = {
         .filter((student) => student.status === "STUDYING")
         .map(
           (student) =>
-            ({
-              id: student.id,
-              avatar: student.avatar,
-              full_name: student.full_name,
-              birth_date: student.birth_date,
-              gender: student.gender,
-              address: student.address,
-              status: student.status,
-              parent: {
-                id: student.parent.id,
-                full_name: student.parent.full_name,
-              },
-              class: {
-                id: student.class.id,
-                name: student.class.name,
-              },
-              pickup: {
-                id: student.pickup.id,
-                name: student.pickup.name,
-                category: student.pickup.category,
-                lat: student.pickup.lat,
-                lng: student.pickup.lng,
-              },
-            } as StudentResponse)
+          ({
+            id: student.id,
+            avatar: student.avatar,
+            full_name: student.full_name,
+            birth_date: student.birth_date,
+            gender: student.gender,
+            address: student.address,
+            status: student.status,
+            parent: {
+              id: student.parent.id,
+              full_name: student.parent.full_name
+            },
+            class: {
+              id: student.class.id,
+              name: student.class.name
+            },
+            pickup: {
+              id: student.pickup.id,
+              name: student.pickup.name,
+              lat: student.pickup.lat,
+              lng: student.pickup.lng,
+              category: student.pickup.category
+            },
+            route: student.route ? student.route.pickups.map(pk => {
+              return pk.pickup ? {
+                id: pk.pickup.id,
+                name: pk.pickup.name,
+                category: pk.pickup.category,
+                lat: pk.pickup.lat,
+                lng: pk.pickup.lng
+              } : undefined;
+            }) : undefined
+          } as StudentResponse)
         )
     );
   },

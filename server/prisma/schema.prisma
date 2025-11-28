@@ -100,6 +100,7 @@ model routes {
 
   schedules schedules[]
   pickups   routePickups[]
+  students  students[]
 }
 
 model pickups {
@@ -164,7 +165,7 @@ model parents {
 }
 
 model students {
-  id         String        @id
+  id         Int        @id @default(autoincrement())
   avatar     String?
   full_name  String
   birth_date String
@@ -180,4 +181,7 @@ model students {
 
   pickup_id Int
   pickup    pickups @relation(fields: [pickup_id], references: [id])
+
+  route_id Int
+  route    routes?   @relation(fields: [route_id], references: [id])
 }

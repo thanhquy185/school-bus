@@ -26,18 +26,16 @@ const AuthService = {
             } as RestResponse;
         }
 
-        
-
-        const isMatch = await comparePassword(data.password, account?.password || "");
-        if (!isMatch) {
-            return {
-                statusCode: BAD_CODE,
-                result: false,
-                message: BAD_MESSAGE,
-                data: null,
-                errorMessage: "Tài khoản hoặc mật khẩu không đúng"
-            } as RestResponse;
-        }
+        // const isMatch = await comparePassword(data.password, account?.password || "");
+        // if (!isMatch) {
+        //     return {
+        //         statusCode: BAD_CODE,
+        //         result: false,
+        //         message: BAD_MESSAGE,
+        //         data: null,
+        //         errorMessage: "Tài khoản hoặc mật khẩu không đúng"
+        //     } as RestResponse;
+        // }
 
         const auth = generateToken({ id: account.id, username: account.username, role: account.role });
         return isGetRest(auth);

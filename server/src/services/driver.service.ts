@@ -50,19 +50,19 @@ const DriverService = {
     return isGetRest(
       drivers.map(
         (driver) =>
-          ({
-            id: driver.id,
-            avatar: driver.avatar,
-            full_name: driver.full_name,
-            birth_date: driver.birth_date,
-            gender: driver.gender,
-            phone: driver.phone,
-            email: driver.email,
-            address: driver.address,
-            status: driver.account.status,
-            account_id: driver.account.id,
-            username: driver.account.username,
-          } as DriverResponse)
+        ({
+          id: driver.id,
+          avatar: driver.avatar,
+          full_name: driver.full_name,
+          birth_date: driver.birth_date,
+          gender: driver.gender,
+          phone: driver.phone,
+          email: driver.email,
+          address: driver.address,
+          status: driver.account.status,
+          account_id: driver.account.id,
+          username: driver.account.username,
+        } as DriverResponse)
       )
     );
   },
@@ -82,19 +82,19 @@ const DriverService = {
     return isGetRest(
       drivers.map(
         (driver) =>
-          ({
-            id: driver.id,
-            avatar: driver.avatar,
-            full_name: driver.full_name,
-            birth_date: driver.birth_date,
-            gender: driver.gender,
-            phone: driver.phone,
-            email: driver.email,
-            address: driver.address,
-            status: driver.account.status,
-            account_id: driver.account.id,
-            username: driver.account.username,
-          } as DriverResponse)
+        ({
+          id: driver.id,
+          avatar: driver.avatar,
+          full_name: driver.full_name,
+          birth_date: driver.birth_date,
+          gender: driver.gender,
+          phone: driver.phone,
+          email: driver.email,
+          address: driver.address,
+          status: driver.account.status,
+          account_id: driver.account.id,
+          username: driver.account.username,
+        } as DriverResponse)
       )
     );
   },
@@ -248,8 +248,44 @@ const DriverService = {
             status: true,
           },
         },
+        schedule: {
+          include: {
+            route: true,
+            bus: true
+          }
+        }
       },
     });
+
+    /**
+     *   id         Int            @id @default(autoincrement())
+        start_date String
+        end_date   String
+        start_time String
+        end_time   String
+        status     ScheduleStatus @default(ACTIVE)
+
+        driver_id Int
+        driver    drivers @relation(fields: [driver_id], references: [id])
+
+        bus_id Int
+        bus    buses @relation(fields: [bus_id], references: [id])
+
+        route_id Int
+        route    routes @relation(fields: [route_id], references: [id])
+     */
+
+    // const driverInfo = {
+    //   id: driver.id,
+    //   name: driver.full_name,
+    //   avatar: driver.avatar,
+    //   route: driver.schedule.map(sc => ({
+    //     id: sc.route.id,
+    //     name: sc.route.name,
+        
+    //   }))
+    //       bus: driver.schedule?.bus ?? null,
+    // };}
 
     return isGetRest({
       avatar: driver.avatar,
@@ -263,6 +299,7 @@ const DriverService = {
       address: driver.address,
       account_id: driver.account_id,
       status: driver.account.status,
+
     } as DriverResponse);
   },
 };

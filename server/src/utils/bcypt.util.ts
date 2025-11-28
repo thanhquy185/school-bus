@@ -26,8 +26,6 @@ export const hashPassword = async (password: string): Promise<string> => {
  */
 export const comparePassword = async (password: string, hashedPassword: string): Promise<boolean> => {
     try {
-        console.log(hashPasswordSync(password));
-        console.log(hashedPassword)
         const isMatch = await bcrypt.compare(password, hashedPassword);
         return isMatch;
     } catch (error) {

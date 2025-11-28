@@ -10,9 +10,19 @@ const StudentService = {
             include: {
                 parent: true,
                 class: true,
-                pickup: true
+                pickup: true,
+                route: {
+                    include: {
+                        pickups: {
+                            include: {
+                                pickup: true
+                            }
+                        }
+                    }
+                }
             }
         });
+
         return isGetRest(students.map(student => ({
             id: student.id,
             avatar: student.avatar,
@@ -32,7 +42,16 @@ const StudentService = {
             pickup: {
                 id: student.pickup.id,
                 name: student.pickup.name
-            }
+            },
+            route: student.route ? student.route.pickups.map(pk => {
+                return pk.pickup ? {
+                    id: pk.pickup.id,
+                    name: pk.pickup.name,
+                    category: pk.pickup.category,
+                    lat: pk.pickup.lat,
+                    lng: pk.pickup.lng
+                } : undefined;
+            }) : undefined
         } as StudentResponse)));
     },
 
@@ -41,12 +60,22 @@ const StudentService = {
             include: {
                 parent: true,
                 class: true,
-                pickup: true
+                pickup: true,
+                route: {
+                    include: {
+                        pickups: {
+                            include: {
+                                pickup: true
+                            }
+                        }
+                    }
+                }
             },
             where: {
                 status: "STUDYING",
             }
         });
+        
         return isGetRest(students.map(student => ({
             id: student.id,
             avatar: student.avatar,
@@ -66,7 +95,16 @@ const StudentService = {
             pickup: {
                 id: student.pickup.id,
                 name: student.pickup.name
-            }
+            },
+            route: student.route ? student.route.pickups.map(pk => {
+                return pk.pickup ? {
+                    id: pk.pickup.id,
+                    name: pk.pickup.name,
+                    category: pk.pickup.category,
+                    lat: pk.pickup.lat,
+                    lng: pk.pickup.lng
+                } : undefined;
+            }) : undefined
         } as StudentResponse)));
     },
 
@@ -74,7 +112,7 @@ const StudentService = {
         const data = createSchema.parse(input);
         const student = await prisma.students.create({
             data: {
-                id: data.id,
+                // id: data.id,
                 full_name: data.fullName,
                 birth_date: data.birthDate,
                 gender: data.gender,
@@ -82,10 +120,10 @@ const StudentService = {
                 status: data.status,
 
                 parent: {
-                    connect: { id: data.parentId } 
+                    connect: { id: data.parentId }
                 },
                 class: {
-                    connect: { id: data.classId } 
+                    connect: { id: data.classId }
                 },
                 pickup: {
                     connect: { id: data.pickupId }
@@ -121,7 +159,7 @@ const StudentService = {
         } as StudentResponse);
     },
 
-    async uploadAvatar(id: string, file: Express.Multer.File) {
+    async uploadAvatar(id: number, file: Express.Multer.File) {
         const avatarUrl = await FirebaseService.uploadStudentImage(file as unknown as File);
         await prisma.students.update({
             where: { id },
@@ -143,18 +181,18 @@ const StudentService = {
         if (data.classId) updateData.class_id = data.classId;
         if (data.pickupId) updateData.pickup_id = data.pickupId;
 
-        const student =  await prisma.students.update(
+        const student = await prisma.students.update(
             {
                 where: { id: data.id },
                 data: updateData,
                 include: {
                     parent: true,
                     class: true,
-                    pickup: true
+                    pickup: true,
                 }
             }
         );
-        
+
         return isPutRest({
             id: student.id,
             avatar: student.avatar,
