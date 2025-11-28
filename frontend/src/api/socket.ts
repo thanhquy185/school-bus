@@ -1,17 +1,25 @@
-import { useEffect, useRef } from "react";
-
-import { io } from "socket.io-client";
-
+import { useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 const useSocket = () => {
-    const socketClient = useRef<any>(null);
+    const socketRef = useRef<Socket | null>(null);
+    const [socket, setSocket] = useState<Socket | null>(null);
 
     useEffect(() => {
-        if (socketClient.current) return;
-        socketClient.current = io(import.meta.env.VITE_SERVER_URL)
+        if (!socketRef.current) {
+            socketRef.current = io(import.meta.env.VITE_SERVER_URL);
+            setSocket(socketRef.current);
+        }
+        
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+                socketRef.current = null;
+            }
+        };
     }, []);
-    
-    return socketClient;
+
+    return socket;
 }
 
 export default useSocket;

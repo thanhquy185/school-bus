@@ -63,6 +63,8 @@ import { schoolIcon } from "../../common/leaflet-icon/SchoolIcon";
 import { pickupIcon } from "../../common/leaflet-icon/PickupIcon";
 import { getCoordRoutes } from "../../common/osm/coords";
 import useSocket from "../../api/socket";
+import { useNotification } from "../../utils/showNotification";
+import { useConfirmation } from "../../utils/showConfirmation";
 
 const { TabPane } = Tabs;
 
@@ -189,6 +191,8 @@ const informValues = {
 const DriverJourneyPage = () => {
   const { execute, notify } = useCallApi();
   const socketClient = useSocket();
+  const { openNotification } = useNotification();
+  const { openConfirmation } = useConfirmation();
 
   // Dữ liệu về vận hành xe buýt
   const [driverActive, setDriverActive] = useState<ActiveFormatType>();
@@ -207,7 +211,7 @@ const DriverJourneyPage = () => {
     },
     status: string,
   }[]>([]);
-  const [activeStudents, setActiveStudents] = useState<any[]>([]);
+  const [_, setActiveStudents] = useState<any[]>([]);
 
   const [coords, setCoords] = useState<{
     index: number,
@@ -216,6 +220,8 @@ const DriverJourneyPage = () => {
 
   // isRunning
   const [isRunning, setIsRunning] = useState<boolean>(false);
+
+  const [isLoadPosition, setIsLoadPosition] = useState<boolean>(false);
   // Index of coord
   const [currentCoord, setCurrentCoord] = useState<number>(0);
   // Index of point in coord
@@ -267,24 +273,24 @@ const DriverJourneyPage = () => {
 
   useEffect(() => {
     if (!driverActive) return;
-    setActivePickups(
-      (driverActive.active_pickups ?? [])
-        .slice()
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-        .map((item) => ({
-          at: item.at ?? "",
-          order: item.order ?? 0,
-          pickup: {
-            category: item.pickup?.category ?? "",
-            id: item.pickup?.id ?? 0,
-            lat: item.pickup?.lat ?? 0,
-            lng: item.pickup?.lng ?? 0,
-            name: item.pickup?.name ?? "",
-            status: item.pickup?.status ?? "",
-          },
-          status: item.status ?? "",
-        }))
-    );
+    const newActivePickups = (driverActive.active_pickups ?? [])
+      .slice()
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((item) => ({
+        at: item.at ?? "",
+        order: item.order ?? 0,
+        pickup: {
+          category: item.pickup?.category ?? "",
+          id: item.pickup?.id ?? 0,
+          lat: item.pickup?.lat ?? 0,
+          lng: item.pickup?.lng ?? 0,
+          name: item.pickup?.name ?? "",
+          status: item.pickup?.status ?? "",
+        },
+        status: item.status ?? "",
+      }));
+
+    setActivePickups(newActivePickups);
     setActiveStudents(
       (driverActive.active_students ?? []).slice().sort((a, b) => {
         const aPickupId = a.student?.pickup?.id ?? 0;
@@ -296,56 +302,115 @@ const DriverJourneyPage = () => {
     // Set position bus 
     if (driverActive.bus_lat && driverActive.bus_lng) {
       setBusLocation(new LatLng(driverActive.bus_lat, driverActive.bus_lng));
-    } else if (activePickups.length === 0) {
-      // If position (lat, lng) null, set first index
-      const activePickupsData = (driverActive.active_pickups ?? [])
-        .slice()
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-      if (activePickupsData.length > 0) {
-        const firstPickup = activePickupsData[0];
+    } else {
+      // Nếu xe chưa có vị trí, đặt xe tại điểm đầu tiên của lộ trình
+      if (newActivePickups.length > 0) {
+        const firstPickup = newActivePickups[0];
         setBusLocation(new LatLng(firstPickup.pickup?.lat ?? 10.8231, firstPickup.pickup?.lng ?? 106.6297));
       }
     }
 
   }, [driverActive]);
 
+  // Tự động load coords khi có activePickups
   useEffect(() => {
-    if (!isRunning || coords.length === 0) return;
+    if (activePickups.length >= 2) {
+      loadCoordRoutes();
+    }
+  }, [activePickups]);
 
-    // Lấy route hiện tại dựa trên currentCoord
+  useEffect(() => {
+    if (!coords || coords.length < 2 || !busLocation) return;
+    if (isLoadPosition == true) return;
+    outter:
+    for (let i = 0; i < coords.length; i++) {
+      const busLat = busLocation.lat;
+      const busLng = busLocation.lng;
+      for (let j = 0; j < coords[i].coords.length; j++) {
+        if (busLat === coords[i].coords[j][0] && busLng === coords[i].coords[j][1]) {
+          setCurrentCoord(i);
+          setCurrentPoint(j);
+          break outter;
+        }
+      }
+    }
+    setIsLoadPosition(true)
+
+  }, [coords, busLocation]);
+
+  const handleChangeIsRunning = async (reserve?: boolean) => {
+    const response = await openConfirmation({
+      title: "Thông báo chạy xe",
+      content: "Có chắc chắn xác nhận hành động này ?",
+    });
+
+    if (!response) return;
+    setIsRunning(reserve ? reserve : true);
+  }
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    if (coords.length === 0) {
+      openNotification({
+        type: "warning",
+        message: "Không thể chạy xe",
+        description: "Vui lòng đợi hệ thống tải đường đi hoặc ít nhất cần 2 điểm đón để tạo lộ trình",
+      });
+      setIsRunning(false);
+      return;
+    }
+
+    // Get all [number, number][] array to tele bus
     const currentRoute = coords[currentCoord]?.coords;
     if (!currentRoute) return;
 
-    // Kiểm tra nếu đã đến cuối route hiện tại
+    // end point in route
     if (currentPoint >= currentRoute.length) {
-      // Nếu đã hết tất cả các routes
+      // check empty route
       if (currentCoord >= coords.length - 1) {
         alert("🏁 Đã hoàn thành hành trình! Hết học sinh rồi.");
         setIsRunning(false);
         return;
       } else {
-        // Chuyển sang route tiếp theo
-        console.log("🚏 Đến trạm! Chuyển sang route tiếp theo");
+        // next route and checkin student
+        
+        // Đặt xe tại pickup point hiện tại (trạm vừa đến)
+        const currentPickup = activePickups[currentCoord];
+        if (currentPickup) {
+          setBusLocation(new LatLng(currentPickup.pickup.lat, currentPickup.pickup.lng));
+        }
+        
         setCurrentCoord(currentCoord + 1);
         setCurrentPoint(0);
-        alert(`🚏 Đã đến trạm ${activePickups[currentCoord]?.pickup?.name}! Điểm danh học sinh đi.`);
+        alert(`🚏 Đã đến trạm ${currentPickup?.pickup?.name}! Điểm danh học sinh đi.`);
+        setIsRunning(false);
+        
         return;
       }
     }
 
-    // Di chuyển xe đến điểm tiếp theo
+    // NExt step
     const time = setTimeout(() => {
       const nextCoord = currentRoute[currentPoint];
       if (nextCoord) {
-        setBusLocation(new LatLng(nextCoord[0], nextCoord[1]));
+        const newLocation = new LatLng(nextCoord[0], nextCoord[1]);
+        setBusLocation(newLocation);
         setCurrentPoint(currentPoint + 1);
-        console.log(`🚌 Xe đang chạy - Điểm: ${currentPoint}/${currentRoute.length}, Route: ${currentCoord + 1}/${coords.length}`);
+        console.log(`🚌 Xe đang chạy - Điểm: ${currentPoint + 1}/${currentRoute.length}, Route: ${currentCoord + 1}/${coords.length}`);
+        
+        socketClient?.emit("bus-location-send", {
+          id: driverActive?.id,
+          bus_lat: nextCoord[0],
+          bus_lng: nextCoord[1],
+          bus_speed: 50,
+          bus_status: "RUNNING"
+        });
       }
-    }, 200); // Giảm thời gian để xe di chuyển nhanh hơn
+    }, 300);
 
     return () => clearTimeout(time)
-  }, [isRunning]);
+  }, [isRunning, currentCoord, currentPoint, coords.length]);
 
   // Cột thông tin bên phải
   // - Lấy ra thời gian hiện tại
@@ -1145,10 +1210,10 @@ const DriverJourneyPage = () => {
                       <>
                         <Button
                           type="primary"
-                          onClick={() => setIsRunning(true)}
-                          loading={isRunning}
+                          onClick={() => handleChangeIsRunning()}
+                        // loading={isRunning}
                         >
-                          {isRunning ? 'Đang chạy...' : 'Chạy xe'}
+                          Chạy xe
                         </Button>
                         <Button
                           onClick={() => setIsRunning(false)}

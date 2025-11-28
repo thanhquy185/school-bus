@@ -26,12 +26,19 @@ import {
 import { getActiveByStudent, getStudents } from "../../services/parent-service";
 import useCallApi from "../../api/useCall";
 import { getGenderText } from "../../utils/vi-trans";
+import useSocket from "../../api/socket";
+import { LatLng } from "leaflet";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { busIcon } from "../../common/leaflet-icon/BusIcon";
+import type { CurrentActiveStudent } from "./interface";
+import StudentIcon from "../../common/leaflet-icon/StudentIcon";
 
 const { TabPane } = Tabs;
 
 //
 const ParentJourneyPage = () => {
   const { execute, notify, loading } = useCallApi();
+  const socketClient = useSocket();
 
   // Xử lý khi chọn 1 học sinh
   const [selectedStudent, setSelectedStudent] =
@@ -70,6 +77,7 @@ const ParentJourneyPage = () => {
       );
     }
   };
+
   useEffect(() => {
     getStudentsByParent();
   }, []);
@@ -77,21 +85,40 @@ const ParentJourneyPage = () => {
   // Dữ liệu vận xe của 1 học sinh
   const [parentActiveStudent, setParentActiveStudent] =
     useState<ActiveFormatType>();
-  const getParentActiveStudent = async () => {
-    if (!selectedStudent  ) return;
 
+  const [busLocation, setBusLocation] = useState<LatLng | null>(null);
+
+  const [studentPosition, setStudentPosition] = useState<LatLng | null>(null);
+  const [currentActiveStudent, setCurrentActiveStudent] = useState<CurrentActiveStudent>({} as CurrentActiveStudent);
+
+
+  const getParentActiveStudent = async () => {
+    if (!selectedStudent) return;
     const restResponse = await execute(
       getActiveByStudent(selectedStudent?.id!),
       false
     );
     if (restResponse?.result) {
       setParentActiveStudent(restResponse.data);
+      setBusLocation(new LatLng(restResponse.data.bus_lat, restResponse.data.bus_lng));
+      // console.log(restResponse.data.current_active_student)
+      setCurrentActiveStudent(restResponse.data.current_active_student);
+      setStudentPosition(new LatLng(restResponse.data.current_active_student.student.pickup.lat, restResponse.data.current_active_student.student.pickup.lng));
+
     }
-  }; 
+  };
 
   useEffect(() => {
     getParentActiveStudent();
   }, [selectedStudent]);
+
+  useEffect(() => {
+    if (!socketClient) return;
+    socketClient.on(`bus-location-receive/${parentActiveStudent?.id}`, data => {
+      setBusLocation(new LatLng(data.bus_lat, data.bus_lng));
+    });
+
+  }, [socketClient, parentActiveStudent]);
 
   return (
     <>
@@ -157,7 +184,66 @@ const ParentJourneyPage = () => {
                       </div>
                     </>
                   )} */}
-                      <LeafletMap id="map-parent" type="detail" />
+                      {/* <LeafletMap id="map-parent" type="detail" /> */}
+
+                      {/* busLocation */}
+                      <MapContainer
+                        style={{ height: "600px", width: "100%", zIndex: 1 }}
+                        center={[busLocation?.lat || 10.8231, busLocation?.lng || 106.6297]}
+                        zoom={15}
+                        scrollWheelZoom={true}
+                      >
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+
+                        {/* Auto center map when bus location changes */}
+                        {/* <SetViewOnBusLocation busLocation={busLocation} /> */}
+
+                        {/* Route */}
+                        {/* {coords && coords.map((coord, index) => (
+                          <Polyline
+                            key={`route-${index}`}
+                            positions={coord.coords}
+                            pathOptions={{
+                              color: '#1890ff',
+                              weight: 4,
+                              opacity: 0.7,
+                              dashArray: '10, 5'
+                            }}
+                          />
+                        ))} */}
+
+                        {/* Component để fly đến vị trí */}
+                        {/* <FlyToLocation center={flyToLocation} /> */}
+
+                        {/* Student Location */}
+                        {currentActiveStudent && (
+                          <Marker
+                            position={studentPosition || new LatLng(10.8231, 106.6297)}
+                            icon={StudentIcon(currentActiveStudent.student.avatar)}
+                          >
+                            <Popup>
+                              Vị trí xe buýt hiện tại<br />
+                              {busLocation && `Lat: ${busLocation.lat.toFixed(6)}, Lng: ${busLocation.lng.toFixed(6)}`}
+                            </Popup>
+                          </Marker>
+                        )}
+
+                        {/* Bus location */}
+                        <Marker
+                          position={busLocation || new LatLng(10.8231, 106.6297)}
+                          icon={busIcon}
+                        >
+                          <Popup>
+                            Vị trí xe buýt hiện tại<br />
+                            {busLocation && `Lat: ${busLocation.lat.toFixed(6)}, Lng: ${busLocation.lng.toFixed(6)}`}
+                          </Popup>
+                        </Marker>
+
+                      </MapContainer>
+
                     </TabPane>
                     <TabPane
                       tab={
@@ -199,8 +285,8 @@ const ParentJourneyPage = () => {
                                   <>
                                     {routePickup?.pickup?.name}{" "}
                                     {routePickup?.order ===
-                                    parentActiveStudent?.schedule?.route
-                                      ?.routePickups?.length!
+                                      parentActiveStudent?.schedule?.route
+                                        ?.routePickups?.length!
                                       ? ""
                                       : "→"}{" "}
                                   </>
@@ -322,11 +408,11 @@ const ParentJourneyPage = () => {
                               <Alert
                                 type={
                                   inform?.type?.toLowerCase() as
-                                    | "success"
-                                    | "info"
-                                    | "warning"
-                                    | "error"
-                                    | undefined
+                                  | "success"
+                                  | "info"
+                                  | "warning"
+                                  | "error"
+                                  | undefined
                                 }
                                 className="inform"
                                 message={
@@ -363,19 +449,19 @@ const ParentJourneyPage = () => {
                 <Tag
                   color={
                     parentActiveStudent.current_active_student?.status ===
-                    "CHECKED"
+                      "CHECKED"
                       ? "green"
                       : parentActiveStudent.current_active_student?.status ===
                         "LEAVE"
-                      ? "orange"
-                      : parentActiveStudent.current_active_student?.status ===
-                        "ABSENT"
-                      ? "red"
-                      : "default"
+                        ? "orange"
+                        : parentActiveStudent.current_active_student?.status ===
+                          "ABSENT"
+                          ? "red"
+                          : "default"
                   }
                   icon={
                     parentActiveStudent.current_active_student?.status ===
-                    "CHECKED" ? (
+                      "CHECKED" ? (
                       <SmileOutlined />
                     ) : parentActiveStudent.current_active_student?.status ===
                       "LEAVE" ? (
@@ -390,15 +476,15 @@ const ParentJourneyPage = () => {
                 >
                   Học sinh này{" "}
                   {parentActiveStudent.current_active_student?.status ===
-                  "CHECKED"
+                    "CHECKED"
                     ? ActiveStudentStatusValue.checked.toLowerCase()
                     : parentActiveStudent.current_active_student?.status ===
                       "LEAVE"
-                    ? ActiveStudentStatusValue.leave.toLowerCase()
-                    : parentActiveStudent.current_active_student?.status ===
-                      "ABSENT"
-                    ? ActiveStudentStatusValue.absent.toLowerCase()
-                    : ActiveStudentStatusValue.pending.toLowerCase()}
+                      ? ActiveStudentStatusValue.leave.toLowerCase()
+                      : parentActiveStudent.current_active_student?.status ===
+                        "ABSENT"
+                        ? ActiveStudentStatusValue.absent.toLowerCase()
+                        : ActiveStudentStatusValue.pending.toLowerCase()}
                 </Tag>
               )}
               <List
@@ -418,16 +504,16 @@ const ParentJourneyPage = () => {
                       actions={
                         selectedStudent && selectedStudent.id === student.id
                           ? [
-                              <Button
-                                type="primary"
-                                danger
-                                icon={<CloseOutlined />}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSelectStudent(null);
-                                }}
-                              />,
-                            ]
+                            <Button
+                              type="primary"
+                              danger
+                              icon={<CloseOutlined />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectStudent(null);
+                              }}
+                            />,
+                          ]
                           : []
                       }
                     >

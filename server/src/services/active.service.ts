@@ -92,48 +92,48 @@ const ActiveService = {
     return isGetRest(
       actives.map(
         (active) =>
-          ({
-            id: active.id,
-            schedule: {
-              id: active.schedule.id,
-              start_date: active.schedule.start_date,
-              end_date: active.schedule.end_date,
-              start_time: active.schedule.start_time,
-              end_time: active.schedule.end_time,
-              days_of_week: active.schedule.days_of_week,
-              route: {
-                id: active.schedule.route.id,
-                name: active.schedule.route.name,
-              },
-              bus: {
-                id: active.schedule.bus.id,
-                license_plate: active.schedule.bus.license_plate,
-                capacity: active.schedule.bus.capacity,
-              },
-              driver: {
-                id: active.schedule.driver.id,
-                full_name: active.schedule.driver.full_name,
-              },
+        ({
+          id: active.id,
+          schedule: {
+            id: active.schedule.id,
+            start_date: active.schedule.start_date,
+            end_date: active.schedule.end_date,
+            start_time: active.schedule.start_time,
+            end_time: active.schedule.end_time,
+            days_of_week: active.schedule.days_of_week,
+            route: {
+              id: active.schedule.route.id,
+              name: active.schedule.route.name,
             },
-            start_at: active.start_at,
-            end_at: active.end_at,
-            bus_lat: active.bus_lat,
-            bus_lng: active.bus_lng,
-            bus_speed: active.bus_speed,
-            bus_status: active.bus_status,
-            status: active.status,
-            active_pickups: active.active_pickups.map((ap) => ({
-              pickup: ap.pickup,
-              order: ap.order,
-              at: ap.at,
-              status: ap.status,
-            })),
-            active_students: active.active_students.map((as) => ({
-              student: as.student,
-              at: as.at,
-              status: as.status,
-            })),
-          } as ActiveResponse)
+            bus: {
+              id: active.schedule.bus.id,
+              license_plate: active.schedule.bus.license_plate,
+              capacity: active.schedule.bus.capacity,
+            },
+            driver: {
+              id: active.schedule.driver.id,
+              full_name: active.schedule.driver.full_name,
+            },
+          },
+          start_at: active.start_at,
+          end_at: active.end_at,
+          bus_lat: active.bus_lat,
+          bus_lng: active.bus_lng,
+          bus_speed: active.bus_speed,
+          bus_status: active.bus_status,
+          status: active.status,
+          active_pickups: active.active_pickups.map((ap) => ({
+            pickup: ap.pickup,
+            order: ap.order,
+            at: ap.at,
+            status: ap.status,
+          })),
+          active_students: active.active_students.map((as) => ({
+            student: as.student,
+            at: as.at,
+            status: as.status,
+          })),
+        } as ActiveResponse)
       )
     );
   },
@@ -167,61 +167,61 @@ const ActiveService = {
     return isGetRest(
       actives.map(
         (active) =>
-          ({
-            id: active.id,
-            schedule: {
-              id: active.schedule.id,
-              start_date: active.schedule.start_date,
-              end_date: active.schedule.end_date,
-              start_time: active.schedule.start_time,
-              end_time: active.schedule.end_time,
-              days_of_week: active.schedule.days_of_week,
-              route: {
-                id: active.schedule.route.id,
-                name: active.schedule.route.name,
-                start_pickup: active.schedule.route.start_pickup,
-                end_pickup: active.schedule.route.end_pickup,
-                routePickups: active.schedule.route.routePickups.map((rp) => ({
-                  pickup: {
-                    id: rp.pickup.id,
-                    name: rp.pickup.name,
-                    category: rp.pickup.category,
-                    lat: rp.pickup.lat,
-                    lng: rp.pickup.lng,
-                    status: rp.pickup.status,
-                  },
-                  order: rp.order,
-                })),
-              },
-              bus: {
-                id: active.schedule.bus.id,
-                license_plate: active.schedule.bus.license_plate,
-                capacity: active.schedule.bus.capacity,
-              },
-              driver: {
-                id: active.schedule.driver.id,
-                full_name: active.schedule.driver.full_name,
-              },
+        ({
+          id: active.id,
+          schedule: {
+            id: active.schedule.id,
+            start_date: active.schedule.start_date,
+            end_date: active.schedule.end_date,
+            start_time: active.schedule.start_time,
+            end_time: active.schedule.end_time,
+            days_of_week: active.schedule.days_of_week,
+            route: {
+              id: active.schedule.route.id,
+              name: active.schedule.route.name,
+              start_pickup: active.schedule.route.start_pickup,
+              end_pickup: active.schedule.route.end_pickup,
+              routePickups: active.schedule.route.routePickups.map((rp) => ({
+                pickup: {
+                  id: rp.pickup.id,
+                  name: rp.pickup.name,
+                  category: rp.pickup.category,
+                  lat: rp.pickup.lat,
+                  lng: rp.pickup.lng,
+                  status: rp.pickup.status,
+                },
+                order: rp.order,
+              })),
             },
-            start_at: active.start_at,
-            end_at: active.end_at,
-            bus_lat: active.bus_lat,
-            bus_lng: active.bus_lng,
-            bus_speed: active.bus_speed,
-            bus_status: active.bus_status,
-            status: active.status,
-            active_pickups: active.active_pickups.map((ap) => ({
-              pickup: ap.pickup,
-              order: ap.order,
-              at: ap.at,
-              status: ap.status,
-            })),
-            active_students: active.active_students.map((as) => ({
-              student: as.student,
-              at: as.at,
-              status: as.status,
-            })),
-          } as ActiveResponse)
+            bus: {
+              id: active.schedule.bus.id,
+              license_plate: active.schedule.bus.license_plate,
+              capacity: active.schedule.bus.capacity,
+            },
+            driver: {
+              id: active.schedule.driver.id,
+              full_name: active.schedule.driver.full_name,
+            },
+          },
+          start_at: active.start_at,
+          end_at: active.end_at,
+          bus_lat: active.bus_lat,
+          bus_lng: active.bus_lng,
+          bus_speed: active.bus_speed,
+          bus_status: active.bus_status,
+          status: active.status,
+          active_pickups: active.active_pickups.map((ap) => ({
+            pickup: ap.pickup,
+            order: ap.order,
+            at: ap.at,
+            status: ap.status,
+          })),
+          active_students: active.active_students.map((as) => ({
+            student: as.student,
+            at: as.at,
+            status: as.status,
+          })),
+        } as ActiveResponse)
       )
     );
   },
@@ -413,6 +413,34 @@ const ActiveService = {
       })),
     } as ActiveResponse);
   },
+
+  async updateFromLocationSocket(socketData: {
+    id: number,
+    bus_lat: number,
+    bus_lng: number,
+    bus_speed: number,
+    bus_status: string
+  }) {
+    const active = await prisma.actives.findUnique({ where: { id: socketData.id }});
+
+    const activeUpdated = await prisma.actives.update({
+      where: active,
+      data: {
+        bus_lat: socketData.bus_lat,
+        bus_lng: socketData.bus_lng,
+        bus_speed: socketData.bus_speed,
+        bus_status: socketData.bus_status,
+      }
+    });
+
+    return {
+      id: activeUpdated.id,
+      bus_lat: activeUpdated.bus_lat,
+      bus_lng: activeUpdated.bus_lng,
+      bus_speed: activeUpdated.bus_speed,
+      bus_status: activeUpdated.bus_status
+    }
+  }
 };
 
 export default ActiveService;

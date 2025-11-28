@@ -1,8 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import path from "path";
-// import http from 'http';
-import { Server as SocketIOServer } from 'socket.io';
 import { createServer } from 'http';
 
 import AuthMiddleware from './middlewares/auth.middleware';
@@ -25,6 +23,8 @@ import DriverRouter from './routes/driver.route';
 import useZod from './hooks/useZod.hook';
 import usePrisma from './hooks/usePrisma.hook';
 import useError from './hooks/useError.hook';
+import InitSocketIO from './configs/socket.config';
+import SocketDriver from './handlers/socket-driver.handler';
 
 const app = express();
 
@@ -34,25 +34,12 @@ app.use(express.json());
 
 // Socket.IO setup
 const socketServer = createServer(app);
-const socketIO = new SocketIOServer(socketServer, {
-    cors: {
-        origin: "http://localhost:3000",
-        methods: ["GET", "POST"]
-    }
-});
-
-if (socketIO) {
-    console.log("Socket.IO server initialized");
-}
+const socketIO = InitSocketIO(socketServer);
 
 socketIO.on("connection", (socket) => {
     console.log(`New client connected: ${socket.id}`);
 
-    socket.on("bus-location-send", (data) => {
-        console.log("Bus location update:", data);
-        // Gửi đến TẤT CẢ clients (bao gồm cả client gửi)
-        socketIO.emit("bus-location-receive", data);
-    });
+    SocketDriver(socket, socketIO);
 
     socket.on("disconnect", () => {
         console.log(`Client disconnected: ${socket.id}`);
