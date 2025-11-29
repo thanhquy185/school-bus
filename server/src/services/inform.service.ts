@@ -209,6 +209,31 @@ const InformService = {
       description: inform.description,
     } as InformResponse);
   },
+
+  async getInformFromSocket(id: number) {
+    const inform = await prisma.informs.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        active: true,
+      },
+    });
+
+    if (!inform) {
+      return null;
+    }
+
+    return {
+      id: inform.id,
+      active: inform.active,
+      at: inform.at,
+      type: inform.type,
+      message: inform.message,
+      description: inform.description,
+    } as InformResponse;
+  },
+
 };
 
 export default InformService;

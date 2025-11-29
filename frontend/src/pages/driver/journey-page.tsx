@@ -374,23 +374,23 @@ const DriverJourneyPage = () => {
         return;
       } else {
         // next route and checkin student
-        
+
         // Đặt xe tại pickup point hiện tại (trạm vừa đến)
         const currentPickup = activePickups[currentCoord];
         if (currentPickup) {
           setBusLocation(new LatLng(currentPickup.pickup.lat, currentPickup.pickup.lng));
         }
-        
+
         setCurrentCoord(currentCoord + 1);
         setCurrentPoint(0);
         alert(`🚏 Đã đến trạm ${currentPickup?.pickup?.name}! Điểm danh học sinh đi.`);
         setIsRunning(false);
-        
+
         return;
       }
     }
 
-    // NExt step
+    // Next step
     const time = setTimeout(() => {
       const nextCoord = currentRoute[currentPoint];
       if (nextCoord) {
@@ -398,7 +398,7 @@ const DriverJourneyPage = () => {
         setBusLocation(newLocation);
         setCurrentPoint(currentPoint + 1);
         console.log(`🚌 Xe đang chạy - Điểm: ${currentPoint + 1}/${currentRoute.length}, Route: ${currentCoord + 1}/${coords.length}`);
-        
+
         socketClient?.emit("bus-location-send", {
           id: driverActive?.id,
           bus_lat: nextCoord[0],
@@ -1295,52 +1295,62 @@ const DriverJourneyPage = () => {
             if (restResponse?.result) {
               setModalOpen(false);
               getDriverActive();
+              if (socketClient) {
+                socketClient.emit("bus-notification-send", {
+                  active_id: restResponse.data.active.id,
+                  notify_id: restResponse.data.id,
+                  at: restResponse.data.at,
+                  type: restResponse.data.type,
+                  message: restResponse.data.message,
+                  description: restResponse.data.description
+                })
+              }
             }
           }}
         >
-          <Form.Item
-            name="message"
-            label="Tiêu đề"
-            rules={[ruleRequired("Tiêu đề không được bỏ trống !")]}
-          >
-            <Input placeholder="Nhập Tiêu đề"></Input>
-          </Form.Item>
-          <Form.Item
-            name="description"
-            label="Nội dung"
-            rules={[ruleRequired("Nội dung không được bỏ trống !")]}
-          >
-            <TextArea
-              showCount
-              placeholder="Nhập Nội dung"
-              style={{ height: 160, resize: "none" }}
-            ></TextArea>
-          </Form.Item>
-          <Button
-            htmlType="submit"
-            variant="solid"
-            color={
-              informValue === informValues.val1
-                ? "red"
-                : informValue === informValues.val2
-                  ? "orange"
-                  : informValue === informValues.val3
-                    ? "blue"
-                    : informValue === informValues.val4
-                      ? "purple"
-                      : "default"
-            }
-            style={{
-              width: "100%",
-              height: 35,
-              marginTop: 30,
-              fontWeight: 500,
-            }}
-          >
-            Xác nhận
-          </Button>
-        </Form>
-      </Modal>
+        <Form.Item
+          name="message"
+          label="Tiêu đề"
+          rules={[ruleRequired("Tiêu đề không được bỏ trống !")]}
+        >
+          <Input placeholder="Nhập Tiêu đề"></Input>
+        </Form.Item>
+        <Form.Item
+          name="description"
+          label="Nội dung"
+          rules={[ruleRequired("Nội dung không được bỏ trống !")]}
+        >
+          <TextArea
+            showCount
+            placeholder="Nhập Nội dung"
+            style={{ height: 160, resize: "none" }}
+          ></TextArea>
+        </Form.Item>
+        <Button
+          htmlType="submit"
+          variant="solid"
+          color={
+            informValue === informValues.val1
+              ? "red"
+              : informValue === informValues.val2
+                ? "orange"
+                : informValue === informValues.val3
+                  ? "blue"
+                  : informValue === informValues.val4
+                    ? "purple"
+                    : "default"
+          }
+          style={{
+            width: "100%",
+            height: 35,
+            marginTop: 30,
+            fontWeight: 500,
+          }}
+        >
+          Xác nhận
+        </Button>
+      </Form>
+    </Modal >
     </>
   );
 };

@@ -1,6 +1,7 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 
 import ActiveService from "../services/active.service";
+import InformService from "../services/inform.service";
 
 type BusLocationSend = {
     id: number,
@@ -18,25 +19,30 @@ type BusLocationReceive = {
     bus_status: string
 }
 
+type BusNotificationSend = {
+    active_id: number,
+    notify_id: number,
+    at: string,
+    message: string,
+    description: string,
+    type: string
+}
+
 const SocketDriver = (socket: Socket, io: SocketIOServer) => {
     socket.on("bus-location-send", async data => {
         const socketData: BusLocationSend = data;
         const response: BusLocationReceive = await ActiveService.updateFromLocationSocket(socketData);
-        // console.log("Get data by update bus location: ", response)
-
-        // Cách 1: Gửi về chỉ client hiện tại (driver app)
-        // socket.emit(`bus-location-receive/${response.id}`, response);
-        
-        // Cách 2: Broadcast đến TẤT CẢ clients (parent apps, admin dashboard)
-        // Để parent có thể real-time theo dõi vị trí xe bus
         io.emit(`bus-location-receive/${response.id}`, response);
-        
-        // Cách 3 (Optional): Gửi đến room cụ thể (chỉ parent theo dõi bus này)
-        // io.to(`bus-${response.id}`).emit("bus-location-receive", response);
     });
 
     socket.on("bus-notification-send", async data => {
-        // TODO: Implement notification logic
+        const socketData: BusNotificationSend = data;
+        console.log("Received bus-notification-send:", socketData);
+        const inform = await InformService.getInformFromSocket(socketData.notify_id);
+        if (!inform) {
+            console.log(`Inform with ID ${socketData.notify_id} not found.`);
+        }
+        io.emit(`bus-notification-receive/${socketData.active_id}`, socketData);
     });
 }
 

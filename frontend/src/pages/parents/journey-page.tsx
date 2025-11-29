@@ -32,6 +32,7 @@ import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { busIcon } from "../../common/leaflet-icon/BusIcon";
 import type { CurrentActiveStudent } from "./interface";
 import StudentIcon from "../../common/leaflet-icon/StudentIcon";
+import { useNotification } from "../../utils/showNotification";
 
 const { TabPane } = Tabs;
 
@@ -39,6 +40,7 @@ const { TabPane } = Tabs;
 const ParentJourneyPage = () => {
   const { execute, notify, loading } = useCallApi();
   const socketClient = useSocket();
+  const { openNotification } = useNotification();
 
   // Xử lý khi chọn 1 học sinh
   const [selectedStudent, setSelectedStudent] =
@@ -91,6 +93,13 @@ const ParentJourneyPage = () => {
   const [studentPosition, setStudentPosition] = useState<LatLng | null>(null);
   const [currentActiveStudent, setCurrentActiveStudent] = useState<CurrentActiveStudent>({} as CurrentActiveStudent);
 
+  const [notifications, setNotifications] = useState<{
+    at: string,
+    description: string,
+    message: string,
+    id: number,
+    type: string
+  }[]>([]);
 
   const getParentActiveStudent = async () => {
     if (!selectedStudent) return;
@@ -101,10 +110,9 @@ const ParentJourneyPage = () => {
     if (restResponse?.result) {
       setParentActiveStudent(restResponse.data);
       setBusLocation(new LatLng(restResponse.data.bus_lat, restResponse.data.bus_lng));
-      // console.log(restResponse.data.current_active_student)
       setCurrentActiveStudent(restResponse.data.current_active_student);
       setStudentPosition(new LatLng(restResponse.data.current_active_student.student.pickup.lat, restResponse.data.current_active_student.student.pickup.lng));
-
+      setNotifications(restResponse.data.informs);
     }
   };
 
@@ -113,12 +121,33 @@ const ParentJourneyPage = () => {
   }, [selectedStudent]);
 
   useEffect(() => {
-    if (!socketClient) return;
-    socketClient.on(`bus-location-receive/${parentActiveStudent?.id}`, data => {
-      setBusLocation(new LatLng(data.bus_lat, data.bus_lng));
-    });
+    if (!socketClient || !parentActiveStudent?.id) return;
 
-  }, [socketClient, parentActiveStudent]);
+    const busLocationHandler = (data: any) => {
+      setBusLocation(new LatLng(data.bus_lat, data.bus_lng));
+    };
+
+    const busNotificationHandler = (data: any) => {
+      showNotificationFromSocket(data);
+      setNotifications(prev => [...prev, data]);
+    };
+
+    socketClient.on(`bus-location-receive/${parentActiveStudent.id}`, busLocationHandler);
+    socketClient.on(`bus-notification-receive/${parentActiveStudent.id}`, busNotificationHandler);
+
+    return () => {
+      socketClient.off(`bus-location-receive/${parentActiveStudent.id}`, busLocationHandler);
+      socketClient.off(`bus-notification-receive/${parentActiveStudent.id}`, busNotificationHandler);
+    };
+  }, [socketClient, parentActiveStudent?.id]);
+
+  const showNotificationFromSocket = (data: any) => {
+    openNotification({
+      type: data.type === "WARNING" ? "warning" : "info",
+      description: data.description,
+      message: data.message
+    });
+  }
 
   return (
     <>
@@ -129,6 +158,7 @@ const ParentJourneyPage = () => {
             <strong>Hành trình đưa đón</strong>
           </span>
         </h2>
+
         <Card
           className="client-layout__journey parent"
           title="Thông tin hành trình đưa đón"
@@ -400,44 +430,40 @@ const ParentJourneyPage = () => {
                       }
                       key="3"
                     >
-                      <div className="inform-tags-wrapper">
-                        <div className="inform-tags">
-                          {parentActiveStudent.informs
-                            ?.sort((a, b) => b.at?.localeCompare(a.at!)!)
-                            .map((inform) => (
-                              <Alert
-                                type={
-                                  inform?.type?.toLowerCase() as
-                                  | "success"
-                                  | "info"
-                                  | "warning"
-                                  | "error"
-                                  | undefined
-                                }
-                                className="inform"
-                                message={
-                                  <>
-                                    <p className="title">
-                                      <img
-                                        src={`/src/assets/images/others/inform-${inform?.type}-icon.png`}
-                                        alt=""
-                                      />
-                                      <span>{inform?.message}</span>
-                                    </p>
-                                  </>
-                                }
-                                description={
-                                  <>
-                                    <p className="description">
-                                      {inform?.description} vào lúc{" "}
-                                      {inform?.at?.split(" ")[1]}
-                                    </p>
-                                  </>
-                                }
-                                style={{ margin: 0 }}
-                              ></Alert>
-                            ))}
-                        </div>
+                      <div className="general-notifications" style={{ marginBottom: '20px' }}>
+                        <h4 style={{ marginBottom: '12px', color: '#1890ff', fontWeight: "bold", fontSize: "20px" }}>
+                          Thông báo chung
+                        </h4>
+                        {notifications.length > 0 ? (
+                          notifications.map((notification, index) => (
+                            <Alert
+                              key={`general-${index}`}
+                              message={notification.message}
+                              description={
+                                <div>
+                                  <p>{notification.description}</p>
+                                  <small style={{ color: '#666' }}>
+                                    Thời gian: {notification.at}
+                                  </small>
+                                </div>
+                              }
+                              type={notification.type === "WARNING" ? "warning" : notification.type === "ERROR" ? "error" : "info"}
+                              showIcon
+                              closable
+                              style={{ marginBottom: '8px' }}
+                              onClose={() => {
+                                setNotifications(prev => prev.filter((_, i) => i !== index));
+                              }}
+                            />
+                          ))
+                        ) : (
+                          <Alert
+                            message="Không có thông báo chung nào"
+                            type="info"
+                            showIcon={false}
+                            style={{ marginBottom: '8px' }}
+                          />
+                        )}
                       </div>
                     </TabPane>
                   </Tabs>
@@ -535,7 +561,7 @@ const ParentJourneyPage = () => {
             </Col>
           </Row>
         </Card>
-      </div>
+      </div >
     </>
   );
 };
