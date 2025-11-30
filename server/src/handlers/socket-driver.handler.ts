@@ -28,6 +28,12 @@ type BusNotificationSend = {
     type: string
 }
 
+type DriverNotificationSend = {
+    active_id: number,
+    student_id: number,
+    status: string,
+}
+
 const SocketDriver = (socket: Socket, io: SocketIOServer) => {
     socket.on("bus-location-send", async data => {
         const socketData: BusLocationSend = data;
@@ -44,6 +50,12 @@ const SocketDriver = (socket: Socket, io: SocketIOServer) => {
         }
         io.emit(`bus-notification-receive/${socketData.active_id}`, socketData);
     });
+
+    socket.on("driver-notification-send", data => {
+        const socketData: DriverNotificationSend = data;
+        console.log(socketData)
+        io.emit(`driver-notification-receive/${socketData.active_id}`, socketData);
+    })
 }
 
 export default SocketDriver;

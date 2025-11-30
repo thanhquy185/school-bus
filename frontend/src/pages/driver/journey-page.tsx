@@ -36,7 +36,7 @@ import {
 } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMapLocationDot } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import QrBarcodeScanner from "../../components/qr-barcode-scanner";
 import {
   ActivePickupStatusValue,
@@ -79,19 +79,6 @@ const FlyToLocation = ({ center }: { center: LatLng | null }) => {
       });
     }
   }, [center, map]);
-
-  return null;
-};
-
-// Component để set view khi busLocation thay đổi
-const SetViewOnBusLocation = ({ busLocation }: { busLocation: LatLng | null }) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (busLocation) {
-      map.setView([busLocation.lat, busLocation.lng], 15);
-    }
-  }, [busLocation, map]);
 
   return null;
 };
@@ -229,6 +216,8 @@ const DriverJourneyPage = () => {
 
   const [busLocation, setBusLocation] = useState<LatLng | null>(null);
   const [flyToLocation, setFlyToLocation] = useState<LatLng | null>(null);
+  const [flyToKey, setFlyToKey] = useState<number>(0);
+  const [isAutoFollow, setIsAutoFollow] = useState<boolean>(false);
 
   // Fix Leaflet default icon issue
   useEffect(() => {
@@ -240,6 +229,14 @@ const DriverJourneyPage = () => {
     });
   }, []);
 
+  // Auto follow bus location
+  useEffect(() => {
+    if (isAutoFollow && busLocation) {
+      setFlyToLocation(new LatLng(busLocation.lat, busLocation.lng));
+      setFlyToKey(prev => prev + 1);
+    }
+  }, [busLocation, isAutoFollow]);
+
   const getDriverActive = async () => {
     const response = await execute(getActive(), false);
     const data = response?.data;
@@ -247,6 +244,8 @@ const DriverJourneyPage = () => {
   };
 
   const loadCoordRoutes = async () => {
+    console.log("Run here")
+
     if (activePickups.length < 2) return;
     const coordsRoutes: {
       index: number,
@@ -397,7 +396,7 @@ const DriverJourneyPage = () => {
         const newLocation = new LatLng(nextCoord[0], nextCoord[1]);
         setBusLocation(newLocation);
         setCurrentPoint(currentPoint + 1);
-        console.log(`🚌 Xe đang chạy - Điểm: ${currentPoint + 1}/${currentRoute.length}, Route: ${currentCoord + 1}/${coords.length}`);
+        console.log(`Bus is running - Point: ${currentPoint + 1}/${currentRoute.length}, Route: ${currentCoord + 1}/${coords.length}`);
 
         socketClient?.emit("bus-location-send", {
           id: driverActive?.id,
@@ -411,6 +410,33 @@ const DriverJourneyPage = () => {
 
     return () => clearTimeout(time)
   }, [isRunning, currentCoord, currentPoint, coords.length]);
+
+  const handleCheckinStudent = async (item: any, status: string) => {
+    socketClient?.emit("driver-notification-send", {
+      active_id: driverActive?.id!,
+      student_id: item.student?.id!,
+      status: status as "PENDING" | "ABSENT" | "LEAVE" | "CHECKED",
+    });
+    
+    const restResponse = await execute(
+      updateActiveStudent({
+        active_id: driverActive?.id!,
+        student_id: item.student?.id!,
+        at: dayjs().format(
+          "DD/MM/YYYY HH:mm:ss"
+        ),
+        status: status as "PENDING" | "ABSENT" | "LEAVE" | "CHECKED",
+      }),
+      true
+    );
+
+    const message = `Cập nhật trạng thái ${status === "ABSENT" ? "" : status === "LEAVE" ? "" : status === "CHECKED" ? "điểm danh" : "không xác định"
+      } cho học sinh thành công`;
+    notify(restResponse!, message);
+    if (restResponse?.result) {
+      getDriverActive();
+    }
+  }
 
   // Cột thông tin bên phải
   // - Lấy ra thời gian hiện tại
@@ -431,11 +457,14 @@ const DriverJourneyPage = () => {
       setCurrentTime(time);
     };
 
-    updateTime(); // Cập nhật lần đầu
-    const timer = setInterval(updateTime, 1000); // cập nhật mỗi giây
+    // Cập nhật lần đầu
+    updateTime();
+    // cập nhật mỗi giây
+    const timer = setInterval(updateTime, 1000);
 
     return () => clearInterval(timer);
   }, []);
+
   // - Tiến độ hành trình
   const [progressValue, setProgressValue] = useState<number>(0);
   useMemo(() => {
@@ -587,9 +616,6 @@ const DriverJourneyPage = () => {
                           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         />
 
-                        {/* Auto center map when bus location changes */}
-                        <SetViewOnBusLocation busLocation={busLocation} />
-
                         {/* Route */}
                         {coords && coords.map((coord, index) => (
                           <Polyline
@@ -605,7 +631,7 @@ const DriverJourneyPage = () => {
                         ))}
 
                         {/* Component để fly đến vị trí */}
-                        <FlyToLocation center={flyToLocation} />
+                        <FlyToLocation key={flyToKey} center={flyToLocation} />
 
                         {/* Bus location */}
                         <Marker
@@ -661,7 +687,7 @@ const DriverJourneyPage = () => {
                         })}
                       </MapContainer>
 
-                      <div style={{ marginTop: 16, display: 'flex', gap: '12px' }}>
+                      <div style={{ marginTop: 16, display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                         <Button
                           onClick={loadCoordRoutes}
                         >Xem đường đi</Button>
@@ -670,12 +696,30 @@ const DriverJourneyPage = () => {
                           icon={<EnvironmentOutlined />}
                           onClick={() => {
                             if (busLocation) {
+                              // Tạo object mới để trigger useEffect trong FlyToLocation
                               setFlyToLocation(new LatLng(busLocation.lat, busLocation.lng));
+                              // Tăng key để force re-render component
+                              setFlyToKey(prev => prev + 1);
                             }
                           }}
-                          disabled={!busLocation}
+                          disabled={!busLocation || isAutoFollow}
                         >
                           Về vị trí xe
+                        </Button>
+                        <Button
+                          type={isAutoFollow ? "default" : "primary"}
+                          icon={<CarOutlined />}
+                          onClick={() => {
+                            setIsAutoFollow(!isAutoFollow);
+                            if (!isAutoFollow && busLocation) {
+                              // Khi bật auto follow, bay đến vị trí xe ngay
+                              setFlyToLocation(new LatLng(busLocation.lat, busLocation.lng));
+                              setFlyToKey(prev => prev + 1);
+                            }
+                          }}
+                          danger={isAutoFollow}
+                        >
+                          {isAutoFollow ? "Tắt tự động theo dõi" : "Bật tự động theo dõi"}
                         </Button>
                       </div>
 
@@ -870,26 +914,7 @@ const DriverJourneyPage = () => {
                                     variant="solid"
                                     color="orange"
                                     icon={<CalendarOutlined />}
-                                    onClick={async () => {
-                                      const restResponse = await execute(
-                                        updateActiveStudent({
-                                          active_id: driverActive.id!,
-                                          student_id: item.student?.id!,
-                                          at: dayjs().format(
-                                            "DD/MM/YYYY HH:mm:ss"
-                                          ),
-                                          status: "LEAVE",
-                                        }),
-                                        true
-                                      );
-                                      notify(
-                                        restResponse!,
-                                        "Cập nhật trạng thái đã nghỉ phép cho học sinh thành công"
-                                      );
-                                      if (restResponse?.result) {
-                                        getDriverActive();
-                                      }
-                                    }}
+                                    onClick={async () => handleCheckinStudent(item, "LEAVE")}
                                     disabled={item?.status === "LEAVE"}
                                   >
                                     Nghỉ phép
@@ -898,30 +923,17 @@ const DriverJourneyPage = () => {
                                     variant="solid"
                                     color="red"
                                     icon={<CloseCircleOutlined />}
-                                    onClick={async () => {
-                                      const restResponse = await execute(
-                                        updateActiveStudent({
-                                          active_id: driverActive.id!,
-                                          student_id: item.student?.id!,
-                                          at: dayjs().format(
-                                            "DD/MM/YYYY HH:mm:ss"
-                                          ),
-                                          status: "ABSENT",
-                                        }),
-                                        true
-                                      );
-                                      notify(
-                                        restResponse!,
-                                        "Cập nhật trạng thái đã nghỉ học cho học sinh này thành công"
-                                      );
-                                      if (restResponse?.result) {
-                                        getDriverActive();
-                                      }
-                                    }}
+                                    onClick={async () => handleCheckinStudent(item, "ABSENT")}
                                     disabled={item?.status === "ABSENT"}
                                   >
                                     Nghỉ học
                                   </Button>,
+                                  // Checkin student here
+                                  <Button
+                                    onClick={async () => handleCheckinStudent(item, "CHECKED")}
+                                    disabled={item?.status === "CHECKED"}
+                                  >Điểm danh
+                                  </Button>
                                 ]}
                               >
                                 <List.Item.Meta
@@ -1308,49 +1320,49 @@ const DriverJourneyPage = () => {
             }
           }}
         >
-        <Form.Item
-          name="message"
-          label="Tiêu đề"
-          rules={[ruleRequired("Tiêu đề không được bỏ trống !")]}
-        >
-          <Input placeholder="Nhập Tiêu đề"></Input>
-        </Form.Item>
-        <Form.Item
-          name="description"
-          label="Nội dung"
-          rules={[ruleRequired("Nội dung không được bỏ trống !")]}
-        >
-          <TextArea
-            showCount
-            placeholder="Nhập Nội dung"
-            style={{ height: 160, resize: "none" }}
-          ></TextArea>
-        </Form.Item>
-        <Button
-          htmlType="submit"
-          variant="solid"
-          color={
-            informValue === informValues.val1
-              ? "red"
-              : informValue === informValues.val2
-                ? "orange"
-                : informValue === informValues.val3
-                  ? "blue"
-                  : informValue === informValues.val4
-                    ? "purple"
-                    : "default"
-          }
-          style={{
-            width: "100%",
-            height: 35,
-            marginTop: 30,
-            fontWeight: 500,
-          }}
-        >
-          Xác nhận
-        </Button>
-      </Form>
-    </Modal >
+          <Form.Item
+            name="message"
+            label="Tiêu đề"
+            rules={[ruleRequired("Tiêu đề không được bỏ trống !")]}
+          >
+            <Input placeholder="Nhập Tiêu đề"></Input>
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="Nội dung"
+            rules={[ruleRequired("Nội dung không được bỏ trống !")]}
+          >
+            <TextArea
+              showCount
+              placeholder="Nhập Nội dung"
+              style={{ height: 160, resize: "none" }}
+            ></TextArea>
+          </Form.Item>
+          <Button
+            htmlType="submit"
+            variant="solid"
+            color={
+              informValue === informValues.val1
+                ? "red"
+                : informValue === informValues.val2
+                  ? "orange"
+                  : informValue === informValues.val3
+                    ? "blue"
+                    : informValue === informValues.val4
+                      ? "purple"
+                      : "default"
+            }
+            style={{
+              width: "100%",
+              height: 35,
+              marginTop: 30,
+              fontWeight: 500,
+            }}
+          >
+            Xác nhận
+          </Button>
+        </Form>
+      </Modal >
     </>
   );
 };
