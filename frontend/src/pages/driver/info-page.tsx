@@ -64,7 +64,7 @@ const DriverInfoPage = () => {
 
       const updateData = {
         full_name: form.getFieldValue("full_name"),
-        birth_date: form.getFieldValue("birthday"),
+        birth_date: form.getFieldValue("birthday").format("DD/MM/YYYY"),
         gender: form.getFieldValue("gender"),
         phone: form.getFieldValue("phone"),
         email: form.getFieldValue("email"),
@@ -110,7 +110,7 @@ const DriverInfoPage = () => {
           initialValues={{
             full_name: driverInfo?.full_name || undefined,
             birthday: driverInfo?.birth_date
-              ? dayjs(driverInfo?.birth_date)
+              ? dayjs(driverInfo?.birth_date, "DD/MM/YYYY")
               : undefined,
             gender: driverInfo?.gender || undefined,
             phone: driverInfo?.phone || undefined,
