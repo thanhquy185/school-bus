@@ -8,10 +8,11 @@ import {
   FrownOutlined,
   MehOutlined,
   SmileOutlined,
+  CarOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMapLocationDot } from "@fortawesome/free-solid-svg-icons";
-import LeafletMap from "../../components/leaflet-map";
 import { useEffect, useState } from "react";
 import type {
   ActiveFormatType,
@@ -28,7 +29,7 @@ import useCallApi from "../../api/useCall";
 import { getGenderText } from "../../utils/vi-trans";
 import useSocket from "../../api/socket";
 import { LatLng } from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { busIcon } from "../../common/leaflet-icon/BusIcon";
 import type { CurrentActiveStudent } from "./interface";
 import StudentIcon from "../../common/leaflet-icon/StudentIcon";
@@ -36,9 +37,24 @@ import { useNotification } from "../../utils/showNotification";
 
 const { TabPane } = Tabs;
 
+// Component để fly về vị trí cụ thể
+const FlyToLocation = ({ center }: { center: LatLng | null }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (center) {
+      map.flyTo([center.lat, center.lng], 15, {
+        duration: 1.5
+      });
+    }
+  }, [center, map]);
+
+  return null;
+};
+
 //
 const ParentJourneyPage = () => {
-  const { execute, notify, loading } = useCallApi();
+  const { execute } = useCallApi();
   const socketClient = useSocket();
   const { openNotification } = useNotification();
 
@@ -91,7 +107,11 @@ const ParentJourneyPage = () => {
   const [busLocation, setBusLocation] = useState<LatLng | null>(null);
 
   const [studentPosition, setStudentPosition] = useState<LatLng | null>(null);
-  const [currentActiveStudent, setCurrentActiveStudent] = useState<CurrentActiveStudent>({} as CurrentActiveStudent);
+  const [currentActiveStudent, setCurrentActiveStudent] = useState<CurrentActiveStudent | null>(null);
+
+  const [flyToLocation, setFlyToLocation] = useState<LatLng | null>(null);
+  const [flyToKey, setFlyToKey] = useState<number>(0);
+  const [isAutoFollow, setIsAutoFollow] = useState<boolean>(false);
 
   const [notifications, setNotifications] = useState<{
     at: string,
@@ -111,7 +131,8 @@ const ParentJourneyPage = () => {
       setParentActiveStudent(restResponse.data);
       setBusLocation(new LatLng(restResponse.data.bus_lat, restResponse.data.bus_lng));
       setCurrentActiveStudent(restResponse.data.current_active_student);
-      setStudentPosition(new LatLng(restResponse.data.current_active_student.student.pickup.lat, restResponse.data.current_active_student.student.pickup.lng));
+
+      // setStudentPosition(new LatLng(restResponse.data.current_active_student.student.pickup.lat, restResponse.data.current_active_student.student.pickup.lng));
       setNotifications(restResponse.data.informs);
     }
   };
@@ -119,6 +140,21 @@ const ParentJourneyPage = () => {
   useEffect(() => {
     getParentActiveStudent();
   }, [selectedStudent]);
+
+  // Auto follow bus location
+  useEffect(() => {
+    if (isAutoFollow && busLocation) {
+      setFlyToLocation(new LatLng(busLocation.lat, busLocation.lng));
+      setFlyToKey(prev => prev + 1);
+    }
+  }, [busLocation, isAutoFollow]);
+
+  useEffect(() => {
+    if (!currentActiveStudent || !busLocation) return;
+    if (currentActiveStudent.status === "CHECKED") {
+      setStudentPosition(busLocation);
+    }
+  }, [currentActiveStudent, busLocation]);
 
   useEffect(() => {
     if (!socketClient || !parentActiveStudent?.id) return;
@@ -132,8 +168,21 @@ const ParentJourneyPage = () => {
       setNotifications(prev => [...prev, data]);
     };
 
+    const driverNotificationHandler = (data: any) => {
+      console.log(data)
+      const student = parentStudents.filter(st => st.id === data.student_id);
+      if (!student) return;
+      const message = `Học sinh ${student[0].full_name} đã ${data.status == "CHECKED" ? " lên xe" : " không lên xe"}`;
+      showNotificationFromSocket({
+        type: "SUCCESS",
+        description:message,
+        message: "Thông báo học sinh"
+      })
+    }
+
     socketClient.on(`bus-location-receive/${parentActiveStudent.id}`, busLocationHandler);
     socketClient.on(`bus-notification-receive/${parentActiveStudent.id}`, busNotificationHandler);
+    socketClient.on(`driver-notification-receive/${parentActiveStudent.id}`, driverNotificationHandler)
 
     return () => {
       socketClient.off(`bus-location-receive/${parentActiveStudent.id}`, busLocationHandler);
@@ -143,7 +192,7 @@ const ParentJourneyPage = () => {
 
   const showNotificationFromSocket = (data: any) => {
     openNotification({
-      type: data.type === "WARNING" ? "warning" : "info",
+      type: data.type === "WARNING" ? "warning" : data.type === "SUCCESS" ? "success" : "info",
       description: data.description,
       message: data.message
     });
@@ -246,7 +295,7 @@ const ParentJourneyPage = () => {
                         ))} */}
 
                         {/* Component để fly đến vị trí */}
-                        {/* <FlyToLocation center={flyToLocation} /> */}
+                        <FlyToLocation key={flyToKey} center={flyToLocation} />
 
                         {/* Student Location */}
                         {currentActiveStudent && (
@@ -273,6 +322,49 @@ const ParentJourneyPage = () => {
                         </Marker>
 
                       </MapContainer>
+
+                      <div style={{ marginTop: 16, display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        <Button
+                          type="primary"
+                          icon={<CarOutlined />}
+                          onClick={() => {
+                            if (busLocation) {
+                              setFlyToLocation(new LatLng(busLocation.lat, busLocation.lng));
+                              setFlyToKey(prev => prev + 1);
+                            }
+                          }}
+                          disabled={!busLocation || isAutoFollow}
+                        >
+                          Về vị trí xe
+                        </Button>
+                        <Button
+                          type="primary"
+                          icon={<UserOutlined />}
+                          onClick={() => {
+                            if (studentPosition) {
+                              setFlyToLocation(new LatLng(studentPosition.lat, studentPosition.lng));
+                              setFlyToKey(prev => prev + 1);
+                            }
+                          }}
+                          disabled={!studentPosition || isAutoFollow}
+                        >
+                          Về vị trí học sinh
+                        </Button>
+                        <Button
+                          type={isAutoFollow ? "default" : "primary"}
+                          icon={<EnvironmentOutlined />}
+                          onClick={() => {
+                            setIsAutoFollow(!isAutoFollow);
+                            if (!isAutoFollow && busLocation) {
+                              setFlyToLocation(new LatLng(busLocation.lat, busLocation.lng));
+                              setFlyToKey(prev => prev + 1);
+                            }
+                          }}
+                          danger={isAutoFollow}
+                        >
+                          {isAutoFollow ? "Tắt tự động theo dõi" : "Bật tự động theo dõi"}
+                        </Button>
+                      </div>
 
                     </TabPane>
                     <TabPane
