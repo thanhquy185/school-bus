@@ -164,10 +164,12 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   routeDetailsList,
   busInfos,
   activePickupsList,
+  
   handleGetBusInfo,
   handleGetRouteInfo,
   handleSelectedPickup,
   handleSelectedBus,
+  onMarkerClick,
 }) => {
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -300,46 +302,52 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   }, [lat, lng, pointType]);
 
   // Danh sách trạm xe buýt khi quản lý
-  useEffect(() => {
-    if (!mapRef.current) return;
+useEffect(() => {
+  if (!mapRef.current) return;
 
-    // Khởi tạo group nếu chưa có
-    if (!markersRef.current) {
-      markersRef.current = L.layerGroup().addTo(mapRef.current);
-    }
+  // Khởi tạo group nếu chưa có
+  if (!markersRef.current) {
+    markersRef.current = L.layerGroup().addTo(mapRef.current);
+  }
 
-    // Xóa marker cũ trước khi vẽ lại
-    markersRef.current.clearLayers();
+  // Xóa marker cũ trước khi vẽ lại
+  markersRef.current.clearLayers();
 
-    // Vẽ danh sách trạm
-    pickups?.forEach((p) => {
-      const tooltipContent = `
-    <div class="custom-tooltip">
-      <p class="title">trạm xe buýt #${p.id}</p>
-      <p>Tên: ${p.name || "-"}</p>
-      <p>Loại: ${p.category}</p>
-      <p>Toạ độ x: ${p.lat || "-"}</p>
-      <p>Toạ độ y: ${p.lng || "-"}</p>
-    </div>
-  `;
+  // Vẽ danh sách trạm
+  pickups?.forEach((p) => {
+    const tooltipContent = `
+      <div class="custom-tooltip">
+        <p class="title">trạm xe buýt #${p.id}</p>
+        <p>Tên: ${p.name || "-"}</p>
+        <p>Loại: ${p.category}</p>
+        <p>Toạ độ x: ${p.lat || "-"}</p>
+        <p>Toạ độ y: ${p.lng || "-"}</p>
+      </div>
+    `;
 
-      L.marker([p.lat!, p.lng!], {
-        icon: getIconByType(p.category!),
-      })
-        .addTo(markersRef.current!)
-        .bindTooltip(tooltipContent, {
-          permanent: false, // true nếu muốn luôn hiển thị
-          direction: "top",
-          className: "leaflet-tooltip-custom",
-        });
+    const marker = L.marker([p.lat!, p.lng!], {
+      icon: getIconByType(p.category!),
+    })
+      .addTo(markersRef.current!)
+      .bindTooltip(tooltipContent, {
+        permanent: false,
+        direction: "top",
+        className: "leaflet-tooltip-custom",
+      });
+
+    // 🔥 GỌI CALLBACK KHI CLICK
+    marker.on("click", () => {
+      if (onMarkerClick) onMarkerClick(p);
     });
+  });
 
-    // Auto-fit map theo tất cả marker
-    if (pickups && pickups.length > 0) {
-      const bounds = L.latLngBounds(pickups?.map((p) => [p.lat!, p.lng!])!);
-      mapRef.current.fitBounds(bounds);
-    }
-  }, [pickups]);
+  // Auto-fit map theo tất cả marker
+  if (pickups && pickups.length > 0) {
+    const bounds = L.latLngBounds(pickups?.map((p) => [p.lat!, p.lng!])!);
+    mapRef.current.fitBounds(bounds);
+  }
+}, [pickups, onMarkerClick]);
+
 
   // Danh sách tuyến đường khi quản lý
   useEffect(() => {
@@ -363,9 +371,9 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     //  🛣️ Lặp qua từng tuyến RouteFormatType
     // -------------------------
     routes.forEach(async (route, index) => {
-      if (!route.routeDetails || route.routeDetails.length === 0) return;
+      if (!route.routePickups || route.routePickups.length === 0) return;
 
-      const sorted = [...route.routeDetails].sort(
+      const sorted = [...route.routePickups].sort(
         (a, b) => a.order! - b.order!
       );
 
@@ -664,7 +672,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         line.addTo(mapRef.current!);
         routeRefs.current.push(line);
 
-        // 📊 Nếu chỉ có 1 tuyến => thêm khung thông tin
+      
         if (routeDetailsList.length === 1) {
           const total_distance = route.summary.distance;
           const totalDuration = route.summary.duration;
