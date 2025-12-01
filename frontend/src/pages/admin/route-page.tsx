@@ -11,6 +11,7 @@ import {
   Col,
   Row,
   Alert,
+
 } from "antd";
 import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -36,9 +37,7 @@ import type {
   RouteDetailsFormatType,
   PickupType,
 } from "../../common/types";
-import LeafletMap, {
-  type HandleGetRouteInfoProps,
-} from "../../components/leaflet-map";
+import LeafletMap, { type HandleGetRouteInfoProps } from "../../components/leaflet-map";
 import CustomTableActions from "../../components/table-actions";
 
 import useCallApi from "../../api/useCall";
@@ -47,11 +46,7 @@ import { getRoutes } from "../../services/route-service";
 
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
 import SortableItem from "../../components/SortableItem";
 import Swal from "sweetalert2";
@@ -61,6 +56,7 @@ import {
   // getRoutes,
   updateRoute,
 } from "../../services/route-service";
+ 
 
 interface RouteFormProps {
   mode: "detail" | "create" | "update";
@@ -78,21 +74,16 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
   // States
   const [routes, setRoutes] = useState<RouteFormatType[]>([]);
   const [pickupList, setPickupList] = useState<PickupType[]>(pickups);
-  const [routeDetailsValue, setRouteDetailsValue] = useState<
-    RouteDetailsFormatType[]
-  >([]);
+  const [routeDetailsValue, setRouteDetailsValue] = useState<RouteDetailsFormatType[]>([]);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
-  const [currentSelectedItem, setCurrentSelectedItem] =
-    useState<RouteFormatType>();
+  const [currentSelectedItem, setCurrentSelectedItem] = useState<RouteFormatType>();
   const [currentAction, setCurrentAction] = useState<string>("list");
 
   const [currentBreadcrumbItems, setCurrentBreadcrumbItems] = useState<
     Partial<BreadcrumbItemType & BreadcrumbSeparatorType>[]
   >([]);
-  const [currentCardTitle, setCurrentCardTitle] = useState<string>(
-    t("route-list")
-  );
+  const [currentCardTitle, setCurrentCardTitle] = useState<string>(t("route-list"));
   const [currentCardContent, setCurrentCardContent] = useState<string>("list");
 
   const [form] = Form.useForm();
@@ -108,8 +99,7 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
       if (response?.result && Array.isArray(response.data)) {
         const pickups = response.data.map((pickup) => ({
           ...pickup,
-          category:
-            pickup.category === "SCHOOL" ? "Trường học" : "Điểm đưa đón",
+          category: pickup.category === "SCHOOL" ? "Trường học" : "Điểm đưa đón",
           status: pickup.status === "ACTIVE" ? "Hoạt động" : "Tạm dừng",
         }));
         setPickupList(pickups);
@@ -128,20 +118,14 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
           response.data.map((route) => ({
             ...route,
             status: route.status === "ACTIVE" ? "Hoạt động" : "Tạm dừng",
-            routeDetails: route?.pickups?.map(
-              (p: { pickup: PickupType; order: number }) => ({
-                pickup: {
-                  ...p.pickup,
-                  category:
-                    p.pickup.category === "SCHOOL"
-                      ? "Trường học"
-                      : "Điểm đưa đón",
-                  status:
-                    p.pickup.status === "ACTIVE" ? "Hoạt động" : "Tạm dừng",
-                },
-                order: p.order,
-              })
-            ),
+            routeDetails: route?.pickups?.map((p: { pickup: PickupType; order: number }) => ({
+              pickup: {
+                ...p.pickup,
+                category: p.pickup.category === "SCHOOL" ? "Trường học" : "Điểm đưa đón",
+                status: p.pickup.status === "ACTIVE" ? "Hoạt động" : "Tạm dừng",
+              },
+              order: p.order,
+            })),
           }))
         );
       }
@@ -157,60 +141,50 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
 
   // Filtered list
   const filteredRouteList = routes.filter((r) => {
-    const matchesName = r.name
-      ?.toLowerCase()
-      .includes(searchText.toLowerCase());
+    const matchesName = r.name?.toLowerCase().includes(searchText.toLowerCase());
     const matchesStatus = statusFilter ? r.status === statusFilter : true;
     return matchesName && matchesStatus;
   });
 
+
   useEffect(() => {
-    if (route?.routePickups) {
-      setRouteDetailsValue(route.routePickups);
+    if (route?.routeDetails) {
+      setRouteDetailsValue(route.routePickups || []);
       handleGetRouteInfo;
+
+
     }
+    
   }, [route]);
 
-  useEffect(() => {
-    if (
-      (currentAction === "update" || currentAction === "detail") &&
-      currentSelectedItem
-    ) {
-      setRouteDetailsValue(currentSelectedItem.routePickups || []);
-      // set form fields so Form shows selectedRoute values
-      form.setFieldsValue({
-        name: currentSelectedItem.name,
-        status: currentSelectedItem.status,
-        total_distance: currentSelectedItem.total_distance,
-        total_time: currentSelectedItem.total_time,
-        start_pickup: currentSelectedItem.start_pickup,
-        end_pickup: currentSelectedItem.end_pickup,
-      });
-    }
-  }, [currentAction, currentSelectedItem]);
+  
+useEffect(() => {
+  if ((currentAction === "update" || currentAction === "detail") && currentSelectedItem) {
+    const routeDetails = currentSelectedItem.routePickups || []; // dùng routePickups
+    setRouteDetailsValue(routeDetails);
+
+    form.setFieldsValue({
+      name: currentSelectedItem.name,
+      status: currentSelectedItem.status,
+      totalDistance: currentSelectedItem.total_distance,
+      totalTime: currentSelectedItem.total_time,
+      startPickup: routeDetails[0]?.pickup?.id,
+      endPickup: routeDetails[routeDetails.length - 1]?.pickup?.id,
+    });
+  }
+}, [currentAction, currentSelectedItem]);
+
 
   useEffect(() => {
-    setRouteDetailsValue(route?.routePickups || []);
+    setRouteDetailsValue(route?.routeDetails || []);
   }, [route]);
   // Breadcrumb + card content
   useEffect(() => {
     const baseBreadcrumb = [
-      {
-        title: (
-          <span onClick={() => setCurrentAction("list")}>
-            <FontAwesomeIcon icon={faUserGraduate} />
-            &nbsp;{t("route-manager")}
-          </span>
-        ),
-      },
-      {
-        title: (
-          <span onClick={() => setCurrentAction("list")}>
-            {t("route-list")}
-          </span>
-        ),
-      },
+      { title: <span onClick={() => setCurrentAction("list")}><FontAwesomeIcon icon={faUserGraduate} />&nbsp;{t("route-manager")}</span> },
+      { title: <span onClick={() => setCurrentAction("list")}>{t("route-list")}</span> },
     ];
+
 
     switch (currentAction) {
       case "list":
@@ -219,75 +193,53 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
         setCurrentCardContent("list");
         break;
       case "detail":
-        setCurrentBreadcrumbItems([
-          ...baseBreadcrumb,
-          { title: <span>{t("route-detail")}</span> },
-        ]);
+        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("route-detail")}</span> }]);
         setCurrentCardTitle(t("route-detail"));
         setCurrentCardContent("detail");
         break;
       case "create":
-        setCurrentBreadcrumbItems([
-          ...baseBreadcrumb,
-          { title: <span>{t("route-create")}</span> },
-        ]);
+        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("route-create")}</span> }]);
         setCurrentCardTitle(t("route-create"));
         setCurrentCardContent("create");
         break;
       case "update":
-        setCurrentBreadcrumbItems([
-          ...baseBreadcrumb,
-          { title: <span>{t("route-update")}</span> },
-        ]);
+        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("route-update")}</span> }]);
         setCurrentCardTitle(t("route-update"));
         setCurrentCardContent("update");
         break;
       case "lock":
-        setCurrentBreadcrumbItems([
-          ...baseBreadcrumb,
-          { title: <span>{t("route-lock")}</span> },
-        ]);
+        setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("route-lock")}</span> }]);
         setCurrentCardTitle(t("route-lock"));
         setCurrentCardContent("lock");
         break;
       case "unlock":
         console.log("Setting breadcrumb and card content for unlock");
-        setCurrentBreadcrumbItems([
-          ...baseBreadcrumb,
-          { title: <span>{t("route-unlock")}</span> },
-        ]);
-        setCurrentCardTitle(t("route-unlock"));
-        setCurrentCardContent("unlock");
-        break;
+      setCurrentBreadcrumbItems([...baseBreadcrumb, { title: <span>{t("route-unlock")}</span> }]);
+      setCurrentCardTitle(t("route-unlock"));
+      setCurrentCardContent("unlock");
+      break;
     }
   }, [currentAction]);
 
   // Handlers
-  const handleGetRouteInfo = ({
-    distance,
-    duration,
-  }: HandleGetRouteInfoProps) => {
-    if (distance !== undefined) form.setFieldValue("total_distance", distance);
-    if (duration !== undefined) form.setFieldValue("total_time", duration);
-  };
+const handleGetRouteInfo = ({ distance, duration }: HandleGetRouteInfoProps) => {
+
+  if (distance !== undefined) form.setFieldValue("totalDistance", distance);
+  if (duration !== undefined) form.setFieldValue("totalTime", duration);
+};
+
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-    const oldIndex = routeDetailsValue.findIndex(
-      (r) => r.pickup?.id === active.id
-    );
-    const newIndex = routeDetailsValue.findIndex(
-      (r) => r.pickup?.id === over.id
-    );
+    const oldIndex = routeDetailsValue.findIndex((r) => r.pickup?.id === active.id);
+    const newIndex = routeDetailsValue.findIndex((r) => r.pickup?.id === over.id);
     if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return;
 
-    setRouteDetailsValue(
-      arrayMove(routeDetailsValue, oldIndex, newIndex).map((item, index) => ({
-        ...item,
-        order: index + 1,
-      }))
-    );
+    setRouteDetailsValue(arrayMove(routeDetailsValue, oldIndex, newIndex).map((item, index) => ({
+      ...item,
+      order: index + 1,
+    })));
   };
 
   const drawRoutePolyline = (routeDetails: RouteDetailsFormatType[]) => {
@@ -308,87 +260,120 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
     }
   };
 
-  const handleMarkerClick = (pickup: PickupType) => {
-    if (mode === "detail") return;
+const handleMarkerClick = (pickup: PickupType) => {
+  if (mode === "detail") return;
 
-    setRouteDetailsValue((prev) => {
-      if (prev.some((r) => r.pickup?.id === pickup.id)) return prev;
-
-      const newRouteDetail = { pickup, order: prev.length + 1 };
-      const newRouteDetails = [...prev, newRouteDetail];
-
-      drawRoutePolyline(newRouteDetails);
-
-      Swal.fire({
-        icon: "success",
-        title: "Trạm đã chọn",
-        html: `<b>${pickup.name}</b> đã thêm vào tuyến`,
-        confirmButtonColor: "#0078ff",
-      });
-
-      return newRouteDetails;
+  // Nếu pickup.id chưa có thì thoát
+  if (pickup.id === undefined) {
+    Swal.fire({
+      icon: "error",
+      title: "Trạm không hợp lệ",
+      text: "Trạm này chưa có ID, không thể thêm vào tuyến.",
     });
-  };
+    return;
+  }
 
-  const handleSubmit = async () => {
-    console.log("Creating route with routeDetailsValue:", routeDetailsValue);
-    if (!routeDetailsValue.length) {
+  // Lấy tất cả các pickup đã được dùng trên các tuyến khác, loại bỏ undefined
+  const usedPickupIds: number[] = routes
+    .filter(r => currentSelectedItem?.id !== r.id) // loại tuyến hiện tại nếu update
+    .flatMap(r => 
+      r.routePickups?.map(p => p.pickup?.id).filter((id): id is number => id !== undefined) || []
+    );
+
+  setRouteDetailsValue((prev) => {
+    
+    if (prev.some(r => r.pickup?.id === pickup.id)) {
       Swal.fire({
         icon: "warning",
-        title: "Chưa có trạm nào được chọn",
+        title: "Trạm đã có trong tuyến này",
+        html: `<b>${pickup.name}</b> đã tồn tại trong tuyến hiện tại.`,
       });
-      return;
+      return prev;
     }
 
-    try {
-      const statusValue =
-        form.getFieldValue("status") === "Hoạt động" ? "ACTIVE" : "INACTIVE";
+    // Ngăn trùng với các tuyến khác
+if (usedPickupIds.includes(pickup.id as number)) {
+  Swal.fire({
+    icon: "warning",
+    title: "Trạm đã được sử dụng",
+    html: `<b>${pickup.name}</b> đã tồn tại trên tuyến khác.`,
+  });
+      return prev;
+    }
 
-      const firstPickupName = String(routeDetailsValue[0]?.pickup?.id);
-      const lastPickupName = String(
-        routeDetailsValue[routeDetailsValue.length - 1]?.pickup?.id
-      );
+    // Thêm pickup vào tuyến
+    const newRouteDetail = { pickup, order: prev.length + 1 };
+    const newRouteDetails = [...prev, newRouteDetail];
 
-      const routePayload = {
-        name: form.getFieldValue("name") || undefined,
-        start_pickup:
-          form.getFieldValue("start_pickup") || firstPickupName || undefined,
-        end_pickup:
-          form.getFieldValue("end_pickup") || lastPickupName || undefined,
-        total_distance: Math.round(
-          Number(form.getFieldValue("total_distance") || 0)
-        ),
-        total_time: Math.round(Number(form.getFieldValue("total_time") || 0)),
-        status: statusValue as "ACTIVE" | "INACTIVE",
-        route_pickups: routeDetailsValue.map((routeDetail) => ({
-          pickup_id: routeDetail.pickup?.id!,
-          order: routeDetail.order!,
-        })),
-      };
+    // Vẽ lại polyline trên map
+    drawRoutePolyline(newRouteDetails);
 
-      const restResponse = await execute(createRoute(routePayload), true);
+    Swal.fire({
+      icon: "success",
+      title: "Trạm đã chọn",
+      html: `<b>${pickup.name}</b> đã thêm vào tuyến`,
+      confirmButtonColor: "#0078ff",
+    });
 
-      if (restResponse?.result) {
-        getRouteData(); // Reload danh sách tuyến
-        setCurrentAction("list"); // Quay về list
-        Swal.fire({
-          icon: "success",
-          title: "Tạo tuyến thành công",
-        });
-      }
-    } catch (error) {
-      console.error(error);
+    return newRouteDetails;
+  });
+};
+
+
+
+const handleSubmit = async () => {
+  console.log("Creating route with routeDetailsValue:", routeDetailsValue);
+  if (!routeDetailsValue.length) {
+    Swal.fire({
+      icon: "warning",
+      title: "Chưa có trạm nào được chọn",
+    });
+    return;
+  }
+
+  try {
+    const statusValue = form.getFieldValue("status") === "Hoạt động" ? "ACTIVE" : "INACTIVE";
+    
+    const firstPickupName = String(routeDetailsValue[0]?.pickup?.id);
+    const lastPickupName = String( routeDetailsValue[routeDetailsValue.length - 1]?.pickup?.id);
+    
+const routePayload= {
+  name: form.getFieldValue("name") || undefined,
+  start_pickup: form.getFieldValue("start_pickup") || firstPickupName || undefined,
+  end_pickup: form.getFieldValue("end_pickup") || lastPickupName || undefined,
+  total_distance: Math.round(Number(form.getFieldValue("total_distance") || 0)),
+  total_time: Math.round(Number(form.getFieldValue("total_time") || 0)),
+  status: statusValue as "ACTIVE" | "INACTIVE",
+  route_pickups: routeDetailsValue.map((routeDetail) => ({
+    pickup_id: routeDetail.pickup?.id!,
+    order: routeDetail.order!,
+  })),
+};
+
+    
+    const restResponse = await execute(createRoute(routePayload), true);
+
+    if (restResponse?.result) {
+      getRouteData();          // Reload danh sách tuyến
+      setCurrentAction("list"); // Quay về list
       Swal.fire({
-        icon: "error",
-        title: "Lỗi",
-        text: "Có lỗi xảy ra khi tạo tuyến",
+        icon: "success",
+        title: "Tạo tuyến thành công",
       });
     }
-  };
+  } catch (error) {
+    console.error(error);
+    Swal.fire({
+      icon: "error",
+      title: "Lỗi",
+      text: "Có lỗi xảy ra khi tạo tuyến",
+    });
+  }
+};
+
 
   // Table columns
   const handleUpdateSubmit = async () => {
-    console.log("Updating route with routeDetailsValue:", routeDetailsValue);
     if (!routeDetailsValue.length) {
       Swal.fire({
         icon: "warning",
@@ -398,17 +383,15 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
     }
 
     try {
-      const statusValue =
-        form.getFieldValue("status") === "Hoạt động" ? "ACTIVE" : "INACTIVE";
+      const statusValue = form.getFieldValue("status") === "Hoạt động" ? "ACTIVE" : "INACTIVE";
+
 
       const routePayload = {
         name: form.getFieldValue("name") || undefined,
-        total_distance: Math.round(
-          Number(form.getFieldValue("total_distance") || 0)
-        ),
-        total_time: Math.round(Number(form.getFieldValue("total_time") || 0)),
+        totalDistance: Math.round(Number(form.getFieldValue("totalDistance") || 0)),
+        totalTime: Math.round(Number(form.getFieldValue("totalTime") || 0)),
         status: statusValue as "ACTIVE" | "INACTIVE",
-        pickups: routeDetailsValue.map((routeDetail) => ({
+        routePickups: routeDetailsValue.map((routeDetail) => ({
           pickupId: routeDetail.pickup?.id!,
           order: routeDetail.order!,
         })),
@@ -422,20 +405,21 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
         });
         return;
       }
-      console.log("Route Payload for update:", routePayload);
+  
       const restResponse = await execute(
         updateRoute(currentSelectedItem.id, routePayload),
         true
       );
 
       if (restResponse?.result) {
-        getRouteData(); // reload danh sách tuyến
+        getRouteData();          // reload danh sách tuyến
         setCurrentAction("list"); // về list
         Swal.fire({
           icon: "success",
           title: "Cập nhật tuyến thành công",
         });
       }
+
     } catch (error) {
       console.error(error);
       Swal.fire({
@@ -447,105 +431,39 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
   };
 
   const columns: ColumnsType<RouteFormatType> = [
-    {
-      title: "#",
-      dataIndex: "id",
-      key: "id",
-      width: "10%",
-      sorter: (a, b) => a?.id! - b?.id!,
-    },
-    {
-      title: "Tên",
-      dataIndex: "name",
-      key: "name",
-      width: "22%",
-      sorter: (a, b) => a?.name!.localeCompare(b?.name!),
-    },
-    {
-      title: "Trạm BĐ",
-      dataIndex: "start_pickup",
-      key: "start_pickup",
-      width: "16%",
-      sorter: (a, b) => a?.start_pickup!.localeCompare(b?.start_pickup!),
-    },
-    {
-      title: "Trạm KT",
-      dataIndex: "end_pickup",
-      key: "end_pickup",
-      width: "16%",
-      sorter: (a, b) => a?.end_pickup!.localeCompare(b?.end_pickup!),
-    },
-    {
-      title: "Tổng m",
-      dataIndex: "total_distance",
-      key: "total_distance",
-      width: "8%",
-      sorter: (a, b) => a?.total_distance! - b?.total_distance!,
-    },
-    {
-      title: "Tổng s",
-      dataIndex: "total_time",
-      key: "total_time",
-      width: "8%",
-      sorter: (a, b) => a?.total_time! - b?.total_time!,
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      width: "10%",
-      render: (status: string) => (
-        <Tag color={status === CommonStatusValue.active ? "green" : "red"}>
-          {status}
-        </Tag>
-      ),
-    },
-    {
-      title: "",
-      render: (record: any) => (
-        <div>
-          <Button
-            onClick={() => {
-              setCurrentAction("detail");
-              setCurrentSelectedItem(record);
-            }}
-          >
-            <FontAwesomeIcon icon={faInfoCircle} />
-          </Button>
-          <Button
-            onClick={() => {
-              setCurrentAction("update");
-              setCurrentSelectedItem(record);
-            }}
-          >
-            <FontAwesomeIcon icon={faPenToSquare} />
-          </Button>
-          <Button
-            color="red"
-            variant="filled"
-            onClick={() => {
-              const action =
-                record.status === CommonStatusValue.active ? "lock" : "unlock";
-              setCurrentAction(action);
-              setCurrentSelectedItem(record);
-            }}
-          >
-            <FontAwesomeIcon
-              icon={
-                record.status === CommonStatusValue.active ? faLock : faLockOpen
-              }
-            />
-          </Button>
-        </div>
-      ),
-      width: "10%",
-    },
+    { title: "#", dataIndex: "id", key: "id", width: "10%", sorter: (a, b) => a?.id! - b?.id! },
+    { title: "Tên", dataIndex: "name", key: "name", width: "22%", sorter: (a, b) => a?.name!.localeCompare(b?.name!) },
+    { title: "Trạm BĐ", dataIndex: "startPickup", key: "startPickup", width: "16%", sorter: (a, b) => a?.start_pickup!.localeCompare(b?.start_pickup!) },
+    { title: "Trạm KT", dataIndex: "endPickup", key: "endPickup", width: "16%", sorter: (a, b) => a?.end_pickup!.localeCompare(b?.end_pickup!) },
+    { title: "Tổng m", dataIndex: "totalDistance", key: "totalDistance", width: "8%", sorter: (a, b) => a?.total_distance! - b?.total_distance! },
+    { title: "Tổng s", dataIndex: "totalTime", key: "totalTime", width: "8%", sorter: (a, b) => a?.total_time! - b?.total_time! },
+    { title: "Trạng thái", dataIndex: "status", key: "status", width: "10%", render: (status: string) => (<Tag color={status === CommonStatusValue.active ? "green" : "red"}>{status}</Tag>) },
+    { title: "", render: (record: any) => (
+      <div>
+        <Button onClick={() => { setCurrentAction("detail"); setCurrentSelectedItem(record); }}><FontAwesomeIcon icon={faInfoCircle} /></Button>
+        <Button onClick={() => { setCurrentAction("update"); setCurrentSelectedItem(record); }}><FontAwesomeIcon icon={faPenToSquare} /></Button>
+<Button 
+  color="red" 
+  variant="filled"
+  onClick={() => {
+    const action = record.status === CommonStatusValue.active ? "lock" : "unlock";
+    setCurrentAction(action);
+    setCurrentSelectedItem(record);
+  }}
+>
+  <FontAwesomeIcon 
+    icon={record.status === CommonStatusValue.active ? faLock : faLockOpen}
+  />
+</Button>
+
+      </div>
+    ), width: "10%" }
   ];
 
   // RouteActions object
   const RouteActions = {
     detail: (selectedRoute: RouteFormatType) => {
-      const routeDetails = selectedRoute.routePickups; // <-- thêm dòng này
+      const routeDetails = selectedRoute.routePickups;
 
       return (
         <Form form={form} layout="vertical" initialValues={selectedRoute}>
@@ -556,19 +474,15 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
                 routeDetails={routeDetails}
                 pickups={pickupList}
                 handleGetRouteInfo={handleGetRouteInfo}
-                draggableMarkers={false}
-                onMarkerClick={() => {}}
+                draggableMarkers={false} 
+                onMarkerClick={() => {}} 
               />
             </Col>
             <Col span={8}>
               <div className="pickup-list">
                 <h3>Danh sách trạm</h3>
                 {routeDetails?.map((item) => (
-                  <Card
-                    key={item.pickup?.id}
-                    size="small"
-                    style={{ marginBottom: 8 }}
-                  >
+                  <Card key={item.pickup?.id} size="small" style={{ marginBottom: 8 }}>
                     {item.order}. {item.pickup?.name} - {item.pickup?.category}
                   </Card>
                 ))}
@@ -581,11 +495,11 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
                   <Input disabled />
                 </Form.Item>
 
-                <Form.Item label="Tổng quãng đường (m)" name="total_distance">
+                <Form.Item label="Tổng quãng đường (m)" name="totalDistance">
                   <Input disabled />
                 </Form.Item>
 
-                <Form.Item label="Thời gian dự tính (s)" name="total_time">
+                <Form.Item label="Thời gian dự tính (s)" name="totalTime">
                   <Input disabled />
                 </Form.Item>
               </div>
@@ -596,6 +510,7 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
     },
 
     update: (selectedRoute: RouteFormatType) => {
+
       return (
         <Form
           form={form}
@@ -607,7 +522,7 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
             <Col span={16}>
               <LeafletMap
                 type="update"
-                routeDetails={routeDetailsValue}
+                routeDetails={routeDetailsValue} 
                 pickups={pickupList}
                 handleGetRouteInfo={handleGetRouteInfo}
                 draggableMarkers
@@ -619,82 +534,47 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
               <div className="pickup-list">
                 <h3>Danh sách trạm đã chọn</h3>
 
-                <DndContext
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
+                <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                   <SortableContext
                     items={routeDetailsValue
-                      .filter(
-                        (
-                          r
-                        ): r is RouteDetailsFormatType & {
-                          pickup: PickupType & { id: number };
-                        } => r.pickup?.id !== undefined
-                      )
-                      .map((r) => r.pickup.id)}
+                      .filter((r): r is RouteDetailsFormatType & { pickup: PickupType & { id: number } } => r.pickup?.id !== undefined)
+                      .map(r => r.pickup.id)} 
                     strategy={verticalListSortingStrategy}
                   >
                     {routeDetailsValue
-                      .filter(
-                        (
-                          r
-                        ): r is RouteDetailsFormatType & {
-                          pickup: PickupType & { id: number };
-                        } => r.pickup?.id !== undefined
-                      )
-                      .map((item) => (
+                      .filter((r): r is RouteDetailsFormatType & { pickup: PickupType & { id: number } } => r.pickup?.id !== undefined)
+                      .map(item => (
                         <SortableItem key={item.pickup.id} id={item.pickup.id}>
                           <Card size="small" style={{ marginBottom: 8 }}>
-                            {item.order}. {item.pickup.name} -{" "}
-                            {item.pickup.category}
+                            {item.order}. {item.pickup.name} - {item.pickup.category}
                           </Card>
                         </SortableItem>
                       ))}
                   </SortableContext>
                 </DndContext>
 
-                <Form.Item
-                  label="Tên tuyến"
-                  name="name"
-                  rules={[{ required: true, message: "Nhập tên tuyến" }]}
-                >
+                <Form.Item label="Tên tuyến" name="name" rules={[{ required: true, message: "Nhập tên tuyến" }]}>
                   <Input placeholder="Nhập tên tuyến" />
                 </Form.Item>
 
-                <Form.Item
-                  label="Trạng thái"
-                  name="status"
-                  rules={[{ required: true, message: "Chọn trạng thái" }]}
-                >
+                <Form.Item label="Trạng thái" name="status" rules={[{ required: true, message: "Chọn trạng thái" }]}>
                   <Select
                     options={[
-                      {
-                        label: CommonStatusValue.active,
-                        value: CommonStatusValue.active,
-                      },
-                      {
-                        label: CommonStatusValue.inactive,
-                        value: CommonStatusValue.inactive,
-                      },
+                      { label: CommonStatusValue.active, value: CommonStatusValue.active },
+                      { label: CommonStatusValue.inactive, value: CommonStatusValue.inactive },
                     ]}
                   />
                 </Form.Item>
 
-                <Form.Item label="Tổng quãng đường (m)" name="total_distance">
+                <Form.Item label="Tổng quãng đường (m)" name="totalDistance">
                   <Input disabled />
                 </Form.Item>
 
-                <Form.Item label="Thời gian dự tính (s)" name="total_time">
+                <Form.Item label="Thời gian dự tính (s)" name="totalTime">
                   <Input disabled />
                 </Form.Item>
 
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  style={{ marginTop: 16 }}
-                  block
-                >
+                <Button type="primary" htmlType="submit" style={{ marginTop: 16 }} block>
                   Cập nhật tuyến
                 </Button>
               </div>
@@ -712,7 +592,7 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
               type="create"
               routeDetails={routeDetailsValue}
               pickups={pickupList}
-              handleGetRouteInfo={handleGetRouteInfo}
+              handleGetRouteInfo={handleGetRouteInfo} 
               draggableMarkers
               onMarkerClick={handleMarkerClick}
             />
@@ -720,10 +600,7 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
           <Col span={8}>
             <div className="pickup-list">
               <h3>Danh sách trạm đã chọn</h3>
-              <DndContext
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
+              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext
                   items={routeDetailsValue.map((r) => r.pickup?.id!)}
                   strategy={verticalListSortingStrategy}
@@ -739,47 +616,28 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
               </DndContext>
 
               {/* Thêm Form.Item nếu cần nhập tên, trạng thái */}
-              <Form.Item
-                label="Tên tuyến"
-                name="name"
-                rules={[{ required: true, message: "Nhập tên tuyến" }]}
-              >
+              <Form.Item label="Tên tuyến" name="name" rules={[{ required: true, message: "Nhập tên tuyến" }]}>
                 <Input placeholder="Nhập tên tuyến" />
               </Form.Item>
 
-              <Form.Item
-                label="Trạng thái"
-                name="status"
-                rules={[{ required: true, message: "Chọn trạng thái" }]}
-              >
+              <Form.Item label="Trạng thái" name="status" rules={[{ required: true, message: "Chọn trạng thái" }]}>
                 <Select
                   options={[
-                    {
-                      label: CommonStatusValue.active,
-                      value: CommonStatusValue.active,
-                    },
-                    {
-                      label: CommonStatusValue.inactive,
-                      value: CommonStatusValue.inactive,
-                    },
+                    { label: CommonStatusValue.active, value: CommonStatusValue.active },
+                    { label: CommonStatusValue.inactive, value: CommonStatusValue.inactive },
                   ]}
                 />
               </Form.Item>
 
-              <Form.Item label="Tổng quãng đường (m)" name="total_distance">
+              <Form.Item label="Tổng quãng đường (m)" name="totalDistance">
                 <Input disabled />
               </Form.Item>
 
-              <Form.Item label="Thời gian dự tính (s)" name="total_time">
+              <Form.Item label="Thời gian dự tính (s)" name="totalTime">
                 <Input disabled />
               </Form.Item>
 
-              <Button
-                type="primary"
-                htmlType="submit"
-                style={{ marginTop: 16 }}
-                block
-              >
+              <Button type="primary" htmlType="submit" style={{ marginTop: 16 }} block>
                 Tạo tuyến
               </Button>
             </div>
@@ -835,14 +693,17 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
           }
           type="error"
           action={
-            <Button color="danger" variant="solid" onClick={handleLockRoute}>
+            <Button
+              color="danger"
+              variant="solid"
+              onClick={handleLockRoute}
+            >
               Xác nhận
             </Button>
           }
         />
       );
     },
-
     unlock: (selectedRoute: RouteFormatType) => {
       const handleUnlockRoute = async () => {
         const restResponse = await execute(
@@ -890,21 +751,26 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
           }
           type="error"
           action={
-            <Button color="danger" variant="solid" onClick={handleUnlockRoute}>
+            <Button
+              color="danger"
+              variant="solid"
+              onClick={handleUnlockRoute}
+            >
               Xác nhận
             </Button>
           }
         />
       );
     },
+  
+
+
   };
 
   return (
+    
     <div className="admin-layout__main-content">
-      <Breadcrumb
-        items={currentBreadcrumbItems}
-        className="admin-layout__main-breadcrumb"
-      />
+      <Breadcrumb items={currentBreadcrumbItems} className="admin-layout__main-breadcrumb" />
       <Card title={currentCardTitle} className="admin-layout__main-card">
         {/* LIST VIEW */}
         {currentCardContent === "list" && (
@@ -922,14 +788,8 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
                   allowClear
                   placeholder="Chọn Trạng thái"
                   options={[
-                    {
-                      label: CommonStatusValue.active,
-                      value: CommonStatusValue.active,
-                    },
-                    {
-                      label: CommonStatusValue.inactive,
-                      value: CommonStatusValue.inactive,
-                    },
+                    { label: CommonStatusValue.active, value: CommonStatusValue.active },
+                    { label: CommonStatusValue.inactive, value: CommonStatusValue.inactive },
                   ]}
                   className="filter-select"
                   value={statusFilter}
@@ -958,6 +818,8 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
                 </Button>
               </div>
             </div>
+          
+          
 
             <LeafletMap
               id="map-routes"
@@ -975,15 +837,12 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
             />
           </div>
         )}
-        {currentCardContent !== "list" &&
-          currentCardContent !== "create" &&
-          currentSelectedItem && (
-            <div className="route-action-form">
-              {RouteActions[currentCardContent as keyof typeof RouteActions]?.(
-                currentSelectedItem
-              )}
-            </div>
-          )}
+      
+        {currentCardContent !== "list" && currentCardContent !== "create" && currentSelectedItem && (
+          <div className="route-action-form">
+            {RouteActions[currentCardContent as keyof typeof RouteActions]?.(currentSelectedItem)}
+          </div>
+        )}
 
         {/* CREATE */}
         {currentCardContent === "create" && RouteActions.create()}
@@ -992,4 +851,6 @@ const RouteForm: React.FC<RouteFormProps> = ({ mode, route, pickups = [] }) => {
   );
 };
 
+
 export default RouteForm;
+
