@@ -153,7 +153,10 @@ const ParentJourneyPage = () => {
     if (!currentActiveStudent || !busLocation) return;
     if (currentActiveStudent.status === "CHECKED") {
       setStudentPosition(busLocation);
+    } else {
+      setStudentPosition(new LatLng(currentActiveStudent.student.pickup.lat, currentActiveStudent.student.pickup.lng))
     }
+
   }, [currentActiveStudent, busLocation]);
 
   useEffect(() => {
@@ -180,9 +183,24 @@ const ParentJourneyPage = () => {
       })
     }
 
+    const checkinNotificationHandler = (data: any) => {
+      console.log(data)
+      const student = parentStudents.filter(st => st.id === data.student_id);
+      if (!student) return;
+      const message = `Học sinh ${student[0].full_name} đã ${data.status == "CHECKED" ? " lên xe" : " không lên xe"}`;
+      showNotificationFromSocket({
+        type: "SUCCESS",
+        description:message,
+        message: "Thông báo học sinh"
+      });
+      // Update location of student
+      getParentActiveStudent();
+    }
+
     socketClient.on(`bus-location-receive/${parentActiveStudent.id}`, busLocationHandler);
     socketClient.on(`bus-notification-receive/${parentActiveStudent.id}`, busNotificationHandler);
     socketClient.on(`driver-notification-receive/${parentActiveStudent.id}`, driverNotificationHandler)
+    socketClient.on(`checkin-notification-receive/${parentActiveStudent.id}`, checkinNotificationHandler)
 
     return () => {
       socketClient.off(`bus-location-receive/${parentActiveStudent.id}`, busLocationHandler);

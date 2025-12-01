@@ -53,6 +53,7 @@ import {
   scanActiveStudent,
   updateActiveStudent,
 } from "../../services/active-student-service";
+import { updateActivePickup } from "../../services/active-pickup-service";
 import { ruleRequired } from "../../common/rules";
 import TextArea from "antd/es/input/TextArea";
 import { createInform } from "../../services/inform-service";
@@ -376,13 +377,16 @@ const DriverJourneyPage = () => {
 
         // Đặt xe tại pickup point hiện tại (trạm vừa đến)
         const currentPickup = activePickups[currentCoord];
-        if (currentPickup) {
-          setBusLocation(new LatLng(currentPickup.pickup.lat, currentPickup.pickup.lng));
-        }
+        const currentLocation = currentRoute[currentPoint - 1];
+        console.log(currentLocation)
+        // setBusLocation(new LatLng(currentLocation[0], currentLocation[1]));
 
         setCurrentCoord(currentCoord + 1);
         setCurrentPoint(0);
         alert(`🚏 Đã đến trạm ${currentPickup?.pickup?.name}! Điểm danh học sinh đi.`);
+
+
+
         setIsRunning(false);
 
         return;
@@ -417,7 +421,7 @@ const DriverJourneyPage = () => {
       student_id: item.student?.id!,
       status: status as "PENDING" | "ABSENT" | "LEAVE" | "CHECKED",
     });
-    
+
     const restResponse = await execute(
       updateActiveStudent({
         active_id: driverActive?.id!,
@@ -432,7 +436,38 @@ const DriverJourneyPage = () => {
 
     const message = `Cập nhật trạng thái ${status === "ABSENT" ? "" : status === "LEAVE" ? "" : status === "CHECKED" ? "điểm danh" : "không xác định"
       } cho học sinh thành công`;
+
+    socketClient?.emit("checkin-notification-send", {
+        active_id: driverActive?.id!,
+        student_id: item.student?.id!,
+        status: status as "PENDING" | "ABSENT" | "LEAVE" | "CHECKED",
+    });
+
     notify(restResponse!, message);
+    if (restResponse?.result) {
+      getDriverActive();
+    }
+  }
+
+  const handleConfirmPickup = async (item: any) => {
+    const response = await openConfirmation({
+      title: "Xác nhận đã đến trạm",
+      content: `Xác nhận đã đến trạm "${item.pickup?.name}"?`,
+    });
+
+    if (!response) return;
+
+    const restResponse = await execute(
+      updateActivePickup({
+        active_id: driverActive?.id!,
+        pickup_id: item.pickup?.id!,
+        at: dayjs().format("DD/MM/YYYY HH:mm:ss"),
+        status: "CONFIRMED",
+      }),
+      true
+    );
+
+    notify(restResponse!, "Xác nhận đã đến trạm thành công");
     if (restResponse?.result) {
       getDriverActive();
     }
@@ -785,6 +820,17 @@ const DriverJourneyPage = () => {
                                       ? "red"
                                       : "gray"
                               }
+                              actions={[
+                                <Button
+                                  type="primary"
+                                  style={{ marginTop: "30px"}}
+                                  icon={<CheckCircleOutlined />}
+                                  onClick={() => handleConfirmPickup(item)}
+                                  disabled={item?.status === "CONFIRMED" || item?.status === "CANCELED"}
+                                >
+                                  Xác nhận đã đến trạm
+                                </Button>
+                              ]}
                             >
                               <List.Item.Meta
                                 avatar={
@@ -1223,7 +1269,7 @@ const DriverJourneyPage = () => {
                         <Button
                           type="primary"
                           onClick={() => handleChangeIsRunning()}
-                        // loading={isRunning}
+                        loading={isRunning}
                         >
                           Chạy xe
                         </Button>
