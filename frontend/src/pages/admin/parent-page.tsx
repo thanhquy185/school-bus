@@ -649,7 +649,7 @@ const ParentPage = () => {
       <>
         <Alert
           message={
-            "Học sinh: " +
+            "Phụ huynh: " +
             "#" +
             parent?.id +
             " - " +

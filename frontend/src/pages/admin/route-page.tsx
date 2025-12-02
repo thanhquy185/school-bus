@@ -432,9 +432,9 @@ const routePayload= {
 
   const columns: ColumnsType<RouteFormatType> = [
     { title: "#", dataIndex: "id", key: "id", width: "10%", sorter: (a, b) => a?.id! - b?.id! },
-    { title: "Tên", dataIndex: "name", key: "name", width: "22%", sorter: (a, b) => a?.name!.localeCompare(b?.name!) },
-    { title: "Trạm BĐ", dataIndex: "startPickup", key: "startPickup", width: "16%", sorter: (a, b) => a?.start_pickup!.localeCompare(b?.start_pickup!) },
-    { title: "Trạm KT", dataIndex: "endPickup", key: "endPickup", width: "16%", sorter: (a, b) => a?.end_pickup!.localeCompare(b?.end_pickup!) },
+    { title: "Tên", dataIndex: "name", key: "name", width: "10%", sorter: (a, b) => a?.name!.localeCompare(b?.name!) },
+    { title: "Trạm BĐ", dataIndex: "startPickup", key: "startPickup", width: "10%", sorter: (a, b) => a?.start_pickup!.localeCompare(b?.start_pickup!) },
+    { title: "Trạm KT", dataIndex: "endPickup", key: "endPickup", width: "10%", sorter: (a, b) => a?.end_pickup!.localeCompare(b?.end_pickup!) },
     { title: "Tổng m", dataIndex: "totalDistance", key: "totalDistance", width: "8%", sorter: (a, b) => a?.total_distance! - b?.total_distance! },
     { title: "Tổng s", dataIndex: "totalTime", key: "totalTime", width: "8%", sorter: (a, b) => a?.total_time! - b?.total_time! },
     { title: "Trạng thái", dataIndex: "status", key: "status", width: "10%", render: (status: string) => (<Tag color={status === CommonStatusValue.active ? "green" : "red"}>{status}</Tag>) },
