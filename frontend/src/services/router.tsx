@@ -31,10 +31,10 @@ export const getRouter = async (): Promise<
       element: <AdminLayout />,
       errorElement: <ErrorPage />,
       children: [
-        {
-          path: "histories",
-          element: <HistoryPage />,
-        },
+        // {
+        //   path: "histories",
+        //   element: <HistoryPage />,
+        // },
         {
           path: "map",
           element: <MapPage />,
