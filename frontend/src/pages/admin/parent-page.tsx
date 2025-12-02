@@ -433,6 +433,7 @@ const ParentPage = () => {
                   label={defaultLabels.full_name}
                   rules={[ruleRequired("Họ và tên không được để trống !")]}
                   className="multiple-2"
+                  style={{width:"100%"}}
                 >
                   <Input placeholder={defaultInputs.full_name} />
                 </Form.Item>
