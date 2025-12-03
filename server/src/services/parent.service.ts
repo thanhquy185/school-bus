@@ -201,11 +201,21 @@ const ParentService = {
 
   async getActiveByStudent(authentication: string, student_id: number) {
     const payload: AuthenticationPayload = await verifyToken(authentication);
+    const account = await prisma.accounts.findUnique({
+      where: {
+        id: payload.id,
+      },
+      include: {
+        parents: true
+      }
+    });
 
-    const student = await prisma.students.findFirst({
+    const parent = account.parents;
+
+    const student = await prisma.students.findUnique({
       where: {
         id: student_id,
-        parent_id: payload.id,
+        parent_id: parent.id,
       },
     });
     if (!student) throw new Error("Học sinh này không tồn tại");

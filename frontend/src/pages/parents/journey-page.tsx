@@ -138,6 +138,7 @@ const ParentJourneyPage = () => {
   };
 
   useEffect(() => {
+    console.log(selectedStudent)
     getParentActiveStudent();
   }, [selectedStudent]);
 
